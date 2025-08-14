@@ -13,13 +13,14 @@ export const handler: Handlers = {
         // 首先尝试从 t.leftsite.cn 获取语音列表
         try {
           console.log("获取 Leftsite 语音列表");
-          
+
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000);
-          
+
           const response = await fetch("https://t.leftsite.cn/voices", {
             headers: {
-              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+              "User-Agent":
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
               "Accept": "application/json",
               "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
               "Cache-Control": "no-cache",
@@ -32,14 +33,18 @@ export const handler: Handlers = {
 
           if (response.ok) {
             const leftsiteVoices = await response.json();
-            console.log("成功获取 Leftsite 语音列表:", leftsiteVoices.length, "个语音");
-            
+            console.log(
+              "成功获取 Leftsite 语音列表:",
+              leftsiteVoices.length,
+              "个语音",
+            );
+
             // 为每个语音添加provider标识
             const processedVoices = leftsiteVoices.map((voice: any) => ({
               ...voice,
-              provider: "leftsite"
+              provider: "leftsite",
             }));
-            
+
             allVoices = allVoices.concat(processedVoices);
           }
         } catch (fetchError) {
@@ -59,7 +64,7 @@ export const handler: Handlers = {
             "gender": "Male",
             "locale": "zh-CN",
             "locale_name": "中文",
-            "provider": "openxing"
+            "provider": "openxing",
           },
           {
             "name": "阿珍",
@@ -70,7 +75,7 @@ export const handler: Handlers = {
             "gender": "Female",
             "locale": "zh-CN",
             "locale_name": "中文",
-            "provider": "openxing"
+            "provider": "openxing",
           },
           {
             "name": "晴儿",
@@ -81,7 +86,7 @@ export const handler: Handlers = {
             "gender": "Female",
             "locale": "zh-CN",
             "locale_name": "中文",
-            "provider": "openxing"
+            "provider": "openxing",
           },
           {
             "name": "芊悦",
@@ -92,7 +97,7 @@ export const handler: Handlers = {
             "gender": "Female",
             "locale": "zh-CN",
             "locale_name": "中英双语",
-            "provider": "openxing"
+            "provider": "openxing",
           },
           {
             "name": "晨煦",
@@ -103,7 +108,7 @@ export const handler: Handlers = {
             "gender": "Male",
             "locale": "zh-CN",
             "locale_name": "中英双语",
-            "provider": "openxing"
+            "provider": "openxing",
           },
           {
             "name": "千雪",
@@ -114,7 +119,7 @@ export const handler: Handlers = {
             "gender": "Female",
             "locale": "zh-CN",
             "locale_name": "中英双语",
-            "provider": "openxing"
+            "provider": "openxing",
           },
           {
             "name": "苏瑶",
@@ -125,8 +130,8 @@ export const handler: Handlers = {
             "gender": "Female",
             "locale": "zh-CN",
             "locale_name": "中英双语",
-            "provider": "openxing"
-          }
+            "provider": "openxing",
+          },
         ];
 
         allVoices = allVoices.concat(openxingVoices);
@@ -138,7 +143,8 @@ export const handler: Handlers = {
         console.log("使用备用语音列表");
         allVoices = [
           {
-            "name": "Microsoft Server Speech Text to Speech Voice (zh-CN, XiaoxiaoNeural)",
+            "name":
+              "Microsoft Server Speech Text to Speech Voice (zh-CN, XiaoxiaoNeural)",
             "display_name": "晓晓",
             "local_name": "晓晓",
             "short_name": "zh-CN-XiaoxiaoNeural",
@@ -146,8 +152,8 @@ export const handler: Handlers = {
             "locale": "zh-CN",
             "locale_name": "Chinese (Mandarin, Simplified)",
             "sample_rate_hertz": "48000",
-            "provider": "leftsite"
-          }
+            "provider": "leftsite",
+          },
         ];
       }
 
@@ -159,18 +165,20 @@ export const handler: Handlers = {
           "Cache-Control": "public, max-age=3600", // 缓存1小时
         },
       });
-
     } catch (error) {
       console.error("TTS voices API error:", error);
-      return new Response(JSON.stringify({
-        error: "Failed to load voices",
-        message: error.message
-      }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
+      return new Response(
+        JSON.stringify({
+          error: "Failed to load voices",
+          message: error.message,
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
     }
   },
 };

@@ -15,7 +15,7 @@ export class Logger {
   constructor(name: string, level: LogLevel = LogLevel.INFO) {
     this.name = name;
     this.level = level;
-    
+
     // 在非 Deploy 环境创建日志目录
     if (!runInDenoDeploy()) {
       this.ensureLogDir();
@@ -35,7 +35,11 @@ export class Logger {
     return `${this.logDir}/app-${date}.log`;
   }
 
-  private formatMessage(level: string, message: string, ...args: unknown[]): string {
+  private formatMessage(
+    level: string,
+    message: string,
+    ...args: unknown[]
+  ): string {
     const timestamp = new Date().toISOString();
     const extra = args.length > 0 ? " " + JSON.stringify(args) : "";
     return `[${timestamp}] [${level}] [${this.name}] ${message}${extra}`;
@@ -43,7 +47,7 @@ export class Logger {
 
   private async writeToFile(message: string) {
     if (runInDenoDeploy()) return;
-    
+
     try {
       const fileName = this.getLogFileName();
       await Deno.writeTextFile(fileName, message + "\n", { append: true });

@@ -14,7 +14,7 @@ export const handler: Handlers = {
           "gender": "Male",
           "locale": "zh-CN",
           "locale_name": "中文",
-          "provider": "openxing"
+          "provider": "openxing",
         },
         {
           "name": "阿珍",
@@ -25,7 +25,7 @@ export const handler: Handlers = {
           "gender": "Female",
           "locale": "zh-CN",
           "locale_name": "中文",
-          "provider": "openxing"
+          "provider": "openxing",
         },
         {
           "name": "晴儿",
@@ -36,7 +36,7 @@ export const handler: Handlers = {
           "gender": "Female",
           "locale": "zh-CN",
           "locale_name": "中文",
-          "provider": "openxing"
+          "provider": "openxing",
         },
         {
           "name": "芊悦",
@@ -47,7 +47,7 @@ export const handler: Handlers = {
           "gender": "Female",
           "locale": "zh-CN",
           "locale_name": "中英双语",
-          "provider": "openxing"
+          "provider": "openxing",
         },
         {
           "name": "晨煦",
@@ -58,7 +58,7 @@ export const handler: Handlers = {
           "gender": "Male",
           "locale": "zh-CN",
           "locale_name": "中英双语",
-          "provider": "openxing"
+          "provider": "openxing",
         },
         {
           "name": "千雪",
@@ -69,7 +69,7 @@ export const handler: Handlers = {
           "gender": "Female",
           "locale": "zh-CN",
           "locale_name": "中英双语",
-          "provider": "openxing"
+          "provider": "openxing",
         },
         {
           "name": "苏瑶",
@@ -80,8 +80,8 @@ export const handler: Handlers = {
           "gender": "Female",
           "locale": "zh-CN",
           "locale_name": "中英双语",
-          "provider": "openxing"
-        }
+          "provider": "openxing",
+        },
       ];
 
       return new Response(JSON.stringify(voices), {
@@ -92,16 +92,18 @@ export const handler: Handlers = {
           "Cache-Control": "public, max-age=3600", // 缓存1小时
         },
       });
-
     } catch (error) {
       console.error("OpenXing voices API error:", error);
-      return new Response(JSON.stringify({
-        error: "Failed to load OpenXing voices",
-        message: error.message
-      }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Failed to load OpenXing voices",
+          message: error.message,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
   },
 };

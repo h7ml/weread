@@ -30,11 +30,11 @@ export function getAppId(ua: string): string {
     }
     return num.toString();
   }(ua);
-  
+
   if (rnd2.length > 16) {
     rnd2 = rnd2.slice(0, 16);
   }
-  
+
   return "wb" + rnd1 + "h" + rnd2;
 }
 
@@ -50,7 +50,7 @@ function _sign(data: string): string {
     n1 = 0x7fffffff & (n1 ^ (data.charCodeAt(i) << ((strlen - i) % 30)));
     n2 = 0x7fffffff & (n2 ^ (data.charCodeAt(i - 1) << (i % 30)));
   }
-  
+
   return (n1 + n2).toString(16).toLowerCase();
 }
 
@@ -70,11 +70,11 @@ function _stringify(data: Record<string, any>, keys: string[] = []): string {
       result += "&";
     }
   }
-  
+
   if (result.length > 0 && result.charAt(result.length - 1) === "&") {
     result = result.slice(0, result.length - 1);
   }
-  
+
   return result;
 }
 
@@ -98,7 +98,7 @@ export function calcHash(data: string | number): string {
 
   const dataMd5 = md5(data);
   let result = dataMd5.substring(0, 3);
-  
+
   const processData = function (data: string): [string, string[]] {
     if (/^\d*$/.test(data)) {
       const dataLen = data.length;
@@ -227,18 +227,18 @@ export function formatSeconds(seconds: number): string {
   if (typeof seconds !== "number") {
     return String(seconds);
   }
-  
+
   if (seconds < 60) {
     return `${seconds}s`;
   }
-  
+
   const minutes = Math.floor(seconds / 60);
   const second = seconds % 60;
-  
+
   if (minutes < 60) {
     return `${minutes}m${second}s`;
   }
-  
+
   const hours = Math.floor(minutes / 60);
   const minute = minutes % 60;
   return `${hours}h${minute}m${second}s`;
@@ -250,14 +250,14 @@ export function formatSeconds(seconds: number): string {
 export function parseCookies(cookieString: string): Record<string, string> {
   const cookies: Record<string, string> = {};
   if (!cookieString) return cookies;
-  
+
   cookieString.split(";").forEach((cookie) => {
     const [key, value] = cookie.trim().split("=");
     if (key && value) {
       cookies[key] = decodeURIComponent(value);
     }
   });
-  
+
   return cookies;
 }
 

@@ -31,20 +31,24 @@ export async function getUserSetting(vid: number): Promise<UserSetting | null> {
 export async function saveUserSetting(setting: UserSetting): Promise<void> {
   const kv = await getKv();
   setting.updatedAt = Date.now();
-  
+
   if (!setting.createdAt) {
     setting.createdAt = Date.now();
   }
-  
+
   await kv.set(["settings", setting.vid], setting);
 }
 
 /**
  * 更新邮箱
  */
-export async function updateEmail(vid: number, email: string, verified = false): Promise<void> {
+export async function updateEmail(
+  vid: number,
+  email: string,
+  verified = false,
+): Promise<void> {
   let setting = await getUserSetting(vid);
-  
+
   if (!setting) {
     setting = {
       vid,
@@ -57,16 +61,19 @@ export async function updateEmail(vid: number, email: string, verified = false):
     setting.email = email;
     setting.emailVerified = verified;
   }
-  
+
   await saveUserSetting(setting);
 }
 
 /**
  * 更新推送Token
  */
-export async function updatePushplusToken(vid: number, token: string): Promise<void> {
+export async function updatePushplusToken(
+  vid: number,
+  token: string,
+): Promise<void> {
   let setting = await getUserSetting(vid);
-  
+
   if (!setting) {
     setting = {
       vid,
@@ -77,7 +84,7 @@ export async function updatePushplusToken(vid: number, token: string): Promise<v
   } else {
     setting.pushplusToken = token;
   }
-  
+
   await saveUserSetting(setting);
 }
 
@@ -88,13 +95,13 @@ export async function getEmailEnabledUsers(): Promise<UserSetting[]> {
   const kv = await getKv();
   const users: UserSetting[] = [];
   const iter = kv.list<UserSetting>({ prefix: ["settings"] });
-  
+
   for await (const entry of iter) {
     if (entry.value?.enableEmailNotify && entry.value.emailVerified) {
       users.push(entry.value);
     }
   }
-  
+
   return users;
 }
 
@@ -105,12 +112,12 @@ export async function getPushEnabledUsers(): Promise<UserSetting[]> {
   const kv = await getKv();
   const users: UserSetting[] = [];
   const iter = kv.list<UserSetting>({ prefix: ["settings"] });
-  
+
   for await (const entry of iter) {
     if (entry.value?.enablePushNotify && entry.value.pushplusToken) {
       users.push(entry.value);
     }
   }
-  
+
   return users;
 }

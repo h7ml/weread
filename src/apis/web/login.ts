@@ -51,35 +51,42 @@ export async function getLoginInfo(uid: string): Promise<LoginInfoResponse> {
 /**
  * 完成登录
  */
-export async function webLogin(info: Record<string, any>): Promise<WebLoginResponse> {
+export async function webLogin(
+  info: Record<string, any>,
+): Promise<WebLoginResponse> {
   // 清理不需要的字段
   const loginInfo = { ...info };
   delete loginInfo.redirect_uri;
   delete loginInfo.expireMode;
   delete loginInfo.pf;
   loginInfo.fp = "";
-  
+
   return await client.post<WebLoginResponse>("/web/login/weblogin", loginInfo);
 }
 
 /**
  * 初始化会话
  */
-export async function initSession(credential: Partial<Credential>): Promise<any> {
+export async function initSession(
+  credential: Partial<Credential>,
+): Promise<any> {
   const params = {
     vid: credential.vid,
     pf: 0,
     skey: credential.skey,
     rt: credential.rt,
   };
-  
+
   return await client.post("/web/login/session/init", params);
 }
 
 /**
  * 刷新Token
  */
-export async function renewalToken(url: string, cookie: string): Promise<Partial<Credential> | null> {
+export async function renewalToken(
+  url: string,
+  cookie: string,
+): Promise<Partial<Credential> | null> {
   try {
     const response = await fetch("https://weread.qq.com/web/login/renewal", {
       method: "POST",
@@ -91,17 +98,17 @@ export async function renewalToken(url: string, cookie: string): Promise<Partial
         rq: encodeURIComponent(url),
       }),
     });
-    
+
     const data = await response.json();
-    
+
     if (data.succ === 1) {
       const cookies = response.headers.getSetCookie();
       const result: Partial<Credential> = {};
-      
-      cookies.forEach(cookie => {
+
+      cookies.forEach((cookie) => {
         const [item] = cookie.split(";");
         const [name, value] = item.split("=");
-        
+
         if (name === "wr_vid") {
           result.vid = parseInt(value);
         } else if (name === "wr_skey") {
@@ -110,10 +117,10 @@ export async function renewalToken(url: string, cookie: string): Promise<Partial
           result.rt = value;
         }
       });
-      
+
       return result;
     }
-    
+
     return null;
   } catch (error) {
     console.error("Token renewal failed:", error);

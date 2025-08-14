@@ -16,7 +16,7 @@ export default function ReaderComponent() {
   const lineHeight = useSignal(1.8);
   const theme = useSignal("light"); // light, dark, sepia
   const showSettings = useSignal(false);
-  
+
   useEffect(() => {
     // 检查登录状态
     const token = localStorage.getItem("weread_token");
@@ -24,34 +24,40 @@ export default function ReaderComponent() {
       window.location.href = "/login";
       return;
     }
-    
+
     // 从URL获取参数
     const path = window.location.pathname;
-    const parts = path.split('/');
+    const parts = path.split("/");
     const bookIdFromUrl = parts[2];
     const chapterUidFromUrl = parts[3];
-    
+
     if (!bookIdFromUrl || !chapterUidFromUrl) {
       error.value = "缺少必要参数";
       loading.value = false;
       return;
     }
-    
+
     bookId.value = bookIdFromUrl;
     chapterUid.value = chapterUidFromUrl;
-    
+
     // 加载数据
     loadChapterContent(token, bookIdFromUrl, chapterUidFromUrl);
     loadChapterList(token, bookIdFromUrl);
-    
+
     // 加载阅读设置
     loadReaderSettings();
   }, []);
-  
-  const loadChapterContent = async (token: string, bookId: string, chapterUid: string) => {
+
+  const loadChapterContent = async (
+    token: string,
+    bookId: string,
+    chapterUid: string,
+  ) => {
     try {
-      const response = await fetch(`/api/book/content?bookId=${bookId}&chapterUid=${chapterUid}&token=${token}`);
-      
+      const response = await fetch(
+        `/api/book/content?bookId=${bookId}&chapterUid=${chapterUid}&token=${token}`,
+      );
+
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.clear();
@@ -60,9 +66,9 @@ export default function ReaderComponent() {
         }
         throw new Error(`加载章节失败: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         content.value = processContentForDisplay(data.data.content);
       } else {
@@ -73,49 +79,54 @@ export default function ReaderComponent() {
       error.value = `加载章节内容失败: ${err.message}`;
     }
   };
-  
+
   const processContentForDisplay = (rawContent: string) => {
     // 处理HTML内容以优化显示
     let processedContent = rawContent;
-    
+
     // 处理图片：确保图片正确加载
     processedContent = processedContent.replace(
-      /<img([^>]*?)src="([^"]*)"([^>]*?)>/g, 
+      /<img([^>]*?)src="([^"]*)"([^>]*?)>/g,
       (match, before, src, after) => {
         let finalSrc = src;
-        
+
         // 处理各种图片URL格式
-        if (src.startsWith('//')) {
+        if (src.startsWith("//")) {
           // 协议相对URL：//res.weread.qq.com/...
-          finalSrc = 'https:' + src;
-        } else if (src.startsWith('/') && !src.startsWith('//')) {
+          finalSrc = "https:" + src;
+        } else if (src.startsWith("/") && !src.startsWith("//")) {
           // 绝对路径：/weread/cover/...
-          finalSrc = 'https://res.weread.qq.com' + src;
-        } else if (src.startsWith('https://res.weread.qq.com/') || 
-                   src.startsWith('https://cdn.weread.qq.com/') ||
-                   src.startsWith('https://weread-1258476243.file.myqcloud.com/')) {
+          finalSrc = "https://res.weread.qq.com" + src;
+        } else if (
+          src.startsWith("https://res.weread.qq.com/") ||
+          src.startsWith("https://cdn.weread.qq.com/") ||
+          src.startsWith("https://weread-1258476243.file.myqcloud.com/")
+        ) {
           // 已经是完整的WeRead URL，保持不变
           finalSrc = src;
-        } else if (!src.startsWith('http')) {
+        } else if (!src.startsWith("http")) {
           // 相对路径，添加WeRead域名
-          finalSrc = 'https://res.weread.qq.com/' + src.replace(/^\.\//, '');
+          finalSrc = "https://res.weread.qq.com/" + src.replace(/^\.\//, "");
         }
-        
+
         // 添加图片加载优化属性
         return `<img${before}src="${finalSrc}"${after} style="max-width: 100%; height: auto; margin: 1em auto; display: block;" onerror="console.warn('Image failed to load:', this.src); this.style.opacity='0.5'; this.alt='图片加载失败';" loading="lazy">`;
-      }
+      },
     );
-    
+
     // 移除空白图片占位符
-    processedContent = processedContent.replace(/<img[^>]*src=""[^>]*>/g, '');
-    
+    processedContent = processedContent.replace(/<img[^>]*src=""[^>]*>/g, "");
+
     // 处理data-src属性（延迟加载的图片）
-    processedContent = processedContent.replace(/data-src="([^"]*)"/g, 'src="$1"');
-    
+    processedContent = processedContent.replace(
+      /data-src="([^"]*)"/g,
+      'src="$1"',
+    );
+
     // 增强CSS样式
-    if (processedContent.includes('<style>')) {
+    if (processedContent.includes("<style>")) {
       processedContent = processedContent.replace(
-        '</style>',
+        "</style>",
         `
         /* 图片增强样式 */
         .bodyPic, .qrbodyPic {
@@ -154,7 +165,7 @@ export default function ReaderComponent() {
           margin-top: 0.5em !important;
           font-style: italic;
         }
-        </style>`
+        </style>`,
       );
     } else {
       // 如果没有<style>标签，添加一个基本的样式块
@@ -173,21 +184,25 @@ export default function ReaderComponent() {
         }
       </style>` + processedContent;
     }
-    
+
     return processedContent;
   };
-  
+
   const loadChapterList = async (token: string, bookId: string) => {
     try {
-      const response = await fetch(`/api/book/chapters?bookId=${bookId}&token=${token}`);
-      
+      const response = await fetch(
+        `/api/book/chapters?bookId=${bookId}&token=${token}`,
+      );
+
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
           chapters.value = data.data.chapters || [];
-          
+
           // 找到当前章节的索引和标题
-          const index = chapters.value.findIndex(ch => ch.chapterUid === chapterUid.value);
+          const index = chapters.value.findIndex((ch) =>
+            ch.chapterUid === chapterUid.value
+          );
           if (index >= 0) {
             currentChapterIndex.value = index;
             chapterTitle.value = chapters.value[index].title;
@@ -200,44 +215,51 @@ export default function ReaderComponent() {
       loading.value = false;
     }
   };
-  
+
   const loadReaderSettings = () => {
     const savedFontSize = localStorage.getItem("reader_fontSize");
     const savedLineHeight = localStorage.getItem("reader_lineHeight");
     const savedTheme = localStorage.getItem("reader_theme");
-    
+
     if (savedFontSize) fontSize.value = parseInt(savedFontSize);
     if (savedLineHeight) lineHeight.value = parseFloat(savedLineHeight);
     if (savedTheme) theme.value = savedTheme;
   };
-  
+
   const saveReaderSettings = () => {
     localStorage.setItem("reader_fontSize", fontSize.value.toString());
     localStorage.setItem("reader_lineHeight", lineHeight.value.toString());
     localStorage.setItem("reader_theme", theme.value);
   };
-  
+
   const navigateToChapter = async (direction: "prev" | "next") => {
     let newIndex;
     if (direction === "prev") {
       newIndex = Math.max(0, currentChapterIndex.value - 1);
     } else {
-      newIndex = Math.min(chapters.value.length - 1, currentChapterIndex.value + 1);
+      newIndex = Math.min(
+        chapters.value.length - 1,
+        currentChapterIndex.value + 1,
+      );
     }
-    
+
     if (newIndex !== currentChapterIndex.value) {
       const newChapter = chapters.value[newIndex];
-      
+
       // 更新当前状态
       currentChapterIndex.value = newIndex;
       chapterUid.value = newChapter.chapterUid;
       chapterTitle.value = newChapter.title;
       loading.value = true;
       content.value = "";
-      
+
       // 更新URL但不重新加载页面
-      window.history.pushState({}, '', `/reader/${bookId.value}/${newChapter.chapterUid}`);
-      
+      window.history.pushState(
+        {},
+        "",
+        `/reader/${bookId.value}/${newChapter.chapterUid}`,
+      );
+
       // 加载新章节内容
       const token = localStorage.getItem("weread_token");
       if (token) {
@@ -246,7 +268,7 @@ export default function ReaderComponent() {
       loading.value = false;
     }
   };
-  
+
   const getThemeClasses = () => {
     switch (theme.value) {
       case "dark":
@@ -257,28 +279,46 @@ export default function ReaderComponent() {
         return "bg-white text-gray-900";
     }
   };
-  
+
   const getReaderContentStyle = () => {
     return {
       fontSize: `${fontSize.value}px`,
-      lineHeight: lineHeight.value.toString()
+      lineHeight: lineHeight.value.toString(),
     };
   };
-  
+
   if (loading.value) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <svg className="animate-spin h-12 w-12 mx-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <svg
+            className="animate-spin h-12 w-12 mx-auto text-blue-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            >
+            </circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            >
+            </path>
           </svg>
           <p className="mt-4 text-gray-600">加载中...</p>
         </div>
       </div>
     );
   }
-  
+
   if (error.value) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -302,7 +342,7 @@ export default function ReaderComponent() {
       </div>
     );
   }
-  
+
   return (
     <div className={`min-h-screen transition-colors ${getThemeClasses()}`}>
       {/* 阅读器工具栏 */}
@@ -326,7 +366,7 @@ export default function ReaderComponent() {
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* 章节导航 */}
             <button
@@ -343,7 +383,7 @@ export default function ReaderComponent() {
             >
               下一章
             </button>
-            
+
             {/* 设置按钮 */}
             <button
               onClick={() => showSettings.value = !showSettings.value}
@@ -353,7 +393,7 @@ export default function ReaderComponent() {
             </button>
           </div>
         </div>
-        
+
         {/* 设置面板 */}
         {showSettings.value && (
           <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
@@ -376,7 +416,7 @@ export default function ReaderComponent() {
                   className="w-full"
                 />
               </div>
-              
+
               {/* 行高 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -395,14 +435,14 @@ export default function ReaderComponent() {
                   className="w-full"
                 />
               </div>
-              
+
               {/* 主题 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   阅读主题
                 </label>
                 <div className="flex space-x-2">
-                  {["light", "dark", "sepia"].map(themeOption => (
+                  {["light", "dark", "sepia"].map((themeOption) => (
                     <button
                       key={themeOption}
                       onClick={() => {
@@ -410,12 +450,16 @@ export default function ReaderComponent() {
                         saveReaderSettings();
                       }}
                       className={`px-3 py-1 text-sm border rounded ${
-                        theme.value === themeOption 
-                          ? "bg-blue-600 text-white border-blue-600" 
+                        theme.value === themeOption
+                          ? "bg-blue-600 text-white border-blue-600"
                           : "hover:bg-gray-100"
                       }`}
                     >
-                      {themeOption === "light" ? "明亮" : themeOption === "dark" ? "夜间" : "护眼"}
+                      {themeOption === "light"
+                        ? "明亮"
+                        : themeOption === "dark"
+                        ? "夜间"
+                        : "护眼"}
                     </button>
                   ))}
                 </div>
@@ -424,7 +468,7 @@ export default function ReaderComponent() {
           </div>
         )}
       </div>
-      
+
       {/* 阅读内容 */}
       <div className="pt-16">
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -433,17 +477,17 @@ export default function ReaderComponent() {
               {chapterTitle.value}
             </h1>
           )}
-          
-          <div 
+
+          <div
             className="reader-content max-w-none"
             style={{
               ...getReaderContentStyle(),
               lineHeight: lineHeight.value,
-              fontSize: `${fontSize.value}px`
+              fontSize: `${fontSize.value}px`,
             }}
             dangerouslySetInnerHTML={{ __html: content.value }}
           />
-          
+
           {/* 章节导航 */}
           <div className="flex justify-between items-center mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
             <button
@@ -453,11 +497,13 @@ export default function ReaderComponent() {
             >
               ← 上一章
             </button>
-            
+
             <div className="text-sm text-gray-500">
-              第 {currentChapterIndex.value + 1} 章 / 共 {chapters.value.length} 章
+              第 {currentChapterIndex.value + 1} 章 / 共 {chapters.value.length}
+              {" "}
+              章
             </div>
-            
+
             <button
               onClick={() => navigateToChapter("next")}
               disabled={currentChapterIndex.value === chapters.value.length - 1}

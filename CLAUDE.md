@@ -10,7 +10,8 @@
 deno task dev
 ```
 
-在端口 8001（或 PORT 环境变量）启动带热重载的开发服务器。使用 unstable KV 和定时任务特性。
+在端口 8001（或 PORT 环境变量）启动带热重载的开发服务器。使用 unstable KV
+和定时任务特性。
 
 **代码质量:**
 
@@ -36,7 +37,8 @@ deno task update   # 更新 Fresh 框架
 
 ## 架构概览
 
-这是一个使用 Fresh (Deno) 构建的**微信读书 Web 阅读应用**，具有现代化阅读界面和高级 TTS 功能。
+这是一个使用 Fresh (Deno) 构建的**微信读书 Web
+阅读应用**，具有现代化阅读界面和高级 TTS 功能。
 
 ### 技术栈
 
@@ -140,7 +142,8 @@ deno task update   # 更新 Fresh 框架
 
 **TTS 开发:**
 
-- 测试外部 TTS: `curl "http://localhost:8001/api/tts?t=测试&v=zh-CN-XiaoxiaoNeural"`
+- 测试外部 TTS:
+  `curl "http://localhost:8001/api/tts?t=测试&v=zh-CN-XiaoxiaoNeural"`
 - 测试语音列表: `curl "http://localhost:8001/api/tts/voices"`
 - 外部服务依赖: 监控 t.leftsite.cn 可用性
 

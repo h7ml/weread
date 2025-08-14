@@ -7,7 +7,16 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -40,7 +49,7 @@ input[type="range"]::-webkit-slider-thumb {
   height: 20px;
   width: 20px;
   border-radius: 50%;
-  background: #007AFF;
+  background: #007aff;
   box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
   border: none;
   cursor: pointer;
@@ -69,7 +78,7 @@ input[type="range"]::-moz-range-thumb {
   height: 20px;
   width: 20px;
   border-radius: 50%;
-  background: #007AFF;
+  background: #007aff;
   box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
   border: none;
   cursor: pointer;
@@ -178,12 +187,24 @@ input[type="range"]::-moz-range-thumb {
   line-height: 1.4;
 }
 
-.reader-content h1 { font-size: 1.5em; }
-.reader-content h2 { font-size: 1.3em; }
-.reader-content h3 { font-size: 1.2em; }
-.reader-content h4 { font-size: 1.1em; }
-.reader-content h5 { font-size: 1.05em; }
-.reader-content h6 { font-size: 1em; }
+.reader-content h1 {
+  font-size: 1.5em;
+}
+.reader-content h2 {
+  font-size: 1.3em;
+}
+.reader-content h3 {
+  font-size: 1.2em;
+}
+.reader-content h4 {
+  font-size: 1.1em;
+}
+.reader-content h5 {
+  font-size: 1.05em;
+}
+.reader-content h6 {
+  font-size: 1em;
+}
 
 /* 图片样式 */
 .reader-content img {
@@ -304,10 +325,14 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .reader-content .border1 {
-  border-left: 4px solid #007AFF;
+  border-left: 4px solid #007aff;
   padding-left: 1.5em;
   margin: 1.5em 0;
-  background: linear-gradient(90deg, rgba(0, 122, 255, 0.05) 0%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 122, 255, 0.05) 0%,
+    transparent 100%
+  );
 }
 
 .reader-content .bgColor {
@@ -455,21 +480,21 @@ input[type="range"]::-moz-range-thumb {
     font-size: 16px;
     line-height: 1.7;
   }
-  
+
   .reader-content p {
     text-indent: 1.5em;
     margin: 0.8em 0;
   }
-  
+
   .reader-content .quotation {
     padding: 0.8em 1.5em;
     margin: 1.2em 0;
   }
-  
+
   .reader-content img {
     margin: 1.5em auto !important;
   }
-  
+
   .reader-content .frontCover img {
     max-width: 250px !important;
     margin: 2em auto !important;
@@ -481,12 +506,12 @@ input[type="range"]::-moz-range-thumb {
     font-size: 15px;
     line-height: 1.6;
   }
-  
+
   .reader-content p {
     text-indent: 1em;
     margin: 0.6em 0;
   }
-  
+
   .reader-content .frontCover img {
     max-width: 200px !important;
   }
@@ -504,19 +529,28 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .progress-bar-fill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* 悬浮提示样式 */
@@ -541,8 +575,12 @@ input[type="range"]::-moz-range-thumb {
 
 /* TTS句子高亮样式 */
 .tts-current-sentence {
-  background: linear-gradient(120deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.08) 100%) !important;
-  border-left: 4px solid #007AFF !important;
+  background: linear-gradient(
+    120deg,
+    rgba(0, 122, 255, 0.15) 0%,
+    rgba(0, 122, 255, 0.08) 100%
+  ) !important;
+  border-left: 4px solid #007aff !important;
   padding: 0.2em 0.5em !important;
   margin: 0.1em 0 !important;
   border-radius: 6px !important;
@@ -553,7 +591,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .tts-current-sentence::before {
-  content: '🔊';
+  content: "🔊";
   position: absolute;
   left: -1.2em;
   top: 50%;
@@ -564,43 +602,75 @@ input[type="range"]::-moz-range-thumb {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 0.4; }
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* 确保高亮在不同主题下都能正常显示 */
 .theme-dark .tts-current-sentence {
-  background: linear-gradient(120deg, rgba(0, 122, 255, 0.25) 0%, rgba(0, 122, 255, 0.12) 100%) !important;
+  background: linear-gradient(
+    120deg,
+    rgba(0, 122, 255, 0.25) 0%,
+    rgba(0, 122, 255, 0.12) 100%
+  ) !important;
   color: #e8e8e8 !important;
 }
 
 .theme-sepia .tts-current-sentence {
-  background: linear-gradient(120deg, rgba(92, 75, 55, 0.15) 0%, rgba(92, 75, 55, 0.08) 100%) !important;
+  background: linear-gradient(
+    120deg,
+    rgba(92, 75, 55, 0.15) 0%,
+    rgba(92, 75, 55, 0.08) 100%
+  ) !important;
   border-left-color: #5c4b37 !important;
 }
 
 .theme-night .tts-current-sentence {
-  background: linear-gradient(120deg, rgba(224, 224, 224, 0.15) 0%, rgba(224, 224, 224, 0.08) 100%) !important;
+  background: linear-gradient(
+    120deg,
+    rgba(224, 224, 224, 0.15) 0%,
+    rgba(224, 224, 224, 0.08) 100%
+  ) !important;
   border-left-color: #e0e0e0 !important;
 }
 
 .theme-green .tts-current-sentence {
-  background: linear-gradient(120deg, rgba(45, 80, 22, 0.15) 0%, rgba(45, 80, 22, 0.08) 100%) !important;
+  background: linear-gradient(
+    120deg,
+    rgba(45, 80, 22, 0.15) 0%,
+    rgba(45, 80, 22, 0.08) 100%
+  ) !important;
   border-left-color: #2d5016 !important;
 }
 
 .theme-blue .tts-current-sentence {
-  background: linear-gradient(120deg, rgba(26, 54, 93, 0.15) 0%, rgba(26, 54, 93, 0.08) 100%) !important;
+  background: linear-gradient(
+    120deg,
+    rgba(26, 54, 93, 0.15) 0%,
+    rgba(26, 54, 93, 0.08) 100%
+  ) !important;
   border-left-color: #1a365d !important;
 }
 
 .theme-purple .tts-current-sentence {
-  background: linear-gradient(120deg, rgba(68, 51, 122, 0.15) 0%, rgba(68, 51, 122, 0.08) 100%) !important;
+  background: linear-gradient(
+    120deg,
+    rgba(68, 51, 122, 0.15) 0%,
+    rgba(68, 51, 122, 0.08) 100%
+  ) !important;
   border-left-color: #44337a !important;
 }
 
 .theme-pink .tts-current-sentence {
-  background: linear-gradient(120deg, rgba(125, 45, 90, 0.15) 0%, rgba(125, 45, 90, 0.08) 100%) !important;
+  background: linear-gradient(
+    120deg,
+    rgba(125, 45, 90, 0.15) 0%,
+    rgba(125, 45, 90, 0.08) 100%
+  ) !important;
   border-left-color: #7d2d5a !important;
 }
 
@@ -611,13 +681,13 @@ input[type="range"]::-moz-range-thumb {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .tts-current-sentence {
     animation: none !important;
     transition: none !important;
     transform: none !important;
   }
-  
+
   .tts-current-sentence::before {
     animation: none !important;
   }
@@ -628,7 +698,7 @@ input[type="range"]::-moz-range-thumb {
   .reader-content img {
     filter: contrast(1.2);
   }
-  
+
   .reader-content .border,
   .reader-content .border1 {
     border-width: 3px;

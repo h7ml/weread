@@ -8,11 +8,14 @@ export default define.page(function LoginPage() {
     <div className="min-h-screen relative overflow-hidden">
       {/* 动态渐变背景 */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.3),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(147,51,234,0.3),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_70%,rgba(59,130,246,0.2),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.3),transparent_50%)]">
+        </div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(147,51,234,0.3),transparent_50%)]">
+        </div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_70%,rgba(59,130,246,0.2),transparent_50%)]">
+        </div>
       </div>
-      
+
       {/* 动态粒子背景 */}
       <div className="absolute inset-0">
         {[...Array(20)].map((_, i) => (
@@ -34,7 +37,8 @@ export default define.page(function LoginPage() {
         <div className="text-center mb-12 animate-fadeIn">
           <div className="mb-6 relative">
             <div className="text-8xl animate-bounce-slow">📚</div>
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-ping"></div>
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-ping">
+            </div>
           </div>
           <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
             <span className="bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">
@@ -58,7 +62,8 @@ export default define.page(function LoginPage() {
       </div>
 
       {/* 自定义样式 */}
-      <style>{`
+      <style>
+        {`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
@@ -93,7 +98,8 @@ export default define.page(function LoginPage() {
         .animation-delay-500 {
           animation-delay: 0.5s;
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 });

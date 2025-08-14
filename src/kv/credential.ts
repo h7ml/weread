@@ -44,7 +44,7 @@ export function getCookieByCredential(credential: Credential): string {
 export async function updateCredential(credential: Credential): Promise<void> {
   const kv = await getKv();
   credential.updatedAt = Date.now();
-  
+
   await kv.atomic()
     .set(["credentials", credential.token], credential)
     .set(["vid", credential.vid], credential.token)
@@ -57,7 +57,7 @@ export async function updateCredential(credential: Credential): Promise<void> {
 export async function deleteCredential(token: string): Promise<void> {
   const kv = await getKv();
   const credential = await getByToken(token);
-  
+
   if (credential) {
     await kv.atomic()
       .delete(["credentials", token])
@@ -73,13 +73,13 @@ export async function getAllCredentials(): Promise<Credential[]> {
   const kv = await getKv();
   const credentials: Credential[] = [];
   const iter = kv.list<Credential>({ prefix: ["credentials"] });
-  
+
   for await (const entry of iter) {
     if (entry.value) {
       credentials.push(entry.value);
     }
   }
-  
+
   return credentials;
 }
 
@@ -88,6 +88,9 @@ export async function getAllCredentials(): Promise<Credential[]> {
  * @param credential 用户凭证
  * @param maxAge 最大有效期（毫秒），默认7天
  */
-export function needsRefresh(credential: Credential, maxAge = 7 * 24 * 60 * 60 * 1000): boolean {
+export function needsRefresh(
+  credential: Credential,
+  maxAge = 7 * 24 * 60 * 60 * 1000,
+): boolean {
   return Date.now() - credential.updatedAt > maxAge;
 }
