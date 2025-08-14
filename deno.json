@@ -1,7 +1,9 @@
 {
   "nodeModulesDir": "auto",
   "tasks": {
-    "check": "deno fmt --check . && deno lint . && deno check",
+    "check": "deno fmt --check . && deno lint .",
+    "check-types": "deno check",
+    "check-all": "deno fmt --check . && deno lint . && deno check",
     "dev": "deno run -A --unstable-kv --unstable-cron --watch=static/,routes/ dev.ts",
     "build": "deno run -A dev.ts build",
     "start": "deno serve -A --unstable-kv --unstable-cron _fresh.js",
