@@ -1,6 +1,4 @@
-import { Handlers } from "fresh";
-
-export const handler: Handlers = {
+export const handler = {
   async GET(req: Request): Promise<Response> {
     const url = new URL(req.url);
     const text = url.searchParams.get("t"); // text

@@ -1,6 +1,4 @@
-import { Handlers } from "fresh";
-
-export const handler: Handlers = {
+export const handler = {
   async POST(req: Request): Promise<Response> {
     const { text, voice = "Dylan" } = await req.json();
 

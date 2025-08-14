@@ -1,6 +1,4 @@
-import { Handlers } from "fresh";
-
-export const handler: Handlers = {
+export const handler = {
   GET(_req: Request): Response {
     try {
       // OpenXing TTS 支持的语音列表
