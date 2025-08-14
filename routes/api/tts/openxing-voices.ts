@@ -1,7 +1,7 @@
 import { Handlers } from "fresh/server";
 
 export const handler: Handlers = {
-  async GET(_req: Request): Promise<Response> {
+  GET(_req: Request): Response {
     try {
       // OpenXing TTS 支持的语音列表
       const voices = [

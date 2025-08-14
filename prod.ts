@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno serve -A --unstable-kv --unstable-cron
 import { App, staticFiles } from "fresh";
-import { define, type State } from "./utils.ts";
+import { type State } from "./utils.ts";
 
 export const app = new App<State>();
 

@@ -91,3 +91,49 @@ export interface ShelfBook extends Book {
   readProgress?: number;
   markedStatus?: number;
 }
+
+/**
+ * TTS 语音信息
+ */
+export interface TTSVoice {
+  name: string;
+  display_name: string;
+  local_name: string;
+  short_name: string;
+  gender: string;
+  locale: string;
+  locale_name: string;
+  provider: string;
+  description?: string;
+  sample_rate_hertz?: string;
+}
+
+/**
+ * 书架同步响应
+ */
+export interface ShelfSyncResponse {
+  books: ShelfBook[];
+}
+
+/**
+ * 微信读书原始书籍数据
+ */
+export interface WereadBookItem {
+  bookId: string;
+  title: string;
+  author: string;
+  cover: string;
+  readUpdateTime?: number;
+  progress?: number;
+  markedStatus?: number;
+  wordCount?: number;
+  finishReading?: number;
+}
+
+/**
+ * 会话初始化响应
+ */
+export interface SessionInitResponse {
+  succ: number;
+  [key: string]: unknown;
+}

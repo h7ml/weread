@@ -18,7 +18,7 @@ export async function getKv(): Promise<Deno.Kv> {
 /**
  * 关闭KV数据库连接
  */
-export async function closeKv(): Promise<void> {
+export function closeKv(): void {
   if (kvInstance) {
     kvInstance.close();
     kvInstance = null;

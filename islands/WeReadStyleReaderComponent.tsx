@@ -83,12 +83,12 @@ export default function WeReadStyleReaderComponent() {
     // 检查登录状态
     const token = localStorage.getItem("weread_token");
     if (!token) {
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
       return;
     }
 
     // 从URL获取参数
-    const path = window.location.pathname;
+    const path = globalThis.location.pathname;
     const parts = path.split("/");
     const bookIdFromUrl = parts[2];
     const chapterUidFromUrl = parts[3];
@@ -253,8 +253,8 @@ export default function WeReadStyleReaderComponent() {
   };
 
   const initializeTTS = async () => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      speechSynthesis.current = window.speechSynthesis;
+    if (typeof window !== "undefined" && globalThis.speechSynthesis) {
+      speechSynthesis.current = globalThis.speechSynthesis;
 
       // 初始化浏览器语音列表
       const loadVoices = () => {
@@ -391,7 +391,7 @@ export default function WeReadStyleReaderComponent() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.clear();
-          window.location.href = "/login";
+          globalThis.location.href = "/login";
           return;
         }
         throw new Error(`加载章节失败: ${response.status}`);
@@ -510,7 +510,7 @@ export default function WeReadStyleReaderComponent() {
       loading.value = true;
       content.value = "";
 
-      window.history.pushState(
+      globalThis.history.pushState(
         {},
         "",
         `/reader/${bookId.value}/${newChapter.chapterUid}`,
@@ -1005,7 +1005,7 @@ export default function WeReadStyleReaderComponent() {
         <div className="text-center">
           <p className="text-xl text-red-500 mb-4">{error.value}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             重新加载
@@ -1028,7 +1028,7 @@ export default function WeReadStyleReaderComponent() {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => window.location.href = "/"}
+              onClick={() => globalThis.location.href = "/"}
               className="p-2 rounded-lg hover:bg-current/10 transition-colors"
               title="返回首页"
             >
@@ -1048,7 +1048,7 @@ export default function WeReadStyleReaderComponent() {
             </button>
 
             <button
-              onClick={() => window.location.href = "/shelf"}
+              onClick={() => globalThis.location.href = "/shelf"}
               className="p-2 rounded-lg hover:bg-current/10 transition-colors"
               title="返回书架"
             >
@@ -1346,7 +1346,7 @@ export default function WeReadStyleReaderComponent() {
 
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => window.location.href = "/"}
+              onClick={() => globalThis.location.href = "/"}
               className="p-2 rounded-lg hover:bg-current/10 transition-colors"
               title="返回首页"
             >

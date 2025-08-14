@@ -23,21 +23,24 @@ export default function LoginComponent() {
     console.log("Component mounted, checking QRCode library...");
 
     // 动态加载本地QRCode.js库
-    if (typeof window !== "undefined" && !window.QRCode) {
+    if (typeof window !== "undefined" && !globalThis.QRCode) {
       console.log("Loading QRCode library from /qrcode.min.js");
       const script = document.createElement("script");
       script.src = "/qrcode.min.js";
       script.async = false; // 同步加载确保库可用
       script.onload = () => {
         console.log("QRCode.js library loaded successfully");
-        console.log("QRCode object:", typeof window.QRCode);
+        console.log("QRCode object:", typeof globalThis.QRCode);
       };
       script.onerror = () => {
         console.error("Failed to load QRCode.js library from /qrcode.min.js");
       };
       document.head.appendChild(script);
     } else {
-      console.log("QRCode library already available:", typeof window.QRCode);
+      console.log(
+        "QRCode library already available:",
+        typeof globalThis.QRCode,
+      );
     }
 
     // 清理函数 - 关闭EventSource连接
@@ -66,29 +69,32 @@ export default function LoginComponent() {
       // 使用setTimeout确保DOM已经准备好
       setTimeout(() => {
         try {
-          if (window.QRCode && qrCodeRef.current) {
+          if (globalThis.QRCode && qrCodeRef.current) {
             console.log("Generating QR code with QRCode.js for URL:", url);
-            qrCodeInstance.current = new window.QRCode(qrCodeRef.current, {
+            qrCodeInstance.current = new globalThis.QRCode(qrCodeRef.current, {
               text: url,
               width: 200,
               height: 200,
               colorDark: "#000000",
               colorLight: "#ffffff",
-              correctLevel: window.QRCode?.CorrectLevel?.M || 2,
+              correctLevel: globalThis.QRCode?.CorrectLevel?.M || 2,
             });
           } else {
             // 如果库还未加载，等待一下再试
             const checkAndGenerate = (retries = 0) => {
-              if (window.QRCode && qrCodeRef.current) {
+              if (globalThis.QRCode && qrCodeRef.current) {
                 console.log("QRCode library ready, generating QR code");
-                qrCodeInstance.current = new window.QRCode(qrCodeRef.current, {
-                  text: url,
-                  width: 200,
-                  height: 200,
-                  colorDark: "#000000",
-                  colorLight: "#ffffff",
-                  correctLevel: window.QRCode?.CorrectLevel?.M || 2,
-                });
+                qrCodeInstance.current = new globalThis.QRCode(
+                  qrCodeRef.current,
+                  {
+                    text: url,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: globalThis.QRCode?.CorrectLevel?.M || 2,
+                  },
+                );
               } else if (retries < 10) {
                 console.log(
                   `Waiting for QRCode library... retry ${retries + 1}/10`,
@@ -190,7 +196,7 @@ export default function LoginComponent() {
 
       // 跳转到首页（仪表板）
       setTimeout(() => {
-        window.location.href = "/";
+        globalThis.location.href = "/";
       }, 2000);
     });
 

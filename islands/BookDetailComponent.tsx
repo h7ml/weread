@@ -17,12 +17,12 @@ export default function BookDetailComponent() {
     // 检查登录状态
     const token = localStorage.getItem("weread_token");
     if (!token) {
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
       return;
     }
 
     // 从URL获取书籍ID
-    const path = window.location.pathname;
+    const path = globalThis.location.pathname;
     const bookId = path.split("/").pop();
 
     if (!bookId) {
@@ -58,7 +58,7 @@ export default function BookDetailComponent() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.clear();
-          window.location.href = "/login";
+          globalThis.location.href = "/login";
           return;
         }
         throw new Error(`获取书籍详情失败: ${response.status}`);
@@ -111,7 +111,7 @@ export default function BookDetailComponent() {
   };
 
   const openReader = (chapterUid: string) => {
-    window.location.href = `/reader/${bookInfo.value.bookId}/${chapterUid}`;
+    globalThis.location.href = `/reader/${bookInfo.value.bookId}/${chapterUid}`;
   };
 
   const downloadChapter = async (chapter) => {
@@ -231,7 +231,7 @@ export default function BookDetailComponent() {
         <div className="text-center">
           <div className="text-red-600 text-lg">{error.value}</div>
           <button
-            onClick={() => window.history.back()}
+            onClick={() => globalThis.history.back()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             返回
@@ -249,7 +249,7 @@ export default function BookDetailComponent() {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <button
-                onClick={() => window.history.back()}
+                onClick={() => globalThis.history.back()}
                 className="mr-4 text-gray-600 hover:text-gray-900"
               >
                 ← 返回
@@ -263,7 +263,7 @@ export default function BookDetailComponent() {
               <button
                 onClick={() => {
                   localStorage.clear();
-                  window.location.href = "/login";
+                  globalThis.location.href = "/login";
                 }}
                 className="text-red-600 hover:text-red-900"
               >

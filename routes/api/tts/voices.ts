@@ -1,4 +1,5 @@
 import { Handlers } from "fresh/server";
+import { TTSVoice } from "@/types";
 
 export const handler: Handlers = {
   async GET(req: Request): Promise<Response> {
@@ -6,7 +7,7 @@ export const handler: Handlers = {
     const engine = url.searchParams.get("engine") || "all"; // 引擎选择：leftsite, openxing, all
 
     try {
-      let allVoices: any[] = [];
+      let allVoices: TTSVoice[] = [];
 
       // 根据引擎参数返回不同的语音列表
       if (engine === "leftsite" || engine === "all") {
@@ -40,7 +41,7 @@ export const handler: Handlers = {
             );
 
             // 为每个语音添加provider标识
-            const processedVoices = leftsiteVoices.map((voice: any) => ({
+            const processedVoices = leftsiteVoices.map((voice: TTSVoice) => ({
               ...voice,
               provider: "leftsite",
             }));

@@ -28,7 +28,7 @@ export default function ShelfComponent() {
     const savedVid = localStorage.getItem("weread_vid");
 
     if (!token) {
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
       return;
     }
 
@@ -69,7 +69,7 @@ export default function ShelfComponent() {
 
         if (response.status === 401) {
           localStorage.clear();
-          window.location.href = "/login";
+          globalThis.location.href = "/login";
           return;
         }
         throw new Error(`HTTP ${response.status}: ${errorText}`);
@@ -112,7 +112,7 @@ export default function ShelfComponent() {
   };
 
   const openBookDetail = (bookId: string) => {
-    window.location.href = `/book/${bookId}`;
+    globalThis.location.href = `/book/${bookId}`;
   };
 
   return (
@@ -145,7 +145,7 @@ export default function ShelfComponent() {
               <button
                 onClick={() => {
                   localStorage.clear();
-                  window.location.href = "/login";
+                  globalThis.location.href = "/login";
                 }}
                 className="text-red-600 hover:text-red-900"
               >

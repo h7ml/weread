@@ -1,5 +1,6 @@
 import { HttpClient } from "@/utils";
 import { Credential } from "@/kv";
+import { SessionInitResponse } from "@/types";
 
 const client = new HttpClient("https://weread.qq.com");
 
@@ -52,7 +53,7 @@ export async function getLoginInfo(uid: string): Promise<LoginInfoResponse> {
  * 完成登录
  */
 export async function webLogin(
-  info: Record<string, any>,
+  info: Record<string, unknown>,
 ): Promise<WebLoginResponse> {
   // 清理不需要的字段
   const loginInfo = { ...info };
@@ -69,7 +70,7 @@ export async function webLogin(
  */
 export async function initSession(
   credential: Partial<Credential>,
-): Promise<any> {
+): Promise<SessionInitResponse> {
   const params = {
     vid: credential.vid,
     pf: 0,

@@ -1,5 +1,5 @@
 import { buildQueryString, HttpClient } from "@/utils";
-import { ShelfBook } from "@/types";
+import { ShelfBook, ShelfSyncResponse, WereadBookItem } from "@/types";
 
 const client = new HttpClient("https://weread.qq.com");
 
@@ -16,13 +16,13 @@ export async function getShelfBooks(cookie: string): Promise<ShelfBook[]> {
   };
 
   const url = `/web/shelf/sync?${buildQueryString(params)}`;
-  const response = await client.get<any>(url, { headers });
+  const response = await client.get<ShelfSyncResponse>(url, { headers });
 
   if (!response.books || !Array.isArray(response.books)) {
     return [];
   }
 
-  return response.books.map((item: any) => ({
+  return response.books.map((item: WereadBookItem) => ({
     bookId: item.bookId,
     title: item.title,
     author: item.author,

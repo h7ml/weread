@@ -21,12 +21,12 @@ export default function ReaderComponent() {
     // 检查登录状态
     const token = localStorage.getItem("weread_token");
     if (!token) {
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
       return;
     }
 
     // 从URL获取参数
-    const path = window.location.pathname;
+    const path = globalThis.location.pathname;
     const parts = path.split("/");
     const bookIdFromUrl = parts[2];
     const chapterUidFromUrl = parts[3];
@@ -61,7 +61,7 @@ export default function ReaderComponent() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.clear();
-          window.location.href = "/login";
+          globalThis.location.href = "/login";
           return;
         }
         throw new Error(`加载章节失败: ${response.status}`);
@@ -254,7 +254,7 @@ export default function ReaderComponent() {
       content.value = "";
 
       // 更新URL但不重新加载页面
-      window.history.pushState(
+      globalThis.history.pushState(
         {},
         "",
         `/reader/${bookId.value}/${newChapter.chapterUid}`,
@@ -326,13 +326,13 @@ export default function ReaderComponent() {
           <div className="text-red-600 text-lg">{error.value}</div>
           <div className="mt-4 space-x-4">
             <button
-              onClick={() => window.history.back()}
+              onClick={() => globalThis.history.back()}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               返回
             </button>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => globalThis.location.reload()}
               className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
             >
               重试
@@ -350,7 +350,7 @@ export default function ReaderComponent() {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => window.history.back()}
+              onClick={() => globalThis.history.back()}
               className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             >
               ← 返回
