@@ -38,6 +38,7 @@ export interface Book {
   updateTime?: number;
   finishReading?: number;
   bookStatus?: number;
+  format?: string; // 书籍格式：epub, txt 等
 }
 
 /**

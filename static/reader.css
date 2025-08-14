@@ -1,0 +1,444 @@
+/* WeRead 阅读器样式 */
+
+/* 设置界面动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* 进度条动画 */
+.progress-bar-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  transition: width 0.5s ease-out;
+  position: relative;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* TTS 高亮样式 */
+.tts-current-sentence {
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%) !important;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+}
+
+/* 设置面板卡片动画 */
+.settings-card {
+  transition: all 0.2s ease;
+  transform: translateZ(0);
+}
+
+.settings-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 按钮点击反馈 */
+.btn-scale {
+  transition: transform 0.1s ease;
+}
+
+.btn-scale:active {
+  transform: scale(0.98);
+}
+
+/* 滑块样式增强 */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  outline: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 4px solid #3b82f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  transform: scale(1);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.4);
+  position: relative;
+  z-index: 2;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
+  border-color: #2563eb;
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 2px 16px rgba(59, 130, 246, 0.6);
+}
+
+/* Firefox 样式 */
+input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  border: none;
+  outline: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 4px solid #3b82f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  transform: scale(1);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.4);
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
+  border-color: #2563eb;
+}
+
+input[type="range"]:active::-moz-range-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 2px 16px rgba(59, 130, 246, 0.6);
+}
+
+/* 滑块轨道填充效果 - 更好的实现方式 */
+.range-slider {
+  position: relative;
+  margin: 8px 0;
+}
+
+.range-slider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 8px;
+  width: var(--slider-value, 0%);
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border-radius: 4px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+  transition: width 0.2s ease;
+}
+
+/* 数值输入框样式优化 */
+.number-input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.number-input {
+  width: 80px;
+  padding: 10px 14px;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.05);
+  color: #1e40af;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  text-align: center;
+  transition: all 0.2s ease;
+  outline: none;
+  font-size: 14px;
+}
+
+.number-input:focus {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  transform: scale(1.02);
+}
+
+.number-input:hover {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* 滑块标签样式增强 */
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* 暗色主题支持 */
+[data-theme="dark"] .number-input {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #3b82f6 0%, #3b82f6 var(--value, 50%), #374151 var(--value, 50%), #374151 100%);
+}
+
+[data-theme="dark"] input[type="range"] {
+  background: #374151;
+}
+
+.reader-content {
+  /* 基础文本样式 */
+  color: inherit;
+  line-height: inherit;
+  font-size: inherit;
+}
+
+/* 重置默认样式 */
+.reader-content * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 图片样式 */
+.reader-content img {
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 1em auto !important;
+  display: block !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 4px;
+}
+
+.reader-content .frontCover img {
+  max-width: 300px !important;
+  margin: 2em auto !important;
+}
+
+.reader-content .bodyPic,
+.reader-content .qrbodyPic {
+  text-align: center !important;
+  margin: 1em auto !important;
+}
+
+.reader-content .bodyPic img,
+.reader-content .qrbodyPic img {
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+/* 段落和文本样式 */
+.reader-content p {
+  margin: 1em 0;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+.reader-content .content {
+  text-indent: 2em;
+  text-align: justify;
+}
+
+.reader-content .content-center {
+  text-align: center;
+  text-indent: 0;
+}
+
+.reader-content .content-right {
+  text-align: right;
+  text-indent: 0;
+}
+
+/* 标题样式 */
+.reader-content h1,
+.reader-content h2,
+.reader-content h3,
+.reader-content h4,
+.reader-content h5,
+.reader-content h6 {
+  margin: 1.5em 0 1em 0;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.reader-content .firstTitle,
+.reader-content .secondTitle,
+.reader-content .thirdTitle {
+  font-weight: bold;
+  margin: 1em 0;
+  text-align: center;
+}
+
+/* 引用和诗词样式 */
+.reader-content .quotation {
+  font-style: italic;
+  margin: 1em 0;
+  padding: 0 2em;
+  text-indent: 2em;
+}
+
+.reader-content .quotation-left {
+  text-align: left;
+  text-indent: 0;
+}
+
+.reader-content .quotation-right {
+  text-align: right;
+  text-indent: 0;
+}
+
+/* 边框和背景色 */
+.reader-content .border {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 1em;
+  margin: 1em 0;
+}
+
+.reader-content .border1 {
+  border-left: 3px solid #007acc;
+  padding-left: 1em;
+  margin: 1em 0;
+}
+
+.reader-content .bgColor {
+  background-color: #f5f5f5;
+  padding: 1em;
+  margin: 1em 0;
+  border-radius: 4px;
+}
+
+/* 列表样式 */
+.reader-content ul,
+.reader-content ol {
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.reader-content li {
+  margin: 0.5em 0;
+}
+
+/* 表格样式 */
+.reader-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.reader-content th,
+.reader-content td {
+  border: 1px solid #ccc;
+  padding: 0.5em;
+  text-align: left;
+}
+
+.reader-content th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+/* 特殊文本样式 */
+.reader-content .bold {
+  font-weight: bold;
+}
+
+.reader-content .italic {
+  font-style: italic;
+}
+
+.reader-content .underline {
+  text-decoration: underline;
+}
+
+.reader-content .linethrough {
+  text-decoration: line-through;
+}
+
+.reader-content .super {
+  vertical-align: super;
+  font-size: 0.8em;
+}
+
+.reader-content .sub {
+  vertical-align: sub;
+  font-size: 0.8em;
+}
+
+/* 版权信息样式 */
+.reader-content .contentCR,
+.reader-content .contentCR1,
+.reader-content .contentCR2 {
+  text-align: center;
+  font-size: 0.9em;
+  text-indent: 0;
+}
+
+/* 图片标题样式 */
+.reader-content .imgtitle {
+  text-align: center;
+  font-size: 0.9em;
+  margin-top: 0.5em;
+  color: #666;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .reader-content {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .reader-content .content {
+    text-indent: 1em;
+  }
+  
+  .reader-content .quotation {
+    padding: 0 1em;
+    text-indent: 1em;
+  }
+}
