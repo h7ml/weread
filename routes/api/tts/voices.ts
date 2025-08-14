@@ -1,4 +1,4 @@
-import { TTSVoice } from "../../../src/types";
+import { TTSVoice } from "@/types";
 
 export const handler = {
   async GET(req: Request): Promise<Response> {
