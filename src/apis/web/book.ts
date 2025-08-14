@@ -111,7 +111,7 @@ export async function getChapterList(
       isFree: item.price === 0,
       anchors: item.anchors || [],
     }));
-  } catch (error) {
+  } catch (_error) {
     // 如果新接口失败，尝试旧接口
     const params = { bookId, star: 0 };
     const url = `/web/book/chapterInfos?${buildQueryString(params)}`;

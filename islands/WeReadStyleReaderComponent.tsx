@@ -445,7 +445,7 @@ export default function WeReadStyleReaderComponent() {
     // 处理图片URL
     processedContent = processedContent.replace(
       /<img([^>]*?)src="([^"]*)"([^>]*?)>/g,
-      (match, before, src, after) => {
+      (_match, before, src, after) => {
         let finalSrc = src;
         if (src.startsWith("//")) {
           finalSrc = "https:" + src;

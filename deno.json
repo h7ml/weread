@@ -4,7 +4,7 @@
     "check": "deno fmt --check . && deno lint . && deno check",
     "dev": "deno run -A --unstable-kv --unstable-cron --watch=static/,routes/ dev.ts",
     "build": "deno run -A dev.ts build",
-    "start": "deno serve -A --unstable-kv --unstable-cron _fresh/server.js",
+    "start": "deno serve -A --unstable-kv --unstable-cron _fresh.js",
     "update": "deno run -A -r jsr:@fresh/update ."
   },
   "lint": {
@@ -12,6 +12,12 @@
       "tags": [
         "fresh",
         "recommended"
+      ],
+      "exclude": [
+        "jsx-button-has-type",
+        "no-explicit-any",
+        "require-await",
+        "react-no-danger"
       ]
     }
   },

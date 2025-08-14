@@ -1,7 +1,6 @@
-import { Handlers } from "fresh/server";
-import { TTSVoice } from "@/types";
+import { TTSVoice } from "../../../src/types";
 
-export const handler: Handlers = {
+export const handler = {
   async GET(req: Request): Promise<Response> {
     const url = new URL(req.url);
     const engine = url.searchParams.get("engine") || "all"; // 引擎选择：leftsite, openxing, all

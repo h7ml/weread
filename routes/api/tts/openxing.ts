@@ -1,4 +1,4 @@
-import { Handlers } from "fresh/server";
+import { Handlers } from "fresh";
 
 export const handler: Handlers = {
   async POST(req: Request): Promise<Response> {

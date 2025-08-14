@@ -10,7 +10,7 @@ import { logger } from "../../../src/utils/logger.ts";
 /**
  * 处理SSE登录 - 真实的微信读书登录
  */
-export async function handler(req: Request): Promise<Response> {
+export async function handler(_req: Request): Promise<Response> {
   logger.info("=== WeRead SSE login endpoint called ===");
 
   try {

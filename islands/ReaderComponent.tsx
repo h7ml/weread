@@ -87,7 +87,7 @@ export default function ReaderComponent() {
     // 处理图片：确保图片正确加载
     processedContent = processedContent.replace(
       /<img([^>]*?)src="([^"]*)"([^>]*?)>/g,
-      (match, before, src, after) => {
+      (_match, before, src, after) => {
         let finalSrc = src;
 
         // 处理各种图片URL格式
