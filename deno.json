@@ -30,7 +30,7 @@
     "static/qrcode.min.js"
   ],
   "imports": {
-    "fresh": "jsr:@fresh/core@^2.0.0-alpha.58",
+    "fresh": "jsr:@fresh/core@^2.0.0-alpha.34",
     "preact": "npm:preact@^10.27.0",
     "preact/jsx-runtime": "npm:preact@^10.27.0/jsx-runtime",
     "@preact/signals": "npm:@preact/signals@^2.2.1",
