@@ -2,9 +2,9 @@
   "nodeModulesDir": "auto",
   "tasks": {
     "check": "deno fmt --check . && deno lint . && deno check",
-    "dev": "deno run -A --watch=static/,routes/ dev.ts",
+    "dev": "deno run -A --unstable-kv --unstable-cron --watch=static/,routes/ dev.ts",
     "build": "deno run -A dev.ts build",
-    "start": "deno serve -A _fresh/server.js",
+    "start": "deno serve -A --unstable-kv --unstable-cron _fresh/server.js",
     "update": "deno run -A -r jsr:@fresh/update ."
   },
   "lint": {
@@ -16,7 +16,9 @@
     }
   },
   "exclude": [
-    "**/_fresh/*"
+    "**/_fresh/*",
+    "**/node_modules/*",
+    "logs/*"
   ],
   "imports": {
     "fresh": "jsr:@fresh/core@^2.0.0-alpha.58",
@@ -26,14 +28,24 @@
     "tailwindcss": "npm:tailwindcss@^4.1.10",
     "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@^0.0.1-alpha.9",
     "@tailwindcss/postcss": "npm:@tailwindcss/postcss@^4.1.10",
-    "postcss": "npm:postcss@^8.5.6"
+    "postcss": "npm:postcss@^8.5.6",
+    "crypto-js": "npm:crypto-js@4.2.0",
+    "xss": "npm:xss@1.0.14",
+    "parse5": "npm:parse5@7.1.2",
+    "@/utils": "./src/utils/mod.ts",
+    "@/apis": "./src/apis/mod.ts",
+    "@/kv": "./src/kv/mod.ts",
+    "@/cron": "./src/cron/mod.ts",
+    "@/config": "./src/config.ts",
+    "@/types": "./src/types/mod.ts"
   },
   "compilerOptions": {
     "lib": [
       "dom",
       "dom.asynciterable",
       "dom.iterable",
-      "deno.ns"
+      "deno.ns",
+      "deno.unstable"
     ],
     "jsx": "precompile",
     "jsxImportSource": "preact",
