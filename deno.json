@@ -21,6 +21,7 @@
   "imports": {
     "fresh": "jsr:@fresh/core@^2.0.0-alpha.58",
     "preact": "npm:preact@^10.27.0",
+    "preact/jsx-runtime": "npm:preact@^10.27.0/jsx-runtime",
     "@preact/signals": "npm:@preact/signals@^2.2.1",
     "tailwindcss": "npm:tailwindcss@^4.1.10",
     "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@^0.0.1-alpha.9",
