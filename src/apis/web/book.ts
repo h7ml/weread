@@ -29,6 +29,7 @@ export async function getBookInfo(
     if (publicResponse.data && publicResponse.data.length > 0) {
       const bookData = publicResponse.data[0];
       return {
+        ...bookData,
         bookId: bookData.bookId,
         title: bookData.title,
         author: bookData.author,
@@ -54,6 +55,7 @@ export async function getBookInfo(
       );
 
       return {
+        ...response,
         bookId: response.bookId,
         title: response.title,
         author: response.author,
@@ -102,6 +104,7 @@ export async function getChapterList(
     }
 
     return bookData.updated.map((item: any) => ({
+      ...bookData,
       chapterUid: item.chapterUid,
       chapterIdx: item.chapterIdx,
       title: item.title,
@@ -563,6 +566,7 @@ export async function getReadProgress(
 
     return {
       bookId,
+      ...response.data,
       chapterUid: response.data.chapterUid,
       chapterIdx: response.data.chapterIdx,
       chapterOffset: response.data.chapterOffset,
