@@ -2,6 +2,7 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
+import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_name_ from "./routes/api/[name].tsx";
 import * as $api_book_chapters from "./routes/api/book/chapters.ts";
@@ -23,6 +24,7 @@ import * as $BookDetailComponent from "./islands/BookDetailComponent.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $HomeComponent from "./islands/HomeComponent.tsx";
 import * as $LoginComponent from "./islands/LoginComponent.tsx";
+import * as $NotFound404Island from "./islands/NotFound404Island.tsx";
 import * as $ReaderComponent from "./islands/ReaderComponent.tsx";
 import * as $ShelfComponent from "./islands/ShelfComponent.tsx";
 import * as $WeReadStyleReaderComponent from "./islands/WeReadStyleReaderComponent.tsx";
@@ -30,6 +32,7 @@ import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
+    "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/api/[name].tsx": $api_name_,
     "./routes/api/book/chapters.ts": $api_book_chapters,
@@ -53,6 +56,7 @@ const manifest = {
     "./islands/Counter.tsx": $Counter,
     "./islands/HomeComponent.tsx": $HomeComponent,
     "./islands/LoginComponent.tsx": $LoginComponent,
+    "./islands/NotFound404Island.tsx": $NotFound404Island,
     "./islands/ReaderComponent.tsx": $ReaderComponent,
     "./islands/ShelfComponent.tsx": $ShelfComponent,
     "./islands/WeReadStyleReaderComponent.tsx": $WeReadStyleReaderComponent,
