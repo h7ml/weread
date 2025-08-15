@@ -3,11 +3,9 @@ import WeReadStyleReaderComponent from "../../../islands/WeReadStyleReaderCompon
 
 export default define.page(function ReaderPage() {
   return (
-    <>
+    <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <link rel="stylesheet" href="/weread-reader.css" />
-      <div>
-        <WeReadStyleReaderComponent />
-      </div>
-    </>
+      <WeReadStyleReaderComponent />
+    </div>
   );
 });

@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import Navigation from "../components/Navigation.tsx";
 
 export default function HomeComponent() {
   const isLoggedIn = useSignal(false);
@@ -152,84 +153,24 @@ export default function HomeComponent() {
     // 已登录用户 - 显示增强版仪表板
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        {/* 导航栏 */}
-        <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                      />
-                    </svg>
-                  </div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    微信读书助手
-                  </h1>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  <span>欢迎，{user.value.name}</span>
-                </div>
-                <a
-                  href="/search"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                >
-                  搜索书籍
-                </a>
-                <a
-                  href="/shelf"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
-                >
-                  我的书架
-                </a>
-                <button
-                  onClick={logout}
-                  className="text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  title="退出登录"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Navigation
+          title="微信读书助手"
+          icon="home"
+          showUser={true}
+          actions={[
+            {
+              label: "搜索书籍",
+              href: "/search",
+              type: "link",
+            },
+            {
+              label: "我的书架",
+              href: "/shelf",
+              type: "link",
+              variant: "primary",
+            },
+          ]}
+        />
 
         <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           {/* 欢迎区域 */}
@@ -246,7 +187,7 @@ export default function HomeComponent() {
 
             {/* 统计卡片 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">
@@ -257,7 +198,7 @@ export default function HomeComponent() {
                     </p>
                     <p className="text-xs text-gray-500 mt-1">本书籍</p>
                   </div>
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
                     <svg
                       className="w-6 h-6 text-white"
                       fill="none"
@@ -275,7 +216,7 @@ export default function HomeComponent() {
                 </div>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">
@@ -286,7 +227,7 @@ export default function HomeComponent() {
                     </p>
                     <p className="text-xs text-gray-500 mt-1">小时</p>
                   </div>
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
                     <svg
                       className="w-6 h-6 text-white"
                       fill="none"
@@ -304,7 +245,7 @@ export default function HomeComponent() {
                 </div>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">
@@ -337,7 +278,7 @@ export default function HomeComponent() {
 
           {/* 快捷操作 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <a
+            {/* <a
               href="/shelf"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
@@ -378,8 +319,9 @@ export default function HomeComponent() {
                   />
                 </svg>
               </div>
-            </a>
+            </a> */}
 
+            {/* 暂时隐藏 - dashboard 功能有问题
             <a
               href="/dashboard"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -422,7 +364,9 @@ export default function HomeComponent() {
                 </svg>
               </div>
             </a>
+            */}
 
+            {/* 暂时隐藏 - notes 功能有问题
             <a
               href="/notes"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -465,7 +409,9 @@ export default function HomeComponent() {
                 </svg>
               </div>
             </a>
+            */}
 
+            {/* 暂时隐藏 - profile 功能有问题
             <a
               href="/profile"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -508,10 +454,11 @@ export default function HomeComponent() {
                 </svg>
               </div>
             </a>
+            */}
           </div>
 
           {/* 阅读设置 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             <div className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
               <div className="text-teal-600 mb-6 group-hover:scale-110 transition-transform duration-300">
                 <svg
@@ -557,7 +504,7 @@ export default function HomeComponent() {
                 </svg>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* 使用提示 */}
           <div className="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
@@ -626,47 +573,24 @@ export default function HomeComponent() {
   // 未登录用户 - 显示增强版欢迎页面
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* 导航栏 */}
-      <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                  />
-                </svg>
-              </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                微信读书助手
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a
-                href="/login"
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-              >
-                登录
-              </a>
-              <a
-                href="/login"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
-              >
-                立即体验
-              </a>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation
+        title="微信读书助手"
+        icon="home"
+        showUser={false}
+        actions={[
+          {
+            label: "登录",
+            href: "/login",
+            type: "link",
+          },
+          {
+            label: "立即体验",
+            href: "/login",
+            type: "link",
+            variant: "primary",
+          },
+        ]}
+      />
 
       <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         {/* 英雄区域 */}

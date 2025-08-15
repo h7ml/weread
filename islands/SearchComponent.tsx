@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import Navigation from "../components/Navigation.tsx";
 
 export default function SearchComponent() {
   const searchQuery = useSignal("");
@@ -306,29 +307,11 @@ export default function SearchComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* 导航栏 */}
-      <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  书籍搜索
-                </h1>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">首页</a>
-              <a href="/shelf" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">我的书架</a>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation
+        title="书籍搜索"
+        icon="search"
+        showUser={false}
+      />
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* 搜索区域 */}

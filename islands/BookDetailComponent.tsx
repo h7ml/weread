@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import Navigation from "../components/Navigation.tsx";
 import ProgressSyncComponent from "./ProgressSyncComponent.tsx";
 
 export default function BookDetailComponent() {
@@ -241,37 +242,19 @@ export default function BookDetailComponent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 导航栏 */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => globalThis.history.back()}
-                className="mr-4 text-gray-600 hover:text-gray-900"
-              >
-                ← 返回
-              </button>
-              <h1 className="text-xl font-semibold">书籍详情</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/shelf" className="text-gray-600 hover:text-gray-900">
-                书架
-              </a>
-              <button
-                onClick={() => {
-                  localStorage.clear();
-                  globalThis.location.href = "/login";
-                }}
-                className="text-red-600 hover:text-red-900"
-              >
-                退出
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <Navigation
+        title="书籍详情"
+        icon="book"
+        showUser={false}
+        actions={[
+          {
+            label: "返回",
+            onClick: () => globalThis.history.back(),
+            type: "button",
+          },
+        ]}
+      />
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {bookInfo.value && (

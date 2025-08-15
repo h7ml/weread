@@ -1,9 +1,10 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import Navigation from "../components/Navigation.tsx";
 
 export default function ShelfComponent() {
-  const books = useSignal([]);
-  const user = useSignal(null);
+  const books = useSignal<any[]>([]);
+  const user = useSignal<any>(null);
   const loading = useSignal(true);
   const error = useSignal("");
   const viewMode = useSignal("card"); // card or table
@@ -18,9 +19,6 @@ export default function ShelfComponent() {
     hasNext: false,
     hasPrev: false,
   });
-  const selectedBooks = useSignal(new Set());
-  const isManageMode = useSignal(false);
-  const actionLoading = useSignal("");
 
   useEffect(() => {
     // 检查登录状态
@@ -97,7 +95,9 @@ export default function ShelfComponent() {
       }
     } catch (err) {
       console.error("Failed to load shelf:", err);
-      error.value = `加载书架失败: ${err.message}`;
+      error.value = `加载书架失败: ${
+        err instanceof Error ? err.message : String(err)
+      }`;
     } finally {
       loading.value = false;
     }
@@ -105,219 +105,44 @@ export default function ShelfComponent() {
 
   const handleSearch = () => {
     currentPage.value = 1;
-    loadShelf(localStorage.getItem("weread_token"), 1, searchQuery.value);
+    const token = localStorage.getItem("weread_token");
+    if (token) {
+      loadShelf(token, 1, searchQuery.value);
+    }
   };
 
   const handlePageChange = (page: number) => {
-    loadShelf(localStorage.getItem("weread_token"), page, searchQuery.value);
+    const token = localStorage.getItem("weread_token");
+    if (token) {
+      loadShelf(token, page, searchQuery.value);
+    }
   };
 
   const openBookDetail = (bookId: string) => {
     globalThis.location.href = `/book/${bookId}`;
   };
 
-  // 书架管理操作
-  const performShelfAction = async (
-    action: string,
-    bookId: string,
-    bookTitle: string = "",
-  ) => {
-    const token = localStorage.getItem("weread_token");
-    if (!token) {
-      error.value = "请先登录";
-      return;
-    }
-
-    try {
-      actionLoading.value = `${action}-${bookId}`;
-
-      const response = await fetch("/api/shelf/manage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action,
-          bookId,
-          token,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // 成功后刷新书架
-        await loadShelf(token, currentPage.value, searchQuery.value);
-
-        // 显示成功消息
-        const messages = {
-          remove: `《${bookTitle}》已从书架移除`,
-          add: `《${bookTitle}》已添加到书架`,
-          archive: `《${bookTitle}》已归档`,
-          unarchive: `《${bookTitle}》已取消归档`,
-        };
-
-        // 简单的成功提示
-        const alertDiv = document.createElement("div");
-        alertDiv.className =
-          "fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50";
-        alertDiv.textContent = messages[action] || data.message;
-        document.body.appendChild(alertDiv);
-
-        setTimeout(() => {
-          document.body.removeChild(alertDiv);
-        }, 3000);
-      } else {
-        // Better error messaging
-        let errorMessage = data.message || data.error || "操作失败";
-        if (errorMessage.includes("HTTP 403")) {
-          errorMessage = "没有权限执行此操作";
-        } else if (errorMessage.includes("HTTP 404")) {
-          errorMessage = "书籍不存在或已被移除";
-        } else if (errorMessage.includes("HTTP 401")) {
-          errorMessage = "登录已过期，请重新登录";
-        }
-        error.value = errorMessage;
-      }
-    } catch (err) {
-      console.error("Shelf action error:", err);
-      error.value = `操作失败: ${err.message}`;
-    } finally {
-      actionLoading.value = "";
-    }
-  };
-
-  // 切换管理模式
-  const toggleManageMode = () => {
-    isManageMode.value = !isManageMode.value;
-    selectedBooks.value = new Set();
-  };
-
-  // 切换书籍选择
-  const toggleBookSelection = (bookId: string) => {
-    const newSelected = new Set(selectedBooks.value);
-    if (newSelected.has(bookId)) {
-      newSelected.delete(bookId);
-    } else {
-      newSelected.add(bookId);
-    }
-    selectedBooks.value = newSelected;
-  };
-
-  // 批量操作
-  const performBatchAction = async (action: string) => {
-    if (selectedBooks.value.size === 0) {
-      error.value = "请先选择要操作的书籍";
-      return;
-    }
-
-    const token = localStorage.getItem("weread_token");
-    if (!token) {
-      error.value = "请先登录";
-      return;
-    }
-
-    try {
-      actionLoading.value = `batch-${action}`;
-
-      const promises = Array.from(selectedBooks.value).map((bookId) =>
-        fetch("/api/shelf/manage", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            action,
-            bookId,
-            token,
-          }),
-        })
-      );
-
-      const responses = await Promise.all(promises);
-      const results = await Promise.all(responses.map((r) => r.json()));
-
-      const successCount = results.filter((r) => r.success).length;
-      const totalCount = selectedBooks.value.size;
-
-      if (successCount > 0) {
-        await loadShelf(token, currentPage.value, searchQuery.value);
-
-        const alertDiv = document.createElement("div");
-        alertDiv.className =
-          "fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50";
-        alertDiv.textContent = `成功操作 ${successCount}/${totalCount} 本书`;
-        document.body.appendChild(alertDiv);
-
-        setTimeout(() => {
-          document.body.removeChild(alertDiv);
-        }, 3000);
-      }
-
-      if (successCount < totalCount) {
-        error.value = `部分操作失败，成功 ${successCount}/${totalCount}`;
-      }
-
-      selectedBooks.value = new Set();
-      isManageMode.value = false;
-    } catch (err) {
-      console.error("Batch action error:", err);
-      error.value = `批量操作失败: ${err.message}`;
-    } finally {
-      actionLoading.value = "";
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 导航栏 */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold">我的书架</h1>
-              {user.value && (
-                <span className="ml-4 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                  {user.value.name}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/" className="text-gray-600 hover:text-gray-900">首页</a>
-              <button
-                onClick={toggleManageMode}
-                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                  isManageMode.value
-                    ? "bg-blue-600 text-white"
-                    : "text-blue-600 hover:bg-blue-50"
-                }`}
-              >
-                {isManageMode.value ? "取消管理" : "管理书架"}
-              </button>
-              <button
-                onClick={() =>
-                  loadShelf(
-                    localStorage.getItem("weread_token"),
-                    currentPage.value,
-                    searchQuery.value,
-                  )}
-                className="text-blue-600 hover:text-blue-900"
-              >
-                刷新
-              </button>
-              <button
-                onClick={() => {
-                  localStorage.clear();
-                  globalThis.location.href = "/login";
-                }}
-                className="text-red-600 hover:text-red-900"
-              >
-                退出
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <Navigation
+        title="我的书架"
+        icon="shelf"
+        showUser={true}
+        actions={[
+          {
+            label: "刷新书架",
+            onClick: () => {
+              const token = localStorage.getItem("weread_token");
+              if (token) {
+                loadShelf(token, currentPage.value, searchQuery.value);
+              }
+            },
+            type: "button",
+            icon:
+              `<path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />`,
+          },
+        ]}
+      />
 
       {/* 内容区域 */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -381,33 +206,6 @@ export default function ShelfComponent() {
                 {pagination.value.totalPages > 1 &&
                   ` | 第 ${pagination.value.page}/${pagination.value.totalPages} 页`}
               </div>
-
-              {/* 批量操作按钮 */}
-              {isManageMode.value && selectedBooks.value.size > 0 && (
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">
-                    已选择 {selectedBooks.value.size} 本书:
-                  </span>
-                  <button
-                    onClick={() => performBatchAction("remove")}
-                    disabled={actionLoading.value.startsWith("batch")}
-                    className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
-                  >
-                    {actionLoading.value === "batch-remove"
-                      ? "移除中..."
-                      : "批量移除"}
-                  </button>
-                  <button
-                    onClick={() => performBatchAction("archive")}
-                    disabled={actionLoading.value.startsWith("batch")}
-                    className="px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
-                  >
-                    {actionLoading.value === "batch-archive"
-                      ? "归档中..."
-                      : "批量归档"}
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -466,11 +264,10 @@ export default function ShelfComponent() {
                   <button
                     onClick={() => {
                       error.value = "";
-                      loadShelf(
-                        localStorage.getItem("weread_token"),
-                        currentPage.value,
-                        searchQuery.value,
-                      );
+                      const token = localStorage.getItem("weread_token");
+                      if (token) {
+                        loadShelf(token, currentPage.value, searchQuery.value);
+                      }
                     }}
                     className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
                   >
@@ -532,23 +329,10 @@ export default function ShelfComponent() {
                       key={book.bookId}
                       className="bg-white rounded-lg shadow hover:shadow-lg transition-all duration-200 relative group"
                     >
-                      {/* 管理模式选择框 */}
-                      {isManageMode.value && (
-                        <div className="absolute top-2 left-2 z-10">
-                          <input
-                            type="checkbox"
-                            checked={selectedBooks.value.has(book.bookId)}
-                            onChange={() => toggleBookSelection(book.bookId)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                        </div>
-                      )}
-
                       {/* 书籍封面和信息 */}
                       <div
-                        onClick={() =>
-                          !isManageMode.value && openBookDetail(book.bookId)}
-                        className={isManageMode.value ? "" : "cursor-pointer"}
+                        onClick={() => openBookDetail(book.bookId)}
+                        className="cursor-pointer"
                       >
                         <div className="aspect-w-3 aspect-h-4">
                           <img
@@ -595,50 +379,6 @@ export default function ShelfComponent() {
                           )}
                         </div>
                       </div>
-
-                      {/* 管理按钮 */}
-                      {!isManageMode.value && (
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="bg-white rounded-lg shadow-lg p-1 flex space-x-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                performShelfAction(
-                                  "remove",
-                                  book.bookId,
-                                  book.title,
-                                );
-                              }}
-                              disabled={actionLoading.value ===
-                                `remove-${book.bookId}`}
-                              className="p-1 text-red-500 hover:bg-red-50 rounded text-xs"
-                              title="移除"
-                            >
-                              {actionLoading.value === `remove-${book.bookId}`
-                                ? "..."
-                                : "🗑️"}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                performShelfAction(
-                                  "archive",
-                                  book.bookId,
-                                  book.title,
-                                );
-                              }}
-                              disabled={actionLoading.value ===
-                                `archive-${book.bookId}`}
-                              className="p-1 text-yellow-500 hover:bg-yellow-50 rounded text-xs"
-                              title="归档"
-                            >
-                              {actionLoading.value === `archive-${book.bookId}`
-                                ? "..."
-                                : "📦"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -649,29 +389,6 @@ export default function ShelfComponent() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        {/* 选择框列 */}
-                        {isManageMode.value && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <input
-                              type="checkbox"
-                              checked={selectedBooks.value.size ===
-                                  books.value.length && books.value.length > 0}
-                              onChange={() => {
-                                if (
-                                  selectedBooks.value.size ===
-                                    books.value.length
-                                ) {
-                                  selectedBooks.value = new Set();
-                                } else {
-                                  selectedBooks.value = new Set(
-                                    books.value.map((b) => b.bookId),
-                                  );
-                                }
-                              }}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                          </th>
-                        )}
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           书籍
                         </th>
@@ -692,26 +409,9 @@ export default function ShelfComponent() {
                           key={book.bookId}
                           className="hover:bg-gray-50"
                         >
-                          {/* 选择框 */}
-                          {isManageMode.value && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <input
-                                type="checkbox"
-                                checked={selectedBooks.value.has(book.bookId)}
-                                onChange={() =>
-                                  toggleBookSelection(book.bookId)}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                              />
-                            </td>
-                          )}
-
                           <td
-                            className={`px-6 py-4 whitespace-nowrap ${
-                              !isManageMode.value ? "cursor-pointer" : ""
-                            }`}
-                            onClick={() =>
-                              !isManageMode.value &&
-                              openBookDetail(book.bookId)}
+                            className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                            onClick={() => openBookDetail(book.bookId)}
                           >
                             <div className="flex items-center">
                               <img
@@ -762,51 +462,14 @@ export default function ShelfComponent() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <div className="flex space-x-2">
-                              {!isManageMode.value && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openBookDetail(book.bookId);
-                                  }}
-                                  className="text-blue-600 hover:text-blue-800"
-                                >
-                                  查看详情
-                                </button>
-                              )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  performShelfAction(
-                                    "remove",
-                                    book.bookId,
-                                    book.title,
-                                  );
+                                  openBookDetail(book.bookId);
                                 }}
-                                disabled={actionLoading.value ===
-                                  `remove-${book.bookId}`}
-                                className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                                className="text-blue-600 hover:text-blue-800"
                               >
-                                {actionLoading.value === `remove-${book.bookId}`
-                                  ? "移除中..."
-                                  : "移除"}
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  performShelfAction(
-                                    "archive",
-                                    book.bookId,
-                                    book.title,
-                                  );
-                                }}
-                                disabled={actionLoading.value ===
-                                  `archive-${book.bookId}`}
-                                className="text-yellow-600 hover:text-yellow-800 disabled:opacity-50"
-                              >
-                                {actionLoading.value ===
-                                    `archive-${book.bookId}`
-                                  ? "归档中..."
-                                  : "归档"}
+                                查看详情
                               </button>
                             </div>
                           </td>
