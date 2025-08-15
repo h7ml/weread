@@ -1,14 +1,20 @@
 import { define } from "../utils.ts";
 import ShelfComponent from "../islands/ShelfComponent.tsx";
-import { seoConfigs } from "../components/SEO.tsx";
+import SEO, { seoConfigs } from "../components/SEO.tsx";
+import { PageProps } from "$fresh/server.ts";
 
-export default define.page(function ShelfPage({ state }) {
-  // 设置书架页SEO配置
-  state.title = seoConfigs.shelf.title;
+export default define.page(function ShelfPage(props: PageProps) {
+  const seoConfig = {
+    ...seoConfigs.shelf,
+    url: props.url.toString(),
+  };
   
   return (
-    <div>
-      <ShelfComponent />
-    </div>
+    <>
+      <SEO {...seoConfig} />
+      <div>
+        <ShelfComponent />
+      </div>
+    </>
   );
 });

@@ -12,7 +12,7 @@
 import { PageProps } from "$fresh/server.ts";
 
 export interface State {
-  title: string;
+  title?: string; // 改为可选属性
 }
 
 // Simple helper for page definitions that matches the original define.page pattern

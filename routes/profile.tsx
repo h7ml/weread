@@ -1,14 +1,18 @@
-import { Head } from "$fresh/runtime.ts";
+import { define } from "../utils.ts";
 import ProfileComponent from "../islands/ProfileComponent.tsx";
+import SEO, { seoConfigs } from "../components/SEO.tsx";
+import { PageProps } from "$fresh/server.ts";
 
-export default function ProfilePage() {
+export default define.page(function ProfilePage(props: PageProps) {
+  const seoConfig = {
+    ...seoConfigs.profile,
+    url: props.url.toString(),
+  };
+  
   return (
     <>
-      <Head>
-        <title>个人中心 - 微信读书</title>
-        <meta name="description" content="查看您的阅读统计、成就和个人设置" />
-      </Head>
+      <SEO {...seoConfig} />
       <ProfileComponent />
     </>
   );
-}
+});

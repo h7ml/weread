@@ -1,5 +1,4 @@
 import { define } from "../utils.ts";
-import SEO from "../components/SEO.tsx";
 import PWA from "../components/PWA.tsx";
 import Analytics, { GTMBody } from "../components/Analytics.tsx";
 
@@ -21,20 +20,14 @@ const analyticsConfig = {
 };
 
 export default define.page(function App({ Component, state, url }) {
-  // 基础SEO配置
-  const seoConfig = {
-    title: state.title,
-    url: url.toString(),
-  };
-
   return (
     <html lang="zh-CN">
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         
-        {/* SEO 组件 */}
-        <SEO {...seoConfig} />
+        {/* 默认标题，如果页面没有设置的话 */}
+        {!state?.title && <title>微信读书 Web - 现代化在线阅读平台</title>}
         
         {/* PWA 组件 */}
         <PWA enabled={true} />
