@@ -2,6 +2,59 @@ import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
 
+// 视图模式配置
+const VIEW_MODES = {
+  grid: {
+    name: "网格",
+    icon: (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    ),
+    gridClasses: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8",
+  },
+  list: {
+    name: "列表",
+    icon: (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+    ),
+    gridClasses: "space-y-4 mb-8",
+  },
+};
+
+// 热门搜索关键词配置
+const HOT_KEYWORDS = [
+  "人工智能",
+  "心理学", 
+  "历史",
+  "小说",
+  "编程",
+  "商业",
+  "哲学",
+  "文学",
+  "科技",
+  "投资",
+];
+
+// UI 图标配置
+const UI_ICONS = {
+  search: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
+  clear: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />,
+  loading: (
+    <>
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </>
+  ),
+  clock: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  fire: (
+    <>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+    </>
+  ),
+  lightbulb: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />,
+  error: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+};
+
 export default function SearchComponent() {
   const searchQuery = useSignal("");
   const searchResults = useSignal([]);
@@ -17,18 +70,7 @@ export default function SearchComponent() {
   const totalCount = useSignal(0);
 
   // 热门搜索关键词
-  const hotKeywords = [
-    "人工智能",
-    "心理学", 
-    "历史",
-    "小说",
-    "编程",
-    "商业",
-    "哲学",
-    "文学",
-    "科技",
-    "投资",
-  ];
+  const hotKeywords = HOT_KEYWORDS;
 
   useEffect(() => {
     // 从 localStorage 加载搜索历史和视图模式
@@ -321,7 +363,7 @@ export default function SearchComponent() {
               {/* 搜索图标 */}
               <div className="pl-6 pr-3">
                 <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  {UI_ICONS.search}
                 </svg>
               </div>
               
@@ -343,7 +385,7 @@ export default function SearchComponent() {
                   title="清空"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    {UI_ICONS.clear}
                   </svg>
                 </button>
               )}
@@ -360,8 +402,7 @@ export default function SearchComponent() {
                 {loading.value ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      {UI_ICONS.loading}
                     </svg>
                     搜索中
                   </>
@@ -378,7 +419,7 @@ export default function SearchComponent() {
               <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
                   <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    {UI_ICONS.lightbulb}
                   </svg>
                   相关推荐
                 </h3>
@@ -407,7 +448,7 @@ export default function SearchComponent() {
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-gray-900 flex items-center">
                       <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        {UI_ICONS.clock}
                       </svg>
                       搜索历史
                     </h2>
@@ -438,8 +479,7 @@ export default function SearchComponent() {
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <svg className="w-5 h-5 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                    {UI_ICONS.fire}
                   </svg>
                   热门搜索
                 </h2>
@@ -476,32 +516,22 @@ export default function SearchComponent() {
                   </h2>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={toggleViewMode}
-                    className={`p-2 rounded-lg transition-colors ${
-                      viewMode.value === "grid"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    title="网格视图"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={toggleViewMode}
-                    className={`p-2 rounded-lg transition-colors ${
-                      viewMode.value === "list"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    title="列表视图"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                    </svg>
-                  </button>
+                  {Object.entries(VIEW_MODES).map(([mode, config]) => (
+                    <button
+                      key={mode}
+                      onClick={toggleViewMode}
+                      className={`p-2 rounded-lg transition-colors ${
+                        viewMode.value === mode
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                      title={`${config.name}视图`}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {config.icon}
+                      </svg>
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -512,7 +542,7 @@ export default function SearchComponent() {
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      {UI_ICONS.error}
                     </svg>
                     <p className="text-red-700">{error.value}</p>
                   </div>
@@ -531,10 +561,7 @@ export default function SearchComponent() {
             {/* 搜索结果展示 */}
             {searchResults.value.length > 0 && (
               <>
-                <div className={viewMode.value === "grid" 
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
-                  : "space-y-4 mb-8"
-                }>
+                <div className={VIEW_MODES[viewMode.value].gridClasses}>
                   {searchResults.value.map((book: any, index: number) => renderBookCard(book, index))}
                 </div>
 

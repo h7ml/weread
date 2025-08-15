@@ -2,6 +2,253 @@ import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
 
+// 数据配置
+const STATS_CONFIG = [
+  {
+    title: "书架藏书",
+    key: "booksCount",
+    unit: "本书籍",
+    color: "blue",
+    icon: (
+      <svg
+        className="w-6 h-6 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "阅读时长",
+    key: "readingTime",
+    unit: "小时",
+    color: "green",
+    icon: (
+      <svg
+        className="w-6 h-6 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "已完成",
+    key: "finishedBooks",
+    unit: "本书籍",
+    color: "purple",
+    icon: (
+      <svg
+        className="w-6 h-6 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    ),
+  },
+];
+
+const FEATURE_CARDS = [
+  {
+    id: "tts",
+    title: "智能语音朗读",
+    description:
+      "支持浏览器TTS、Leftsite TTS、OpenXing TTS三种引擎，包含超拟人语音，让阅读更轻松",
+    colorFrom: "blue-500",
+    colorTo: "cyan-500",
+    hoverColor: "blue-600",
+    features: ["三种TTS引擎可选", "语速、音量精准调节", "智能断句与高亮显示"],
+    icon: (
+      <svg
+        className="w-8 h-8 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728m-9.192-9.192L7.05 7.05A7 7 0 105 12a7 7 0 002.05-4.95l2.122-2.122z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: "scroll",
+    title: "自动滚动阅读",
+    description: "设置滚动速度，解放双手，享受沉浸式阅读体验，支持自动翻页功能",
+    colorFrom: "green-500",
+    colorTo: "emerald-500",
+    hoverColor: "green-600",
+    features: ["可调节滚动速度", "平滑滚动效果", "智能自动翻页"],
+    icon: (
+      <svg
+        className="w-8 h-8 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 19V5m0 0l-7 7m7-7l7 7"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: "theme",
+    title: "多主题定制",
+    description:
+      "8种精美主题，护眼模式、夜间模式等，保护视力，个性化您的阅读界面",
+    colorFrom: "purple-500",
+    colorTo: "pink-500",
+    hoverColor: "purple-600",
+    features: ["8种精美主题", "字体大小与行距调节", "页面宽度自适应"],
+    icon: (
+      <svg
+        className="w-8 h-8 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h2a2 2 0 002-2V5z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: "shelf",
+    title: "书架同步",
+    description: "同步微信读书书架，支持按分类浏览，快速找到想读的书籍",
+    colorFrom: "indigo-500",
+    colorTo: "blue-500",
+    hoverColor: "indigo-600",
+    features: ["实时书架同步", "分类管理书籍", "阅读进度显示"],
+    icon: (
+      <svg
+        className="w-8 h-8 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: "settings",
+    title: "全屏设置界面",
+    description: "专业的全屏设置面板，分类清晰，操作简便，精确调节每个参数",
+    colorFrom: "orange-500",
+    colorTo: "red-500",
+    hoverColor: "orange-600",
+    features: ["全屏设置界面", "实时设置保存", "智能默认配置"],
+    icon: (
+      <svg
+        className="w-8 h-8 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+        />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: "shortcuts",
+    title: "快捷操作",
+    description:
+      "键盘快捷键支持，快速切换功能，提升操作效率，专为重度阅读用户设计",
+    colorFrom: "teal-500",
+    colorTo: "cyan-500",
+    hoverColor: "teal-600",
+    features: ["键盘快捷键", "快捷导航栏", "沉浸式阅读模式"],
+    icon: (
+      <svg
+        className="w-8 h-8 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13 10V3L4 14h7v7l9-11h-7z"
+        />
+      </svg>
+    ),
+  },
+];
+
+const USAGE_STEPS = [
+  {
+    step: 1,
+    title: "登录账号",
+    description: "使用您的微信读书账号登录，同步书架和阅读记录",
+    colorFrom: "blue-500",
+    colorTo: "cyan-500",
+  },
+  {
+    step: 2,
+    title: "选择书籍",
+    description: "从书架中选择要阅读的书籍，继续上次的阅读进度",
+    colorFrom: "purple-500",
+    colorTo: "pink-500",
+  },
+  {
+    step: 3,
+    title: "享受阅读",
+    description: "开启语音朗读或自动滚动，沉浸在知识的海洋中",
+    colorFrom: "green-500",
+    colorTo: "emerald-500",
+  },
+];
+
 export default function HomeComponent() {
   const isLoggedIn = useSignal(false);
   const user = useSignal(null);
@@ -187,98 +434,39 @@ export default function HomeComponent() {
 
             {/* 统计卡片 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">
-                      书架藏书
-                    </p>
-                    <p className="text-3xl font-bold text-blue-600">
-                      {userStats.value.booksCount}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">本书籍</p>
-                  </div>
-                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+              {STATS_CONFIG.map((stat) => (
+                <div
+                  key={stat.key}
+                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">
+                        {stat.title}
+                      </p>
+                      <p
+                        className={`text-3xl font-bold text-${stat.color}-600`}
+                      >
+                        {userStats
+                          .value[stat.key as keyof typeof userStats.value]}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">{stat.unit}</p>
+                    </div>
+                    <div
+                      className={`w-12 h-12 bg-${stat.color}-600 rounded-lg flex items-center justify-center`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                      />
-                    </svg>
+                      {stat.icon}
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">
-                      阅读时长
-                    </p>
-                    <p className="text-3xl font-bold text-green-600">
-                      {userStats.value.readingTime}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">小时</p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">
-                      已完成
-                    </p>
-                    <p className="text-3xl font-bold text-purple-600">
-                      {userStats.value.finishedBooks}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">本书籍</p>
-                  </div>
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* 快捷操作 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* <a
+            {
+              /* <a
               href="/shelf"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
@@ -319,9 +507,11 @@ export default function HomeComponent() {
                   />
                 </svg>
               </div>
-            </a> */}
+            </a> */
+            }
 
-            {/* 暂时隐藏 - dashboard 功能有问题
+            {
+              /* 暂时隐藏 - dashboard 功能有问题
             <a
               href="/dashboard"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -364,9 +554,11 @@ export default function HomeComponent() {
                 </svg>
               </div>
             </a>
-            */}
+            */
+            }
 
-            {/* 暂时隐藏 - notes 功能有问题
+            {
+              /* 暂时隐藏 - notes 功能有问题
             <a
               href="/notes"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -409,9 +601,11 @@ export default function HomeComponent() {
                 </svg>
               </div>
             </a>
-            */}
+            */
+            }
 
-            {/* 暂时隐藏 - profile 功能有问题
+            {
+              /* 暂时隐藏 - profile 功能有问题
             <a
               href="/profile"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -454,11 +648,13 @@ export default function HomeComponent() {
                 </svg>
               </div>
             </a>
-            */}
+            */
+            }
           </div>
 
           {/* 阅读设置 */}
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {
+            /* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             <div className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
               <div className="text-teal-600 mb-6 group-hover:scale-110 transition-transform duration-300">
                 <svg
@@ -504,7 +700,8 @@ export default function HomeComponent() {
                 </svg>
               </div>
             </div>
-          </div> */}
+          </div> */
+          }
 
           {/* 使用提示 */}
           <div className="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
@@ -686,462 +883,49 @@ export default function HomeComponent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* 功能卡片 1 */}
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl hover:scale-105 transition-all duration-500 cursor-pointer">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {FEATURE_CARDS.map((feature) => (
+              <div
+                key={feature.id}
+                className="group bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl hover:scale-105 transition-all duration-500 cursor-pointer"
+              >
+                <div
+                  className={`w-16 h-16 bg-gradient-to-br from-${feature.colorFrom} to-${feature.colorTo} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728m-9.192-9.192L7.05 7.05A7 7 0 105 12a7 7 0 002.05-4.95l2.122-2.122z"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900 group-hover:text-blue-600 transition-colors">
-                智能语音朗读
-              </h4>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                支持浏览器TTS、Leftsite TTS、OpenXing
-                TTS三种引擎，包含超拟人语音，让阅读更轻松
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  三种TTS引擎可选
+                  {feature.icon}
                 </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  语速、音量精准调节
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  智能断句与高亮显示
-                </div>
-              </div>
-            </div>
-
-            {/* 功能卡片 2 */}
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl hover:scale-105 transition-all duration-500 cursor-pointer">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                <h4
+                  className={`text-2xl font-bold mb-4 text-gray-900 group-hover:text-${feature.hoverColor} transition-colors`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 19V5m0 0l-7 7m7-7l7 7"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900 group-hover:text-green-600 transition-colors">
-                自动滚动阅读
-              </h4>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                设置滚动速度，解放双手，享受沉浸式阅读体验，支持自动翻页功能
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  可调节滚动速度
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  平滑滚动效果
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  智能自动翻页
+                  {feature.title}
+                </h4>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  {feature.description}
+                </p>
+                <div className="space-y-2">
+                  {feature.features.map((featureItem, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center text-sm text-gray-500"
+                    >
+                      <svg
+                        className="w-4 h-4 mr-2 text-green-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      {featureItem}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-
-            {/* 功能卡片 3 */}
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl hover:scale-105 transition-all duration-500 cursor-pointer">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h2a2 2 0 002-2V5z"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900 group-hover:text-purple-600 transition-colors">
-                多主题定制
-              </h4>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                8种精美主题，护眼模式、夜间模式等，保护视力，个性化您的阅读界面
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  8种精美主题
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  字体大小与行距调节
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  页面宽度自适应
-                </div>
-              </div>
-            </div>
-
-            {/* 功能卡片 4 */}
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl hover:scale-105 transition-all duration-500 cursor-pointer">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900 group-hover:text-indigo-600 transition-colors">
-                书架同步
-              </h4>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                同步微信读书书架，支持按分类浏览，快速找到想读的书籍
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  实时书架同步
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  分类管理书籍
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  阅读进度显示
-                </div>
-              </div>
-            </div>
-
-            {/* 功能卡片 5 */}
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl hover:scale-105 transition-all duration-500 cursor-pointer">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900 group-hover:text-orange-600 transition-colors">
-                全屏设置界面
-              </h4>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                专业的全屏设置面板，分类清晰，操作简便，精确调节每个参数
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  全屏设置界面
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  实时设置保存
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  智能默认配置
-                </div>
-              </div>
-            </div>
-
-            {/* 功能卡片 6 */}
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl hover:scale-105 transition-all duration-500 cursor-pointer">
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900 group-hover:text-teal-600 transition-colors">
-                快捷操作
-              </h4>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                键盘快捷键支持，快速切换功能，提升操作效率，专为重度阅读用户设计
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  键盘快捷键
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  快捷导航栏
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  沉浸式阅读模式
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -1155,41 +939,23 @@ export default function HomeComponent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-3xl font-bold text-white">1</span>
+            {USAGE_STEPS.map((step) => (
+              <div key={step.step} className="text-center group">
+                <div
+                  className={`w-20 h-20 bg-gradient-to-r from-${step.colorFrom} to-${step.colorTo} rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300`}
+                >
+                  <span className="text-3xl font-bold text-white">
+                    {step.step}
+                  </span>
+                </div>
+                <h4 className="text-2xl font-bold mb-4 text-gray-900">
+                  {step.title}
+                </h4>
+                <p className="text-gray-600">
+                  {step.description}
+                </p>
               </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900">
-                登录账号
-              </h4>
-              <p className="text-gray-600">
-                使用您的微信读书账号登录，同步书架和阅读记录
-              </p>
-            </div>
-
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-3xl font-bold text-white">2</span>
-              </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900">
-                选择书籍
-              </h4>
-              <p className="text-gray-600">
-                从书架中选择要阅读的书籍，继续上次的阅读进度
-              </p>
-            </div>
-
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-3xl font-bold text-white">3</span>
-              </div>
-              <h4 className="text-2xl font-bold mb-4 text-gray-900">
-                享受阅读
-              </h4>
-              <p className="text-gray-600">
-                开启语音朗读或自动滚动，沉浸在知识的海洋中
-              </p>
-            </div>
+            ))}
           </div>
         </div>
 

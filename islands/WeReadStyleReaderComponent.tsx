@@ -1,6 +1,84 @@
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
 
+// 配置数据
+const THEME_OPTIONS = [
+  {
+    key: "light",
+    name: "默认",
+    bg: "bg-white",
+    text: "text-gray-900", 
+    ring: "ring-gray-300",
+  },
+  {
+    key: "sepia",
+    name: "护眼",
+    bg: "bg-amber-50",
+    text: "text-amber-900",
+    ring: "ring-amber-300",
+  },
+  {
+    key: "dark",
+    name: "夜间",
+    bg: "bg-gray-800",
+    text: "text-gray-100",
+    ring: "ring-gray-600",
+  },
+  {
+    key: "night",
+    name: "深邃",
+    bg: "bg-gray-900",
+    text: "text-gray-200",
+    ring: "ring-gray-700",
+  },
+  {
+    key: "green",
+    name: "清新",
+    bg: "bg-green-50",
+    text: "text-green-900",
+    ring: "ring-green-300",
+  },
+  {
+    key: "blue",
+    name: "海洋",
+    bg: "bg-blue-50",
+    text: "text-blue-900",
+    ring: "ring-blue-300",
+  },
+  {
+    key: "purple",
+    name: "神秘",
+    bg: "bg-purple-50",
+    text: "text-purple-900",
+    ring: "ring-purple-300",
+  },
+  {
+    key: "pink",
+    name: "温柔",
+    bg: "bg-pink-50",
+    text: "text-pink-900",
+    ring: "ring-pink-300",
+  },
+];
+
+const FONT_OPTIONS = [
+  { key: "system", name: "系统", desc: "无衬线" },
+  { key: "serif", name: "衬线", desc: "易读性" },
+  { key: "reading", name: "等宽", desc: "代码风格" },
+];
+
+const PAGE_WIDTH_OPTIONS = [
+  { key: "narrow", name: "窄", desc: "专注阅读" },
+  { key: "medium", name: "中", desc: "平衡体验" },
+  { key: "wide", name: "宽", desc: "大屏优化" },
+];
+
+const SETTINGS_TABS = [
+  { key: "display", name: "显示", icon: "🎨" },
+  { key: "voice", name: "语音", icon: "🔊" },
+  { key: "reading", name: "阅读", icon: "📖" },
+];
+
 export default function WeReadStyleReaderComponent() {
   // 默认设置配置
   const defaultSettings = {
@@ -1468,57 +1546,26 @@ export default function WeReadStyleReaderComponent() {
 
             {/* 标签切换 */}
             <div className="flex border-b border-current/10">
-              <button
-                onClick={() => activeSettingsTab.value = "display"}
-                className={`flex-1 py-4 px-2 text-center font-medium transition-colors relative ${
-                  activeSettingsTab.value === "display"
-                    ? "text-blue-600"
-                    : "text-current/70 hover:text-current"
-                }`}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <span>🎨</span>
-                  <span>显示</span>
-                </div>
-                {activeSettingsTab.value === "display" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600">
+              {SETTINGS_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => activeSettingsTab.value = tab.key}
+                  className={`flex-1 py-4 px-2 text-center font-medium transition-colors relative ${
+                    activeSettingsTab.value === tab.key
+                      ? "text-blue-600"
+                      : "text-current/70 hover:text-current"
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <span>{tab.icon}</span>
+                    <span>{tab.name}</span>
                   </div>
-                )}
-              </button>
-              <button
-                onClick={() => activeSettingsTab.value = "voice"}
-                className={`flex-1 py-4 px-2 text-center font-medium transition-colors relative ${
-                  activeSettingsTab.value === "voice"
-                    ? "text-blue-600"
-                    : "text-current/70 hover:text-current"
-                }`}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <span>🔊</span>
-                  <span>语音</span>
-                </div>
-                {activeSettingsTab.value === "voice" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600">
-                  </div>
-                )}
-              </button>
-              <button
-                onClick={() => activeSettingsTab.value = "reading"}
-                className={`flex-1 py-4 px-2 text-center font-medium transition-colors relative ${
-                  activeSettingsTab.value === "reading"
-                    ? "text-blue-600"
-                    : "text-current/70 hover:text-current"
-                }`}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <span>📖</span>
-                  <span>阅读</span>
-                </div>
-                {activeSettingsTab.value === "reading" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600">
-                  </div>
-                )}
-              </button>
+                  {activeSettingsTab.value === tab.key && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600">
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1533,64 +1580,7 @@ export default function WeReadStyleReaderComponent() {
                     主题风格
                   </h3>
                   <div className="grid grid-cols-4 gap-3">
-                    {[
-                      {
-                        key: "light",
-                        name: "默认",
-                        bg: "bg-white",
-                        text: "text-gray-900",
-                        ring: "ring-gray-300",
-                      },
-                      {
-                        key: "sepia",
-                        name: "护眼",
-                        bg: "bg-amber-50",
-                        text: "text-amber-900",
-                        ring: "ring-amber-300",
-                      },
-                      {
-                        key: "dark",
-                        name: "夜间",
-                        bg: "bg-gray-800",
-                        text: "text-gray-100",
-                        ring: "ring-gray-600",
-                      },
-                      {
-                        key: "night",
-                        name: "深邃",
-                        bg: "bg-gray-900",
-                        text: "text-gray-200",
-                        ring: "ring-gray-700",
-                      },
-                      {
-                        key: "green",
-                        name: "清新",
-                        bg: "bg-green-50",
-                        text: "text-green-900",
-                        ring: "ring-green-300",
-                      },
-                      {
-                        key: "blue",
-                        name: "海洋",
-                        bg: "bg-blue-50",
-                        text: "text-blue-900",
-                        ring: "ring-blue-300",
-                      },
-                      {
-                        key: "purple",
-                        name: "神秘",
-                        bg: "bg-purple-50",
-                        text: "text-purple-900",
-                        ring: "ring-purple-300",
-                      },
-                      {
-                        key: "pink",
-                        name: "温柔",
-                        bg: "bg-pink-50",
-                        text: "text-pink-900",
-                        ring: "ring-pink-300",
-                      },
-                    ].map((t) => (
+                    {THEME_OPTIONS.map((t) => (
                       <button
                         key={t.key}
                         onClick={() => updateReadingSettings("theme", t.key)}
@@ -1739,27 +1729,18 @@ export default function WeReadStyleReaderComponent() {
                     <div>
                       <label className="block font-medium mb-3">字体类型</label>
                       <div className="grid grid-cols-3 gap-3">
-                        {[
-                          { key: "system", name: "系统", desc: "无衬线" },
-                          { key: "serif", name: "衬线", desc: "易读性" },
-                          { key: "reading", name: "等宽", desc: "代码风格" },
-                        ].map((font) => (
+                        {FONT_OPTIONS.map((font) => (
                           <button
                             key={font.key}
-                            onClick={() =>
-                              updateReadingSettings("fontFamily", font.key)}
+                            onClick={() => updateReadingSettings("fontFamily", font.key)}
                             className={`p-3 rounded-xl border-2 transition-all btn-scale ${
                               fontFamily.value === font.key
                                 ? "border-blue-500 bg-blue-50 text-blue-700"
                                 : "border-current/20 hover:bg-current/5"
                             }`}
                           >
-                            <div className="text-sm font-medium">
-                              {font.name}
-                            </div>
-                            <div className="text-xs opacity-60">
-                              {font.desc}
-                            </div>
+                            <div className="text-sm font-medium">{font.name}</div>
+                            <div className="text-xs opacity-60">{font.desc}</div>
                           </button>
                         ))}
                       </div>
@@ -1768,11 +1749,7 @@ export default function WeReadStyleReaderComponent() {
                     <div>
                       <label className="block font-medium mb-3">页面宽度</label>
                       <div className="grid grid-cols-3 gap-3">
-                        {[
-                          { key: "narrow", name: "窄", desc: "专注阅读" },
-                          { key: "medium", name: "中", desc: "平衡体验" },
-                          { key: "wide", name: "宽", desc: "大屏优化" },
-                        ].map((width) => (
+                        {PAGE_WIDTH_OPTIONS.map((width) => (
                           <button
                             key={width.key}
                             onClick={() =>

@@ -1,6 +1,112 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 
+// 统计卡片配置
+const STATS_CARDS_CONFIG = [
+  {
+    key: "readingTime",
+    title: "阅读时长",
+    bgColor: "bg-blue-100",
+    iconColor: "text-blue-600",
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    ),
+    getValue: (stats) => `${Math.floor((stats.total?.readingTime || 0) / 60)}分钟`,
+  },
+  {
+    key: "booksCount",
+    title: "阅读书籍",
+    bgColor: "bg-green-100",
+    iconColor: "text-green-600",
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+      />
+    ),
+    getValue: (stats) => `${stats.total?.booksCount || 0}本`,
+  },
+  {
+    key: "readWords",
+    title: "阅读字数",
+    bgColor: "bg-purple-100",
+    iconColor: "text-purple-600",
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    ),
+    getValue: (stats) => `${((stats.total?.readWords || 0) / 10000).toFixed(1)}万字`,
+  },
+  {
+    key: "daysCount",
+    title: "连续阅读",
+    bgColor: "bg-orange-100",
+    iconColor: "text-orange-600",
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
+      />
+    ),
+    getValue: (stats) => `${stats.total?.daysCount || 0}天`,
+  },
+];
+
+// Tab配置
+const PROFILE_TABS = [
+  { key: "overview", label: "概览", icon: "📊" },
+  { key: "achievements", label: "成就", icon: "🏆" },
+  { key: "goals", label: "目标", icon: "🎯" },
+  { key: "settings", label: "设置", icon: "⚙️" },
+];
+
+// 本周统计卡片配置  
+const WEEKLY_STATS_CONFIG = [
+  {
+    key: "thisWeek",
+    title: "本周阅读",
+    colorFrom: "blue-50",
+    colorTo: "blue-100",
+    textColor: "blue-600",
+    valueColor: "blue-900",
+    icon: "📖",
+    getValue: (stats, formatTime) => formatTime(stats.thisWeek?.readingTime || 0),
+  },
+  {
+    key: "today",
+    title: "今日阅读", 
+    colorFrom: "green-50",
+    colorTo: "green-100",
+    textColor: "green-600",
+    valueColor: "green-900",
+    icon: "⏰",
+    getValue: (stats, formatTime) => formatTime(stats.today?.readingTime || 0),
+  },
+  {
+    key: "readWords",
+    title: "阅读进度",
+    colorFrom: "purple-50",
+    colorTo: "purple-100", 
+    textColor: "purple-600",
+    valueColor: "purple-900",
+    icon: "📈",
+    getValue: (stats) => `${((stats.today?.readWords || 0) / 1000).toFixed(1)}k字`,
+  },
+];
+
 export default function ProfileComponent() {
   const userInfo = useSignal(null);
   const userStats = useSignal(null);
@@ -164,113 +270,30 @@ export default function ProfileComponent() {
         {/* 阅读统计概览 */}
         {userStats.value && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">
-                    总阅读时长
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatTime(userStats.value.total?.readingTime || 0)}
-                  </p>
+            {STATS_CARDS_CONFIG.map((card) => (
+              <div key={card.key} className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
+                <div className="flex items-center">
+                  <div className={`p-3 ${card.bgColor} rounded-lg`}>
+                    <svg
+                      className={`w-6 h-6 ${card.iconColor}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      {card.icon}
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      {card.title}
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {card.getValue(userStats.value)}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">阅读书籍</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {userStats.value.total?.booksCount || 0}本
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">阅读字数</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {((userStats.value.total?.readWords || 0) / 10000).toFixed(
-                      1,
-                    )}万字
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-orange-100 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-orange-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">连续阅读</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {userStats.value.total?.daysCount || 0}天
-                  </p>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         )}
 
@@ -278,12 +301,7 @@ export default function ProfileComponent() {
         <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 mb-6">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
-              {[
-                { key: "overview", label: "概览", icon: "📊" },
-                { key: "achievements", label: "成就", icon: "🏆" },
-                { key: "goals", label: "目标", icon: "🎯" },
-                { key: "settings", label: "设置", icon: "⚙️" },
-              ].map((tab) => (
+              {PROFILE_TABS.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => activeTab.value = tab.key}
@@ -309,50 +327,21 @@ export default function ProfileComponent() {
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-blue-600 text-sm font-medium">
-                          本周阅读
-                        </p>
-                        <p className="text-2xl font-bold text-blue-900">
-                          {formatTime(
-                            userStats.value.thisWeek?.readingTime || 0,
-                          )}
-                        </p>
+                  {WEEKLY_STATS_CONFIG.map((stat) => (
+                    <div key={stat.key} className={`bg-gradient-to-r from-${stat.colorFrom} to-${stat.colorTo} rounded-lg p-4`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className={`${stat.textColor} text-sm font-medium`}>
+                            {stat.title}
+                          </p>
+                          <p className={`text-2xl font-bold ${stat.valueColor}`}>
+                            {stat.getValue(userStats.value, formatTime)}
+                          </p>
+                        </div>
+                        <div className="text-3xl">{stat.icon}</div>
                       </div>
-                      <div className="text-3xl">📖</div>
                     </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-green-600 text-sm font-medium">
-                          今日阅读
-                        </p>
-                        <p className="text-2xl font-bold text-green-900">
-                          {formatTime(userStats.value.today?.readingTime || 0)}
-                        </p>
-                      </div>
-                      <div className="text-3xl">⏰</div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-purple-600 text-sm font-medium">
-                          阅读进度
-                        </p>
-                        <p className="text-2xl font-bold text-purple-900">
-                          {((userStats.value.today?.readWords || 0) / 1000)
-                            .toFixed(1)}k字
-                        </p>
-                      </div>
-                      <div className="text-3xl">📈</div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}

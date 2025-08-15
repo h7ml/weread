@@ -1,6 +1,66 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 
+// Tab配置
+const TABS_CONFIG = [
+  { key: "notes", label: "笔记", icon: "📝" },
+  { key: "bookmarks", label: "书签", icon: "🔖" },
+  { key: "reviews", label: "书评", icon: "✍️" },
+];
+
+// 笔记类型配置
+const NOTE_TYPE_OPTIONS = [
+  { value: "all", label: "全部类型" },
+  { value: "underline", label: "划线", typeValue: "1" },
+  { value: "thought", label: "想法", typeValue: "2" },
+  { value: "bookmark", label: "书签", typeValue: "3" },
+];
+
+// 笔记类型图标映射
+const NOTE_TYPE_ICONS = {
+  1: "🖍️", // 划线
+  2: "💭", // 想法
+  3: "🔖", // 书签
+  default: "📝",
+};
+
+// 颜色样式配置
+const COLOR_STYLES = [
+  "border-l-yellow-400 bg-yellow-50",
+  "border-l-green-400 bg-green-50",
+  "border-l-blue-400 bg-blue-50",
+  "border-l-purple-400 bg-purple-50",
+  "border-l-pink-400 bg-pink-50",
+  "border-l-red-400 bg-red-50",
+  "border-l-indigo-400 bg-indigo-50",
+  "border-l-gray-400 bg-gray-50",
+];
+
+// 导航链接配置
+const NAV_LINKS = [
+  { href: "/shelf", label: "我的书架" },
+  { href: "/dashboard", label: "阅读统计" },
+];
+
+// 空状态配置
+const EMPTY_STATES = {
+  notes: {
+    icon: "📝",
+    title: "暂无笔记",
+    description: "开始阅读并做笔记吧！",
+  },
+  bookmarks: {
+    icon: "🔖", 
+    title: "暂无书签",
+    description: "在阅读时添加书签标记重要位置！",
+  },
+  reviews: {
+    icon: "✍️",
+    title: "暂无书评", 
+    description: "读完书籍后写下你的感受吧！",
+  },
+};
+
 export default function NotesComponent() {
   const notes = useSignal([]);
   const bookmarks = useSignal([]);
@@ -41,8 +101,10 @@ export default function NotesComponent() {
         });
 
         if (selectedNoteType.value !== "all") {
-          const typeMap = { underline: "1", thought: "2", bookmark: "3" };
-          params.append("noteType", typeMap[selectedNoteType.value]);
+          const noteTypeOption = NOTE_TYPE_OPTIONS.find(opt => opt.value === selectedNoteType.value);
+          if (noteTypeOption?.typeValue) {
+            params.append("noteType", noteTypeOption.typeValue);
+          }
         }
 
         if (selectedBook.value) {
@@ -170,34 +232,29 @@ export default function NotesComponent() {
   };
 
   const getNoteTypeIcon = (noteType) => {
-    switch (noteType) {
-      case 1:
-        return "🖍️"; // 划线
-      case 2:
-        return "💭"; // 想法
-      case 3:
-        return "🔖"; // 书签
-      default:
-        return "📝";
-    }
+    return NOTE_TYPE_ICONS[noteType] || NOTE_TYPE_ICONS.default;
   };
 
   const getColorStyleClass = (colorStyle) => {
-    const colors = [
-      "border-l-yellow-400 bg-yellow-50",
-      "border-l-green-400 bg-green-50",
-      "border-l-blue-400 bg-blue-50",
-      "border-l-purple-400 bg-purple-50",
-      "border-l-pink-400 bg-pink-50",
-      "border-l-red-400 bg-red-50",
-      "border-l-indigo-400 bg-indigo-50",
-      "border-l-gray-400 bg-gray-50",
-    ];
-    return colors[colorStyle] || colors[0];
+    return COLOR_STYLES[colorStyle] || COLOR_STYLES[0];
   };
 
   const loadMore = () => {
     currentPage.value += 1;
+  };
+
+  // 渲染空状态的辅助函数
+  const renderEmptyState = (tabKey: string) => {
+    const emptyState = EMPTY_STATES[tabKey];
+    if (!emptyState) return null;
+    
+    return (
+      <div className="text-center py-12">
+        <div className="text-6xl mb-4">{emptyState.icon}</div>
+        <p className="text-gray-500">{emptyState.title}</p>
+        <p className="text-sm text-gray-400 mt-2">{emptyState.description}</p>
+      </div>
+    );
   };
 
   if (loading.value && currentPage.value === 1) {
@@ -225,15 +282,11 @@ export default function NotesComponent() {
               <h1 className="text-xl font-bold text-gray-900">笔记管理</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <a href="/shelf" className="text-gray-600 hover:text-gray-900">
-                我的书架
-              </a>
-              <a
-                href="/dashboard"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                阅读统计
-              </a>
+              {NAV_LINKS.map((link) => (
+                <a key={link.href} href={link.href} className="text-gray-600 hover:text-gray-900">
+                  {link.label}
+                </a>
+              ))}
             </div>
           </div>
         </div>
@@ -273,10 +326,11 @@ export default function NotesComponent() {
                 }}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="all">全部类型</option>
-                <option value="underline">划线</option>
-                <option value="thought">想法</option>
-                <option value="bookmark">书签</option>
+                {NOTE_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -286,11 +340,7 @@ export default function NotesComponent() {
         <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 mb-6">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
-              {[
-                { key: "notes", label: "笔记", icon: "📝" },
-                { key: "bookmarks", label: "书签", icon: "🔖" },
-                { key: "reviews", label: "书评", icon: "✍️" },
-              ].map((tab) => (
+              {TABS_CONFIG.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => {
@@ -406,15 +456,7 @@ export default function NotesComponent() {
                       )}
                     </>
                   )
-                  : (
-                    <div className="text-center py-12">
-                      <div className="text-6xl mb-4">📝</div>
-                      <p className="text-gray-500">暂无笔记</p>
-                      <p className="text-sm text-gray-400 mt-2">
-                        开始阅读并做笔记吧！
-                      </p>
-                    </div>
-                  )}
+                  : renderEmptyState("notes")}
               </div>
             )}
 
@@ -465,15 +507,7 @@ export default function NotesComponent() {
                       </div>
                     ))
                   )
-                  : (
-                    <div className="text-center py-12">
-                      <div className="text-6xl mb-4">🔖</div>
-                      <p className="text-gray-500">暂无书签</p>
-                      <p className="text-sm text-gray-400 mt-2">
-                        在阅读时添加书签标记重要位置！
-                      </p>
-                    </div>
-                  )}
+                  : renderEmptyState("bookmarks")}
               </div>
             )}
 
@@ -548,15 +582,7 @@ export default function NotesComponent() {
                       )}
                     </>
                   )
-                  : (
-                    <div className="text-center py-12">
-                      <div className="text-6xl mb-4">✍️</div>
-                      <p className="text-gray-500">暂无书评</p>
-                      <p className="text-sm text-gray-400 mt-2">
-                        读完书籍后写下你的感受吧！
-                      </p>
-                    </div>
-                  )}
+                  : renderEmptyState("reviews")}
               </div>
             )}
           </div>

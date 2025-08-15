@@ -1,6 +1,93 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 
+// 工具函数
+const formatTime = (minutes) => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (hours > 0) {
+    return `${hours}小时${mins}分钟`;
+  }
+  return `${mins}分钟`;
+};
+
+// 统计卡片配置
+const STATS_CARDS_CONFIG = [
+  {
+    key: "totalReadingTime",
+    title: "总阅读时长",
+    colorFrom: "blue-400",
+    colorTo: "blue-600",
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    ),
+    valueFormat: (stats) => ({
+      main: formatTime(stats.totalReadingTime || 0),
+      sub: `平均 ${formatTime((stats.totalReadingTime || 0) / Math.max(stats.totalBooks || 1, 1))} / 本`,
+    }),
+  },
+  {
+    key: "totalBooks",
+    title: "阅读书籍",
+    colorFrom: "green-400",
+    colorTo: "green-600",
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+      />
+    ),
+    valueFormat: (stats) => ({
+      main: `${stats.totalBooks || 0}`,
+      sub: `完成 ${stats.finishedBooks || 0} 本`,
+    }),
+  },
+  {
+    key: "totalNotes",
+    title: "笔记数量",
+    colorFrom: "purple-400",
+    colorTo: "purple-600",
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    ),
+    valueFormat: (stats) => ({
+      main: `${stats.totalNotes || 0}`,
+      sub: `书签 ${stats.totalBookmarks || 0} 个`,
+    }),
+  },
+  {
+    key: "currentStreak",
+    title: "连续阅读",
+    colorFrom: "orange-400",
+    colorTo: "orange-600",
+    icon: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
+      />
+    ),
+    valueFormat: (stats) => ({
+      main: `${stats.currentStreak || 0}天`,
+      sub: `最长 ${stats.longestStreak || 0} 天`,
+    }),
+  },
+];
+
 export default function DashboardComponent() {
   const overallStats = useSignal(null);
   const readingTrend = useSignal([]);
@@ -62,7 +149,7 @@ export default function DashboardComponent() {
 
       if (booksRes.ok) {
         const data = await booksRes.json();
-        bookStats.value = data.data?.books || [];
+        bookStats.value = data.data || [];
       }
     } catch (err) {
       console.error("Failed to load dashboard data:", err);
@@ -72,108 +159,81 @@ export default function DashboardComponent() {
     }
   };
 
-  const formatTime = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-
-    if (hours > 0) {
-      return `${hours}小时${mins}分钟`;
-    }
-    return `${mins}分钟`;
-  };
-
-  const getHeatmapColor = (level) => {
-    const colors = [
-      "bg-gray-100",
-      "bg-green-200",
-      "bg-green-300",
-      "bg-green-400",
-      "bg-green-500",
-    ];
-    return colors[level] || colors[0];
-  };
-
-  const generateHeatmapGrid = () => {
-    if (!heatmapData.value?.data) return [];
-
-    const year = selectedYear.value;
+  const generateDaysInYear = (year) => {
+    const days = [];
     const startDate = new Date(year, 0, 1);
     const endDate = new Date(year, 11, 31);
-    const grid = [];
 
-    const dataMap = new Map();
-    heatmapData.value.data.forEach((item) => {
-      dataMap.set(item.date, item);
-    });
-
-    for (
-      let d = new Date(startDate);
-      d <= endDate;
-      d.setDate(d.getDate() + 1)
-    ) {
-      const dateStr = d.toISOString().split("T")[0];
-      const data = dataMap.get(dateStr);
-      grid.push({
-        date: dateStr,
-        level: data?.level || 0,
-        count: data?.count || 0,
-      });
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      days.push(new Date(d));
     }
+    return days;
+  };
 
-    return grid;
+  const getHeatmapIntensity = (date) => {
+    if (!heatmapData.value || !heatmapData.value.dailyData) return 0;
+
+    const dateString = date.toISOString().split("T")[0];
+    const dayData = heatmapData.value.dailyData[dateString];
+
+    if (!dayData || !dayData.readingTime) return 0;
+
+    // 根据阅读时长计算强度等级 (0-4)
+    if (dayData.readingTime >= 120) return 4; // 2小时以上
+    if (dayData.readingTime >= 60) return 3; // 1-2小时
+    if (dayData.readingTime >= 30) return 2; // 30分钟-1小时
+    if (dayData.readingTime >= 10) return 1; // 10-30分钟
+    return 0;
   };
 
   if (loading.value) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-12 w-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4">
           </div>
-          <p className="text-gray-600">正在生成统计报告...</p>
+          <p className="text-gray-600">加载统计数据中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error.value) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <p className="text-gray-600 mb-4">{error.value}</p>
+          <button
+            onClick={loadDashboardData}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+          >
+            重试
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100">
       {/* 顶部导航 */}
       <nav className="bg-white/80 backdrop-blur-lg shadow-sm border-b border-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <a
-                href="/"
-                className="text-purple-600 hover:text-purple-800 mr-6"
-              >
+              <a href="/" className="text-purple-600 hover:text-purple-800 mr-6">
                 ← 返回首页
               </a>
               <h1 className="text-xl font-bold text-gray-900">阅读统计</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <select
-                value={selectedPeriod.value}
-                onChange={(e) => selectedPeriod.value = e.currentTarget.value}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="week">本周</option>
-                <option value="month">本月</option>
-                <option value="quarter">本季度</option>
-                <option value="year">本年</option>
-              </select>
-              <select
-                value={selectedYear.value}
-                onChange={(e) =>
-                  selectedYear.value = parseInt(e.currentTarget.value)}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm"
-              >
-                {Array.from(
-                  { length: 5 },
-                  (_, i) => new Date().getFullYear() - i,
-                ).map((year) => (
-                  <option key={year} value={year}>{year}年</option>
-                ))}
-              </select>
+              <a href="/shelf" className="text-gray-600 hover:text-gray-900">
+                我的书架
+              </a>
+              <a href="/notes" className="text-gray-600 hover:text-gray-900">
+                我的笔记
+              </a>
             </div>
           </div>
         </div>
@@ -183,126 +243,36 @@ export default function DashboardComponent() {
         {/* 总体统计卡片 */}
         {overallStats.value && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+            {STATS_CARDS_CONFIG.map((card) => {
+              const values = card.valueFormat(overallStats.value);
+              return (
+                <div key={card.key} className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
+                  <div className="flex items-center">
+                    <div className={`p-3 bg-gradient-to-r from-${card.colorFrom} to-${card.colorTo} rounded-lg`}>
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        {card.icon}
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-500">
+                        {card.title}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {values.main}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {values.sub}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">
-                    总阅读时长
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatTime(overallStats.value.totalReadingTime || 0)}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    平均 {formatTime(
-                      (overallStats.value.totalReadingTime || 0) /
-                        Math.max(overallStats.value.totalBooks || 1, 1),
-                    )} / 本
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-gradient-to-r from-green-400 to-green-600 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">阅读书籍</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {overallStats.value.totalBooks || 0}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    完成 {overallStats.value.finishedBooks || 0} 本
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-gradient-to-r from-purple-400 to-purple-600 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">笔记数量</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {overallStats.value.totalNotes || 0}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    书签 {overallStats.value.totalBookmarks || 0} 个
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-gradient-to-r from-orange-400 to-orange-600 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">连续阅读</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {overallStats.value.currentStreak || 0}天
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    最长 {overallStats.value.longestStreak || 0} 天
-                  </p>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         )}
 
@@ -333,11 +303,8 @@ export default function DashboardComponent() {
                           : 0;
 
                         return (
-                          <div
-                            key={index}
-                            className="flex items-center space-x-4"
-                          >
-                            <div className="w-16 text-sm text-gray-600">
+                          <div key={index} className="flex items-center space-x-4">
+                            <div className="w-20 text-sm text-gray-600">
                               {new Date(day.date).toLocaleDateString("zh-CN", {
                                 month: "short",
                                 day: "numeric",
@@ -345,11 +312,11 @@ export default function DashboardComponent() {
                             </div>
                             <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
                               <div
-                                className="bg-gradient-to-r from-purple-400 to-purple-600 h-4 rounded-full transition-all duration-300"
+                                className="bg-gradient-to-r from-purple-400 to-blue-500 h-4 rounded-full transition-all duration-300"
                                 style={{ width: `${percentage}%` }}
                               />
-                              <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">
-                                {day.readingTime}分钟
+                              <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-700">
+                                {formatTime(day.readingTime)}
                               </span>
                             </div>
                           </div>
@@ -371,37 +338,71 @@ export default function DashboardComponent() {
                 <h3 className="text-lg font-semibold text-gray-900">
                   阅读热力图
                 </h3>
-                <div className="flex items-center space-x-2 text-xs text-gray-500">
-                  <span>少</span>
-                  <div className="flex space-x-1">
-                    {[0, 1, 2, 3, 4].map((level) => (
-                      <div
-                        key={level}
-                        className={`w-3 h-3 rounded-sm ${
-                          getHeatmapColor(level)
-                        }`}
-                      />
-                    ))}
+                <select
+                  value={selectedYear.value}
+                  onChange={(e) =>
+                    selectedYear.value = parseInt(e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+                >
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {heatmapData.value
+                ? (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-53 gap-1">
+                      {generateDaysInYear(selectedYear.value).map((date, index) => {
+                        const intensity = getHeatmapIntensity(date);
+                        const intensityColors = [
+                          "bg-gray-100", // 0
+                          "bg-green-200", // 1
+                          "bg-green-300", // 2
+                          "bg-green-500", // 3
+                          "bg-green-700", // 4
+                        ];
+
+                        return (
+                          <div
+                            key={index}
+                            className={`w-2 h-2 rounded-sm ${
+                              intensityColors[intensity]
+                            }`}
+                            title={`${date.toLocaleDateString()}: ${
+                              heatmapData.value.dailyData?.[
+                                date.toISOString().split("T")[0]
+                              ]?.readingTime || 0
+                            }分钟`}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-4">
+                      <span>少</span>
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-100 rounded-sm" />
+                        <div className="w-2 h-2 bg-green-200 rounded-sm" />
+                        <div className="w-2 h-2 bg-green-300 rounded-sm" />
+                        <div className="w-2 h-2 bg-green-500 rounded-sm" />
+                        <div className="w-2 h-2 bg-green-700 rounded-sm" />
+                      </div>
+                      <span>多</span>
+                    </div>
                   </div>
-                  <span>多</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-53 gap-1">
-                {generateHeatmapGrid().map((day, index) => (
-                  <div
-                    key={index}
-                    className={`w-3 h-3 rounded-sm ${
-                      getHeatmapColor(day.level)
-                    } hover:ring-2 hover:ring-purple-300 cursor-pointer transition-all`}
-                    title={`${day.date}: ${day.count}分钟`}
-                  />
-                ))}
-              </div>
-
-              <div className="mt-4 text-xs text-gray-500 text-center">
-                {selectedYear.value}年阅读活动
-              </div>
+                )
+                : (
+                  <div className="text-center py-8 text-gray-500">
+                    暂无热力图数据
+                  </div>
+                )}
             </div>
           </div>
 
@@ -415,29 +416,36 @@ export default function DashboardComponent() {
 
               {categoryStats.value.length > 0
                 ? (
-                  <div className="space-y-4">
-                    {categoryStats.value.slice(0, 5).map((category, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-700">
-                            {category.categoryName}
+                  <div className="space-y-3">
+                    {categoryStats.value.slice(0, 8).map((category, index) => {
+                      const colors = [
+                        "bg-blue-500",
+                        "bg-green-500",
+                        "bg-purple-500",
+                        "bg-yellow-500",
+                        "bg-red-500",
+                        "bg-indigo-500",
+                        "bg-pink-500",
+                        "bg-gray-500",
+                      ];
+                      return (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                colors[index % colors.length]
+                              }`}
+                            />
+                            <span className="text-sm text-gray-700">
+                              {category.category}
+                            </span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900">
+                            {category.count}本
                           </span>
-                          <span className="text-sm text-gray-500">
-                            {category.bookCount}本
-                          </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-pink-400 to-purple-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${category.percentage}%` }}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>{formatTime(category.totalReadingTime)}</span>
-                          <span>{category.percentage.toFixed(1)}%</span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )
                 : (
@@ -450,45 +458,34 @@ export default function DashboardComponent() {
             {/* 热门书籍 */}
             <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                最爱书籍
+                阅读最多的书籍
               </h3>
 
               {bookStats.value.length > 0
                 ? (
                   <div className="space-y-4">
                     {bookStats.value.slice(0, 5).map((book, index) => (
-                      <div
-                        key={book.bookId}
-                        className="flex items-center space-x-3"
-                      >
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                            index === 0
-                              ? "bg-yellow-500"
-                              : index === 1
-                              ? "bg-gray-400"
-                              : index === 2
-                              ? "bg-orange-400"
-                              : "bg-gray-300"
-                          }`}
-                        >
-                          {index + 1}
+                      <div key={index} className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <img
+                            src={book.cover}
+                            alt={book.title}
+                            className="w-12 h-16 object-cover rounded"
+                            onError={(e) => {
+                              e.target.src =
+                                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA0OCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNiAyNEgzMlY0MEgxNlYyNFoiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg==";
+                            }}
+                          />
                         </div>
-                        <img
-                          src={book.cover}
-                          alt={book.title}
-                          className="w-10 h-12 object-cover rounded shadow-sm"
-                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
                             {book.title}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-sm text-gray-500 truncate">
                             {book.author}
                           </p>
-                          <p className="text-xs text-purple-600">
-                            {formatTime(book.totalReadingTime)} •{" "}
-                            {Math.round(book.readProgress)}%
+                          <p className="text-xs text-gray-400">
+                            阅读 {formatTime(book.readingTime || 0)}
                           </p>
                         </div>
                       </div>
@@ -500,31 +497,6 @@ export default function DashboardComponent() {
                     暂无书籍数据
                   </div>
                 )}
-            </div>
-
-            {/* 快速操作 */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                快速操作
-              </h3>
-
-              <div className="space-y-3">
-                <a
-                  href="/notes"
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center"
-                >
-                  📝 查看笔记
-                </a>
-                <a
-                  href="/profile"
-                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center justify-center"
-                >
-                  👤 个人资料
-                </a>
-                <button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-2 px-4 rounded-lg text-sm font-medium hover:from-green-600 hover:to-emerald-600 transition-all flex items-center justify-center">
-                  📊 导出报告
-                </button>
-              </div>
             </div>
           </div>
         </div>
