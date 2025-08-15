@@ -4,15 +4,21 @@ import { useEffect } from "preact/hooks";
 export default function SearchComponent() {
   const searchQuery = useSignal("");
   const searchResults = useSignal([]);
+  const suggestions = useSignal([]);
   const loading = useSignal(false);
+  const loadingMore = useSignal(false);
   const error = useSignal("");
   const searchHistory = useSignal([]);
   const showHistory = useSignal(true);
+  const viewMode = useSignal("grid"); // "grid" 或 "list"
+  const hasMore = useSignal(false);
+  const maxIdx = useSignal(0);
+  const totalCount = useSignal(0);
 
   // 热门搜索关键词
   const hotKeywords = [
     "人工智能",
-    "心理学",
+    "心理学", 
     "历史",
     "小说",
     "编程",
@@ -24,27 +30,46 @@ export default function SearchComponent() {
   ];
 
   useEffect(() => {
-    // 从 localStorage 加载搜索历史
-    const saved = localStorage.getItem("weread_search_history");
-    if (saved) {
+    // 从 localStorage 加载搜索历史和视图模式
+    const savedHistory = localStorage.getItem("weread_search_history");
+    const savedViewMode = localStorage.getItem("weread_search_view_mode");
+    
+    if (savedHistory) {
       try {
-        searchHistory.value = JSON.parse(saved);
+        searchHistory.value = JSON.parse(savedHistory);
       } catch (e) {
         console.error("Failed to parse search history:", e);
       }
     }
+    
+    if (savedViewMode && (savedViewMode === "grid" || savedViewMode === "list")) {
+      viewMode.value = savedViewMode;
+    }
+
+    // 添加滚动监听
+    const handleScroll = () => {
+      if (loadingMore.value || !hasMore.value) return;
+      
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      if (scrollTop + windowHeight >= documentHeight - 200) {
+        loadMoreResults();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const saveSearchHistory = (keyword: string) => {
     const history = [...searchHistory.value];
-    // 移除重复的关键词
     const index = history.indexOf(keyword);
     if (index > -1) {
       history.splice(index, 1);
     }
-    // 添加到开头
     history.unshift(keyword);
-    // 限制历史记录数量
     if (history.length > 10) {
       history.splice(10);
     }
@@ -53,47 +78,89 @@ export default function SearchComponent() {
     localStorage.setItem("weread_search_history", JSON.stringify(history));
   };
 
+  const toggleViewMode = () => {
+    viewMode.value = viewMode.value === "grid" ? "list" : "grid";
+    localStorage.setItem("weread_search_view_mode", viewMode.value);
+  };
+
   const clearSearchHistory = () => {
     searchHistory.value = [];
     localStorage.removeItem("weread_search_history");
   };
 
-  const performSearch = async (keyword: string = searchQuery.value) => {
+  const performSearch = async (keyword: string = searchQuery.value, isLoadMore = false) => {
     if (!keyword.trim()) {
       error.value = "请输入搜索关键词";
       return;
     }
 
     try {
-      loading.value = true;
-      error.value = "";
-      showHistory.value = false;
+      if (isLoadMore) {
+        loadingMore.value = true;
+      } else {
+        loading.value = true;
+        error.value = "";
+        showHistory.value = false;
+        maxIdx.value = 0;
+        searchResults.value = [];
+        suggestions.value = [];
+      }
 
       const params = new URLSearchParams({
         q: keyword.trim(),
-        count: "50",
+        type: "mixed",
+        count: "15",
+        maxIdx: maxIdx.value.toString(),
       });
 
       const response = await fetch(`/api/search?${params}`);
       const data = await response.json();
 
       if (data.success) {
-        searchResults.value = data.data.books || [];
-        saveSearchHistory(keyword.trim());
+        const newBooks = data.data.books || [];
+        const newSuggestions = data.data.suggestions || [];
+        
+        if (isLoadMore) {
+          searchResults.value = [...searchResults.value, ...newBooks];
+        } else {
+          searchResults.value = newBooks;
+          suggestions.value = newSuggestions;
+          saveSearchHistory(keyword.trim());
+        }
 
-        if (searchResults.value.length === 0) {
+        totalCount.value = data.data.total || 0;
+        hasMore.value = data.data.hasMore || false;
+        maxIdx.value += newBooks.length;
+
+        if (!isLoadMore && searchResults.value.length === 0) {
           error.value = "没有找到相关书籍，试试其他关键词";
         }
       } else {
         error.value = data.error || "搜索失败";
-        searchResults.value = [];
+        if (!isLoadMore) {
+          searchResults.value = [];
+          suggestions.value = [];
+        }
       }
     } catch (err) {
       console.error("Search error:", err);
       error.value = `搜索失败: ${err.message}`;
-      searchResults.value = [];
+      if (!isLoadMore) {
+        searchResults.value = [];
+        suggestions.value = [];
+      }
     } finally {
-      loading.value = false;
+      if (isLoadMore) {
+        loadingMore.value = false;
+      } else {
+        loading.value = false;
+      }
+    }
+  };
+
+  const loadMoreResults = () => {
+    if (searchQuery.value.trim() && hasMore.value && !loadingMore.value) {
+      performSearch(searchQuery.value, true);
     }
   };
 
@@ -101,13 +168,140 @@ export default function SearchComponent() {
     performSearch();
   };
 
-  const selectKeyword = (keyword: string) => {
+  const handleKeywordClick = (keyword: string) => {
     searchQuery.value = keyword;
     performSearch(keyword);
   };
 
-  const openBookDetail = (bookId: string) => {
-    globalThis.location.href = `/book/${bookId}`;
+  const resetSearch = () => {
+    searchQuery.value = "";
+    searchResults.value = [];
+    suggestions.value = [];
+    error.value = "";
+    showHistory.value = true;
+    hasMore.value = false;
+    maxIdx.value = 0;
+    totalCount.value = 0;
+  };
+
+  const renderBookCard = (book: any, index: number) => {
+    const isGridMode = viewMode.value === "grid";
+    
+    if (isGridMode) {
+      // 网格模式
+      return (
+        <div
+          key={`${book.bookId}-${index}`}
+          className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+        >
+          <div className="relative">
+            <img
+              src={book.cover}
+              alt={book.title}
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+            {book.rating > 0 && (
+              <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                ⭐ {book.rating.toFixed(1)}
+              </div>
+            )}
+          </div>
+          <div className="p-4">
+            <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+              {book.title}
+            </h3>
+            <p className="text-gray-600 text-sm mb-2">{book.author}</p>
+            {book.intro && (
+              <p className="text-gray-500 text-xs line-clamp-2 mb-3">{book.intro}</p>
+            )}
+            {book.fragments && book.fragments.length > 0 && (
+              <div className="mb-3">
+                <div className="text-xs text-gray-400 mb-1">内容片段:</div>
+                {book.fragments.slice(0, 1).map((fragment: any, fragIndex: number) => (
+                  <div key={fragIndex} className="bg-gray-50 p-2 rounded text-xs">
+                    <div className="text-gray-500 mb-1">{fragment.chapterTitle}</div>
+                    <div className="text-gray-700 line-clamp-2">{fragment.text}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <a
+                href={`/book/${book.bookId}`}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+              >
+                查看详情
+              </a>
+              <a
+                href={`/reader/${book.bookId}/1`}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+              >
+                开始阅读
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      // 列表模式
+      return (
+        <div
+          key={`${book.bookId}-${index}`}
+          className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-4 flex gap-4"
+        >
+          <div className="flex-shrink-0">
+            <img
+              src={book.cover}
+              alt={book.title}
+              className="w-20 h-28 object-cover rounded-lg"
+              loading="lazy"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="font-bold text-gray-900 text-lg line-clamp-2 hover:text-blue-600 transition-colors">
+                {book.title}
+              </h3>
+              {book.rating > 0 && (
+                <div className="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium ml-2">
+                  ⭐ {book.rating.toFixed(1)}
+                </div>
+              )}
+            </div>
+            <p className="text-gray-600 mb-2">{book.author}</p>
+            {book.intro && (
+              <p className="text-gray-500 text-sm line-clamp-2 mb-3">{book.intro}</p>
+            )}
+            {book.fragments && book.fragments.length > 0 && (
+              <div className="mb-3">
+                <div className="text-xs text-gray-400 mb-2">相关内容:</div>
+                {book.fragments.map((fragment: any, fragIndex: number) => (
+                  <div key={fragIndex} className="bg-gray-50 p-3 rounded mb-2">
+                    <div className="text-gray-500 text-xs mb-1">{fragment.chapterTitle}</div>
+                    <div className="text-gray-700 text-sm line-clamp-3">{fragment.text}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <a
+                href={`/book/${book.bookId}`}
+                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+              >
+                查看详情
+              </a>
+              <a
+                href={`/reader/${book.bookId}/1`}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+              >
+                开始阅读
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    }
   };
 
   return (
@@ -119,18 +313,8 @@ export default function SearchComponent() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -139,174 +323,149 @@ export default function SearchComponent() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <a
-                href="/"
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-              >
-                首页
-              </a>
-              <a
-                href="/shelf"
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-              >
-                书架
-              </a>
+              <a href="/" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">首页</a>
+              <a href="/shelf" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">我的书架</a>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* 主要内容 */}
-      <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* 搜索区域 */}
-        <div className="text-center mb-12">
-          <div className="mb-8">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-              发现你的
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                下一本好书
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              搜索海量书籍，找到最适合你的阅读内容
-            </p>
+        <div className="mb-8">
+          <div className="max-w-3xl mx-auto">
+            <div className="relative flex items-center bg-white rounded-full shadow-lg border border-gray-200 hover:shadow-xl focus-within:shadow-xl transition-all duration-300">
+              {/* 搜索图标 */}
+              <div className="pl-6 pr-3">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              
+              {/* 输入框 */}
+              <input
+                type="text"
+                value={searchQuery.value}
+                onInput={(e) => searchQuery.value = (e.target as HTMLInputElement).value}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="搜索书名、作者或关键词..."
+                className="flex-1 py-4 text-lg bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500"
+              />
+              
+              {/* 清除按钮 */}
+              {searchQuery.value && (
+                <button
+                  onClick={resetSearch}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
+                  title="清空"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              
+              {/* 分割线 */}
+              <div className="h-8 w-px bg-gray-200 mx-3"></div>
+              
+              {/* 搜索按钮 */}
+              <button
+                onClick={handleSearch}
+                disabled={loading.value || !searchQuery.value.trim()}
+                className="mr-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium rounded-full transition-all duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed flex items-center"
+              >
+                {loading.value ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    搜索中
+                  </>
+                ) : (
+                  "搜索"
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* 搜索框 */}
-          <div className="max-w-3xl mx-auto mb-8">
-            <div className="relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000">
-              </div>
-              <div className="relative bg-white/80 backdrop-blur-lg rounded-3xl p-2 shadow-xl border border-white/50">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 pl-6">
-                    <svg
-                      className="h-8 w-8 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+          {/* 搜索建议显示 */}
+          {!showHistory.value && suggestions.value.length > 0 && (
+            <div className="max-w-2xl mx-auto mt-4">
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                  <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  相关推荐
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.value.map((suggestion: any, index: number) => (
+                    <button
+                      key={index}
+                      onClick={() => handleKeywordClick(suggestion.title)}
+                      className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-full text-sm font-medium transition-all hover:scale-105"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    value={searchQuery.value}
-                    onInput={(e) => {
-                      searchQuery.value = e.currentTarget.value;
-                      if (!e.currentTarget.value.trim()) {
-                        showHistory.value = true;
-                        searchResults.value = [];
-                        error.value = "";
-                      }
-                    }}
-                    onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                    placeholder="搜索书名、作者或关键词..."
-                    className="flex-1 px-6 py-4 text-lg bg-transparent border-0 focus:outline-none focus:ring-0 placeholder-gray-400"
-                  />
-                  <button
-                    onClick={handleSearch}
-                    disabled={loading.value}
-                    className="flex-shrink-0 mr-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading.value
-                      ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full">
-                          </div>
-                          <span>搜索中</span>
-                        </div>
-                      )
-                      : (
-                        "搜索"
-                      )}
-                  </button>
+                      {suggestion.title}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* 搜索历史和热门推荐 */}
         {showHistory.value && (
-          <div className="mb-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* 搜索历史 */}
-              {searchHistory.value.length > 0 && (
-                <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-white/50">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900 flex items-center">
-                      <svg
-                        className="w-6 h-6 mr-3 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
+          <div className="max-w-4xl mx-auto">
+            {/* 搜索历史 */}
+            {searchHistory.value.length > 0 && (
+              <div className="mb-8">
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       搜索历史
-                    </h3>
+                    </h2>
                     <button
                       onClick={clearSearchHistory}
-                      className="text-sm text-red-500 hover:text-red-700 px-3 py-1 rounded-lg hover:bg-red-50 transition-colors"
+                      className="text-gray-400 hover:text-gray-600 text-sm hover:bg-gray-50 px-2 py-1 rounded-md transition-all"
                     >
-                      清除
+                      清空历史
                     </button>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    {searchHistory.value.slice(0, 8).map((keyword, index) => (
+                  <div className="flex flex-wrap gap-2">
+                    {searchHistory.value.map((keyword: string, index: number) => (
                       <button
                         key={index}
-                        onClick={() => selectKeyword(keyword)}
-                        className="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-blue-100 hover:to-purple-100 text-gray-700 hover:text-blue-700 rounded-2xl text-sm font-medium transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
+                        onClick={() => handleKeywordClick(keyword)}
+                        className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-full text-sm font-medium transition-all hover:scale-105"
                       >
                         {keyword}
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* 热门搜索 */}
-              <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-white/50">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                  <svg
-                    className="w-6 h-6 mr-3 text-orange-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"
-                    />
+            {/* 热门搜索 */}
+            <div className="mb-8">
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <svg className="w-5 h-5 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
                   </svg>
                   热门搜索
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {hotKeywords.map((keyword, index) => (
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {hotKeywords.map((keyword: string, index: number) => (
                     <button
                       key={index}
-                      onClick={() => selectKeyword(keyword)}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 text-blue-700 hover:text-purple-700 rounded-2xl text-sm font-medium transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
+                      onClick={() => handleKeywordClick(keyword)}
+                      className="px-3 py-1.5 bg-gradient-to-r from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 text-orange-700 rounded-full text-sm font-medium transition-all border border-transparent hover:border-orange-200 hover:scale-105"
                     >
                       {keyword}
                     </button>
@@ -317,193 +476,114 @@ export default function SearchComponent() {
           </div>
         )}
 
-        {/* 错误提示 */}
-        {error.value && (
-          <div className="mb-8 max-w-4xl mx-auto">
-            <div className="bg-red-50/80 backdrop-blur-lg border border-red-200/50 text-red-700 px-6 py-4 rounded-2xl shadow-lg">
-              <div className="flex items-center">
-                <svg
-                  className="h-6 w-6 text-red-400 mr-3"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="font-medium">{error.value}</span>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* 搜索结果 */}
-        {!showHistory.value && searchResults.value.length > 0 && (
+        {!showHistory.value && (
           <div>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                搜索结果
-              </h2>
-              <p className="text-gray-600">
-                找到 {searchResults.value.length} 本相关书籍
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-              {searchResults.value.map((book) => (
-                <div
-                  key={book.bookId}
-                  onClick={() => openBookDetail(book.bookId)}
-                  className="group bg-white/80 backdrop-blur-lg rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl transition-all duration-500 cursor-pointer hover:scale-105 overflow-hidden"
-                >
-                  <div className="aspect-w-3 aspect-h-4 relative overflow-hidden">
-                    <img
-                      src={book.cover}
-                      alt={book.title}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDIwMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03MC41IDcwSDEyOS41VjE3MEg3MC41VjcwWiIgZmlsbD0iI0Q1RDVENS8+Cjx0ZXh0IHg9IjEwMCIgeT0iMjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNkI3MjgwIiBmb250LXNpemU9IjE0Ij7ml6DmmYLlsIE+PC90ZXh0Pgo8L3N2Zz4K";
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3
-                      className="font-bold text-sm text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors"
-                      title={book.title}
-                    >
-                      {book.title}
-                    </h3>
-                    <p
-                      className="text-xs text-gray-500 mb-3 line-clamp-1"
-                      title={book.author}
-                    >
-                      {book.author}
-                    </p>
-
-                    {/* 评分和额外信息 */}
-                    {book.rating && (
-                      <div className="flex items-center mb-2">
-                        <div className="flex items-center mr-2">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              className={`w-3 h-3 ${
-                                i < Math.floor(book.rating / 2)
-                                  ? "text-yellow-400"
-                                  : "text-gray-300"
-                              }`}
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          {(book.rating / 100).toFixed(1)}
-                        </span>
-                      </div>
+            {/* 结果头部 - 统计信息和视图切换 */}
+            {(searchResults.value.length > 0 || loading.value) && (
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-4">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    搜索结果
+                    {totalCount.value > 0 && (
+                      <span className="text-gray-500 font-normal ml-2">
+                        共找到 {totalCount.value} 个结果
+                      </span>
                     )}
+                  </h2>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={toggleViewMode}
+                    className={`p-2 rounded-lg transition-colors ${
+                      viewMode.value === "grid"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                    title="网格视图"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={toggleViewMode}
+                    className={`p-2 rounded-lg transition-colors ${
+                      viewMode.value === "list"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                    title="列表视图"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
 
-                    {/* 阅读统计 */}
-                    {book.readingCount && (
-                      <div className="flex items-center mb-2">
-                        <svg
-                          className="w-3 h-3 text-blue-500 mr-1"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path
-                            fillRule="evenodd"
-                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <span className="text-xs text-gray-500">
-                          {book.readingCount}人在读
-                        </span>
-                      </div>
-                    )}
-
-                    {/* 是否在书架 */}
-                    {book.inshelf && (
-                      <div className="flex items-center mb-2">
-                        <svg
-                          className="w-3 h-3 text-green-500 mr-1"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <span className="text-xs text-green-600">已收藏</span>
-                      </div>
-                    )}
-
-                    {/* 价格 */}
-                    {book.price !== undefined && (
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`text-sm font-bold ${
-                            book.price === 0
-                              ? "text-green-600"
-                              : "text-blue-600"
-                          }`}
-                        >
-                          {book.price === 0 ? "免费" : `¥${book.price}`}
-                        </span>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <svg
-                            className="w-4 h-4 text-blue-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    )}
+            {/* 错误提示 */}
+            {error.value && (
+              <div className="max-w-2xl mx-auto mb-8">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-red-700">{error.value}</p>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* 加载状态 */}
+            {loading.value && (
+              <div className="flex justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+                <span className="ml-4 text-gray-600">搜索中...</span>
+              </div>
+            )}
+
+            {/* 搜索结果展示 */}
+            {searchResults.value.length > 0 && (
+              <>
+                <div className={viewMode.value === "grid" 
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
+                  : "space-y-4 mb-8"
+                }>
+                  {searchResults.value.map((book: any, index: number) => renderBookCard(book, index))}
+                </div>
+
+                {/* 加载更多指示器 */}
+                {hasMore.value && (
+                  <div className="flex justify-center py-8">
+                    {loadingMore.value ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                        <span className="text-gray-600">加载更多...</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={loadMoreResults}
+                        className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-3 rounded-xl font-medium transition-colors"
+                      >
+                        点击加载更多
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {!hasMore.value && searchResults.value.length > 10 && (
+                  <div className="text-center py-4">
+                    <p className="text-gray-500">已显示全部 {searchResults.value.length} 个结果</p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </main>
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-          .line-clamp-1 {
-            display: -webkit-box;
-            -webkit-line-clamp: 1;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-          .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-        `,
-        }}
-      />
     </div>
   );
 }

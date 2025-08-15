@@ -15,6 +15,8 @@ export default function LoginComponent() {
   const qrCodeRef = useRef<HTMLDivElement>(null);
   const qrCodeInstance = useRef<any>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const showLargeQR = useSignal(false); // 控制大图二维码显示
+  const largeQRRef = useRef<HTMLDivElement>(null); // 大图二维码容器
 
   // 在组件挂载时加载QRCode库
   useEffect(() => {
@@ -37,6 +39,110 @@ export default function LoginComponent() {
       }
     };
   }, []);
+
+  // 生成大图二维码
+  const generateLargeQRCode = (url: string) => {
+    if (!largeQRRef.current) {
+      return;
+    }
+
+    // 清空之前的二维码
+    largeQRRef.current.innerHTML = "";
+
+    try {
+      if (globalThis.QRCode && largeQRRef.current) {
+        // 生成更大的二维码，使用更小的尺寸以适应容器
+        new globalThis.QRCode(largeQRRef.current, {
+          text: url,
+          width: 280,
+          height: 280,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: globalThis.QRCode?.CorrectLevel?.H || 3, // 使用最高纠错等级
+        });
+
+        // 为大图二维码添加微信长按识别支持
+        setTimeout(() => {
+          const qrImage = largeQRRef.current?.querySelector("img");
+          if (qrImage) {
+            qrImage.setAttribute("data-qr-text", url);
+            qrImage.setAttribute("data-miniprogram-type", "text");
+            qrImage.style.userSelect = "none";
+            qrImage.style.webkitUserSelect = "none";
+            qrImage.style.webkitTouchCallout = "default";
+            qrImage.style.webkitUserDrag = "none";
+            // 确保图片可以长按
+            qrImage.style.pointerEvents = "auto";
+            qrImage.style.touchAction = "manipulation";
+          }
+        }, 100);
+      } else {
+        // 使用备用方案生成大图二维码
+        const img = document.createElement("img");
+        img.src =
+          `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${
+            encodeURIComponent(url)
+          }`;
+        img.alt = "登录二维码（大图）";
+        img.style.width = "280px";
+        img.style.height = "280px";
+        img.style.borderRadius = "8px";
+
+        // 为备用二维码也添加微信支持
+        img.setAttribute("data-qr-text", url);
+        img.setAttribute("data-miniprogram-type", "text");
+        img.style.userSelect = "none";
+        img.style.webkitUserSelect = "none";
+        img.style.webkitTouchCallout = "default";
+        img.style.webkitUserDrag = "none";
+        img.style.pointerEvents = "auto";
+        img.style.touchAction = "manipulation";
+
+        largeQRRef.current.appendChild(img);
+      }
+    } catch (error) {
+      console.error("Error generating large QR code:", error);
+      // 备用方案
+      if (largeQRRef.current) {
+        const img = document.createElement("img");
+        img.src =
+          `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${
+            encodeURIComponent(url)
+          }`;
+        img.alt = "登录二维码（大图）";
+        img.style.width = "280px";
+        img.style.height = "280px";
+        img.style.borderRadius = "8px";
+
+        img.setAttribute("data-qr-text", url);
+        img.setAttribute("data-miniprogram-type", "text");
+        img.style.userSelect = "none";
+        img.style.webkitUserSelect = "none";
+        img.style.webkitTouchCallout = "default";
+        img.style.webkitUserDrag = "none";
+        img.style.pointerEvents = "auto";
+        img.style.touchAction = "manipulation";
+
+        largeQRRef.current.appendChild(img);
+      }
+    }
+  };
+
+  // 显示大图二维码
+  const showLargeQRCode = () => {
+    if (qrCodeUrl.value) {
+      showLargeQR.value = true;
+      // 延迟生成，确保DOM已渲染
+      setTimeout(() => {
+        generateLargeQRCode(qrCodeUrl.value);
+      }, 100);
+    }
+  };
+
+  // 隐藏大图二维码
+  const hideLargeQRCode = () => {
+    showLargeQR.value = false;
+  };
 
   // 生成二维码
   const generateQRCode = (url: string) => {
@@ -420,7 +526,9 @@ export default function LoginComponent() {
 
                     <div
                       ref={qrCodeRef}
-                      className="w-full h-full flex items-center justify-center rounded-2xl"
+                      className="w-full h-full flex items-center justify-center rounded-2xl cursor-pointer"
+                      onDoubleClick={showLargeQRCode}
+                      title="双击查看大图二维码"
                     >
                       <div className="relative">
                         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin">
@@ -455,8 +563,11 @@ export default function LoginComponent() {
                 <h3 className="text-xl font-semibold text-white mb-2">
                   请扫描二维码
                 </h3>
-                <p className="text-blue-100/70 text-sm mb-4">
+                <p className="text-blue-100/70 text-sm mb-2">
                   {statusMessage.value || "打开微信扫一扫，扫描上方二维码"}
+                </p>
+                <p className="text-blue-100/50 text-xs mb-4">
+                  💡 提示：双击二维码可查看大图，长按识别更容易
                 </p>
 
                 {/* 操作按钮组 */}
@@ -592,6 +703,156 @@ export default function LoginComponent() {
           )}
         </div>
       </div>
+
+      {/* 大图二维码模态框 */}
+      {showLargeQR.value && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn"
+          onClick={hideLargeQRCode}
+        >
+          <div
+            className="relative bg-white rounded-3xl p-6 shadow-2xl max-w-md mx-4 animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 关闭按钮 */}
+            <button
+              onClick={hideLargeQRCode}
+              className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl z-10"
+              title="关闭大图"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            {/* 标题 */}
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                微信扫码登录
+              </h3>
+              <p className="text-gray-600 text-sm">大图二维码更便于长按识别</p>
+            </div>
+
+            {/* 大图二维码容器 */}
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                {/* 二维码装饰边框 */}
+                <div className="absolute -inset-2 rounded-2xl border-2 border-blue-200">
+                </div>
+                <div className="absolute -top-2 -left-2 w-6 h-6 border-l-4 border-t-4 border-blue-500 rounded-tl-lg">
+                </div>
+                <div className="absolute -top-2 -right-2 w-6 h-6 border-r-4 border-t-4 border-blue-500 rounded-tr-lg">
+                </div>
+                <div className="absolute -bottom-2 -left-2 w-6 h-6 border-l-4 border-b-4 border-blue-500 rounded-bl-lg">
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-6 h-6 border-r-4 border-b-4 border-blue-500 rounded-br-lg">
+                </div>
+
+                <div
+                  ref={largeQRRef}
+                  className="w-80 h-80 flex items-center justify-center bg-white rounded-xl p-4 shadow-lg border border-gray-200"
+                >
+                  <div className="relative">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin">
+                    </div>
+                    <div className="absolute inset-0 w-12 h-12 border-4 border-purple-300 border-b-transparent rounded-full animate-spin animation-delay-150">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 提示信息 */}
+            <div className="text-center">
+              <div className="bg-blue-50 rounded-xl p-4 mb-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="3"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-blue-800 font-medium text-sm mb-1">
+                      扫码提示
+                    </p>
+                    <p className="text-blue-700 text-xs leading-relaxed">
+                      1. 打开微信，点击右上角 "+" 号<br />
+                      2. 选择 "扫一扫" 功能<br />
+                      3. 对准二维码进行扫描<br />
+                      4. 在微信中确认登录
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 rounded-xl p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-amber-800 font-medium text-sm mb-1">
+                      长按识别
+                    </p>
+                    <p className="text-amber-700 text-xs leading-relaxed">
+                      如果扫码有问题，可以长按二维码选择 "识别图中二维码" 功能
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>
+        {`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out;
+        }
+      `}
+      </style>
     </div>
   );
 }
