@@ -151,6 +151,25 @@ export default function BookDetailComponent() {
     globalThis.location.href = `/reader/${bookInfo.value.bookId}/${chapterUid}`;
   };
 
+  const startReading = () => {
+    // 优先选择第一章阅读
+    if (chapters.value.length > 0) {
+      const firstChapter = chapters.value[0];
+      openReader(firstChapter.chapterUid);
+    } else {
+      // 如果章节还没加载，先加载章节
+      const token = localStorage.getItem("weread_token");
+      if (token && bookInfo.value) {
+        loadChapters(token, bookInfo.value.bookId).then(() => {
+          if (chapters.value.length > 0) {
+            const firstChapter = chapters.value[0];
+            openReader(firstChapter.chapterUid);
+          }
+        });
+      }
+    }
+  };
+
   const downloadChapter = async (chapter) => {
     try {
       const token = localStorage.getItem("weread_token");
@@ -243,21 +262,12 @@ export default function BookDetailComponent() {
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        // 降级到剪贴板
-        const shareText = `${shareData.title}\n\n${shareData.text}\n\n链接: ${shareData.url}`;
-        await navigator.clipboard.writeText(shareText);
-        alert("分享内容已复制到剪贴板！");
+        // 如果不支持原生分享，提示用户手动分享
+        alert(`分享链接：${shareData.url}\n\n您可以复制此链接分享给朋友！`);
       }
     } catch (err) {
-      // 最终降级方案
-      const shareText = `${shareData.title}\n\n${shareData.text}\n\n链接: ${shareData.url}`;
-      const textArea = document.createElement("textarea");
-      textArea.value = shareText;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      alert("分享内容已复制到剪贴板！");
+      // 用户取消分享或其他错误，不进行任何操作
+      console.log("分享操作被取消或失败:", err);
     }
   };
 
@@ -611,6 +621,17 @@ export default function BookDetailComponent() {
                       {isLoggedIn.value ? (
                         <>
                           <button
+                            onClick={startReading}
+                            className="px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ring-2 ring-orange-300"
+                          >
+                            <div className="flex items-center justify-center space-x-2">
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <span>阅读</span>
+                            </div>
+                          </button>
+                          <button
                             onClick={() => loadChapters(localStorage.getItem("weread_token"), bookInfo.value.bookId)}
                             disabled={chaptersLoading.value}
                             className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-base transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:scale-105 active:scale-95"
@@ -937,6 +958,17 @@ export default function BookDetailComponent() {
                   <div className="space-y-2">
                     {isLoggedIn.value ? (
                       <>
+                        <button
+                          onClick={startReading}
+                          className="w-full px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ring-2 ring-orange-300"
+                        >
+                          <div className="flex items-center justify-center space-x-2">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>阅读</span>
+                          </div>
+                        </button>
                         <button
                           onClick={() => loadChapters(localStorage.getItem("weread_token"), bookInfo.value.bookId)}
                           disabled={chaptersLoading.value}

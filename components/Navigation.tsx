@@ -17,22 +17,68 @@ interface NavigationProps {
 }
 
 export default function Navigation({ title, icon = "home", showUser = false, currentPath, actions = [] }: NavigationProps) {
-  const user = useSignal<{ name: string; vid: string } | null>(null);
+  const user = useSignal<{ name: string; vid: string; avatar?: string } | null>(null);
+  const loading = useSignal(false);
 
   useEffect(() => {
-    // 检查用户登录状态
+    // 检查用户登录状态并获取用户信息
     if (showUser) {
-      const savedUser = localStorage.getItem("weread_user");
-      const savedVid = localStorage.getItem("weread_vid");
-      
-      if (savedUser && savedVid) {
-        user.value = {
-          name: savedUser,
-          vid: savedVid,
-        };
-      }
+      loadUserInfo();
     }
   }, [showUser]);
+
+  const loadUserInfo = async () => {
+    const token = localStorage.getItem("weread_token");
+    const savedVid = localStorage.getItem("weread_vid");
+    
+    if (!token || !savedVid) {
+      user.value = null;
+      return;
+    }
+
+    // 首先从localStorage获取已缓存的用户信息
+    const savedUser = localStorage.getItem("weread_user");
+    const savedAvatar = localStorage.getItem("weread_avatar");
+    
+    if (savedUser) {
+      user.value = {
+        name: savedUser,
+        vid: savedVid,
+        avatar: savedAvatar || undefined,
+      };
+    }
+
+    // 然后尝试从API获取最新的用户信息
+    try {
+      loading.value = true;
+      const response = await fetch(`/api/user/weread?userVid=${savedVid}&skey=${token}&vid=${savedVid}`);
+      
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData.success && userData.data && userData.data.transformed) {
+          const userInfo = userData.data.transformed;
+          const updatedUser = {
+            name: userInfo.name || savedUser || "微信读书用户",
+            vid: savedVid,
+            avatar: userInfo.avatarUrl || savedAvatar || undefined,
+          };
+          
+          user.value = updatedUser;
+          
+          // 更新localStorage
+          localStorage.setItem("weread_user", updatedUser.name);
+          if (updatedUser.avatar) {
+            localStorage.setItem("weread_avatar", updatedUser.avatar);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("获取用户信息失败:", error);
+      // 如果API调用失败，保持使用localStorage中的信息
+    } finally {
+      loading.value = false;
+    }
+  };
 
   // 获取当前路径
   const getCurrentPath = () => {
@@ -161,7 +207,19 @@ export default function Navigation({ title, icon = "home", showUser = false, cur
               {/* 用户信息 - 只在PC端显示 */}
               {showUser && user.value && (
                 <div className="nav-pc-only items-center space-x-3 bg-gray-50 rounded-lg px-3 py-2">
-                  <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center">
+                  {user.value.avatar ? (
+                    <img
+                      src={user.value.avatar}
+                      alt="用户头像"
+                      className="w-6 h-6 rounded-full object-cover"
+                      onError={(e) => {
+                        // 如果头像加载失败，显示默认图标
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className={`w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center ${user.value.avatar ? 'hidden' : ''}`}>
                     <svg
                       className="w-4 h-4 text-white"
                       fill="none"

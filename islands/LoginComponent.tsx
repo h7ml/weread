@@ -339,16 +339,43 @@ export default function LoginComponent() {
     });
 
     // 监听登录成功事件
-    eventSource.addEventListener("success", (event) => {
+    eventSource.addEventListener("success", async (event) => {
       const data = JSON.parse(event.data);
-      userName.value = data.name || "微信读书用户";
-      loginStatus.value = "success";
-      statusMessage.value = "登录成功！";
-
-      // 保存用户信息到localStorage
+      
+      // 保存基本登录信息
       localStorage.setItem("weread_token", data.token);
       localStorage.setItem("weread_vid", data.vid?.toString() || "");
-      localStorage.setItem("weread_user", data.name || "");
+      
+      try {
+        // 使用weread接口获取用户信息
+        const userResponse = await fetch(`/api/user/weread?userVid=${data.vid}&skey=${data.token}&vid=${data.vid}`);
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          if (userData.success && userData.data && userData.data.transformed) {
+            const userInfo = userData.data.transformed;
+            userName.value = userInfo.name || "微信读书用户";
+            localStorage.setItem("weread_user", userInfo.name || "");
+            localStorage.setItem("weread_avatar", userInfo.avatarUrl || "");
+          } else {
+            // 如果获取失败，使用默认值
+            userName.value = data.name || "微信读书用户";
+            localStorage.setItem("weread_user", data.name || "");
+          }
+        } else {
+          // 如果API调用失败，使用默认值
+          userName.value = data.name || "微信读书用户";
+          localStorage.setItem("weread_user", data.name || "");
+        }
+      } catch (error) {
+        console.error("获取用户信息失败:", error);
+        // 使用默认值
+        userName.value = data.name || "微信读书用户";
+        localStorage.setItem("weread_user", data.name || "");
+      }
+      
+      loginStatus.value = "success";
+      statusMessage.value = "登录成功！";
 
       // 关闭连接
       if (eventSourceRef.current) {
@@ -644,21 +671,69 @@ export default function LoginComponent() {
           {loginStatus.value === "success" && (
             <div className="text-center transform transition-all duration-500">
               <div className="mb-8">
-                <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                  <svg
-                    className="w-10 h-10 text-white animate-bounce"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="3"
-                      d="M5 13l4 4L19 7"
+                {/* 用户头像或成功图标 */}
+                {localStorage.getItem("weread_avatar") ? (
+                  <div className="w-20 h-20 mx-auto mb-6 relative">
+                    <img
+                      src={localStorage.getItem("weread_avatar")}
+                      alt="用户头像"
+                      className="w-20 h-20 rounded-full object-cover border-4 border-green-400 shadow-lg"
+                      onError={(e) => {
+                        // 如果头像加载失败，显示默认的成功图标
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling.style.display = 'flex';
+                      }}
                     />
-                  </svg>
-                </div>
+                    <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full items-center justify-center mx-auto animate-pulse hidden">
+                      <svg
+                        className="w-10 h-10 text-white animate-bounce"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="3"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </div>
+                    {/* 成功标识小圆点 */}
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="3"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                    <svg
+                      className="w-10 h-10 text-white animate-bounce"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="3"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                )}
+                
                 <h3 className="text-2xl font-bold text-white mb-3">
                   登录成功！
                 </h3>
