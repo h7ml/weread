@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络连接失败 - 微信读书 Web</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .offline-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .offline-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+
+        .offline-message {
+            color: #718096;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .offline-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+
+        .status-indicator {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-offline {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .status-online {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+
+        .cached-pages {
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .cached-pages h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #4a5568;
+        }
+
+        .cached-pages ul {
+            list-style: none;
+        }
+
+        .cached-pages li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .cached-pages a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .cached-pages a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .offline-container {
+                padding: 1.5rem;
+            }
+            
+            .offline-title {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1 class="offline-title">网络连接失败</h1>
+        <p class="offline-message">
+            很抱歉，您的设备目前无法连接到互联网。请检查网络设置后重试。
+        </p>
+        
+        <div class="offline-actions">
+            <button class="btn btn-primary" onclick="window.location.reload()">
+                重试连接
+            </button>
+            <a href="/" class="btn btn-secondary">返回首页</a>
+        </div>
+        
+        <div class="status-indicator" id="status-indicator">
+            <span class="status-offline">离线状态</span>
+        </div>
+        
+        <div class="cached-pages">
+            <h3>可离线访问的页面：</h3>
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li><a href="/shelf">我的书架</a></li>
+                <li><a href="/notes">我的笔记</a></li>
+                <li><a href="/dashboard">阅读统计</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 监听网络状态变化
+        function updateConnectionStatus() {
+            const statusIndicator = document.getElementById('status-indicator');
+            if (navigator.onLine) {
+                statusIndicator.innerHTML = '<span class="status-online">已连接网络</span>';
+                
+                // 网络恢复时自动刷新页面
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                statusIndicator.innerHTML = '<span class="status-offline">离线状态</span>';
+            }
+        }
+
+        // 初始化状态
+        updateConnectionStatus();
+
+        // 监听网络状态事件
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // 定期检查网络状态
+        setInterval(() => {
+            if (navigator.onLine) {
+                fetch('/api/health', { 
+                    method: 'HEAD',
+                    cache: 'no-cache',
+                    signal: AbortSignal.timeout(5000)
+                })
+                .then(() => {
+                    updateConnectionStatus();
+                })
+                .catch(() => {
+                    // 网络不稳定
+                });
+            }
+        }, 10000);
+
+        // 添加重试逻辑
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        function retryConnection() {
+            if (retryCount < maxRetries) {
+                retryCount++;
+                
+                fetch('/api/health', { 
+                    method: 'HEAD',
+                    cache: 'no-cache',
+                    signal: AbortSignal.timeout(10000)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        throw new Error('Server unavailable');
+                    }
+                })
+                .catch(() => {
+                    setTimeout(retryConnection, 3000 * retryCount);
+                });
+            }
+        }
+
+        // 页面加载时尝试重连
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(retryConnection, 2000);
+        });
+
+        // Service Worker 消息监听
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'CACHE_UPDATED') {
+                    // 缓存更新时的处理
+                    console.log('Cache updated:', event.data.url);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+{
+  "name": "微信读书 Web",
+  "short_name": "微信读书",
+  "description": "基于 Fresh (Deno) 构建的微信读书 Web 阅读应用，提供现代化阅读界面、高级 TTS 功能和完整的用户管理系统",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "zh-CN",
+  "categories": ["books", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-96x96.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-128x128.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-144x144.svg",
+      "sizes": "144x144",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-152x152.svg",
+      "sizes": "152x152",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.svg",
+      "sizes": "384x384",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home-mobile.svg",
+      "sizes": "375x812",
+      "type": "image/svg+xml",
+      "platform": "narrow",
+      "label": "首页 - 移动端"
+    },
+    {
+      "src": "/screenshots/reader-mobile.svg",
+      "sizes": "375x812",
+      "type": "image/svg+xml",
+      "platform": "narrow",
+      "label": "阅读器 - 移动端"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "我的书架",
+      "short_name": "书架",
+      "description": "查看和管理我的图书收藏",
+      "url": "/shelf",
+      "icons": [
+        {
+          "src": "/icons/shelf-shortcut.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "搜索图书",
+      "short_name": "搜索",
+      "description": "搜索图书和内容",
+      "url": "/search",
+      "icons": [
+        {
+          "src": "/icons/search-shortcut.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "我的笔记",
+      "short_name": "笔记",
+      "description": "查看阅读笔记和书签",
+      "url": "/notes",
+      "icons": [
+        {
+          "src": "/icons/notes-shortcut.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "阅读统计",
+      "short_name": "统计",
+      "description": "查看阅读数据和分析",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icons/stats-shortcut.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+weread",
+      "url": "/book/%s"
+    }
+  ]
+}

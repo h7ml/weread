@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+
+# 允许搜索引擎抓取的页面
+Allow: /
+Allow: /search
+Allow: /book/*
+
+# 不允许搜索引擎抓取的页面（用户隐私相关）
+Disallow: /dashboard
+Disallow: /notes
+Disallow: /shelf
+Disallow: /profile
+Disallow: /login
+Disallow: /reader/*
+Disallow: /api/*
+Disallow: /islands/*
+Disallow: /components/*
+Disallow: /static/sw.js
+
+# 特殊文件
+Allow: /manifest.json
+Allow: /sitemap.xml
+
+# Sitemap 位置
+Sitemap: https://webook.linuxcloudlab.com/sitemap.xml
+
+# 爬虫延迟（可选）
+Crawl-delay: 1

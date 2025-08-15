@@ -1,17 +1,14 @@
-import { Head } from "$fresh/runtime.ts";
+import { define } from "../utils.ts";
 import DashboardComponent from "../islands/DashboardComponent.tsx";
+import { seoConfigs } from "../components/SEO.tsx";
 
-export default function DashboardPage() {
+export default define.page(function DashboardPage({ state }) {
+  // 设置仪表板SEO配置
+  state.title = seoConfigs.dashboard.title;
+  
   return (
     <>
-      <Head>
-        <title>阅读统计 - 微信读书</title>
-        <meta
-          name="description"
-          content="查看详细的阅读统计数据、趋势分析和个人阅读报告"
-        />
-      </Head>
       <DashboardComponent />
     </>
   );
-}
+});

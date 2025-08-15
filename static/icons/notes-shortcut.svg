@@ -1,0 +1,26 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="96" height="96" rx="16" fill="#8B5CF6"/>
+  
+  <!-- 笔记本 -->
+  <rect x="24" y="16" width="48" height="64" rx="4" fill="#FFFFFF"/>
+  
+  <!-- 螺旋线 -->
+  <line x1="20" y1="24" x2="28" y2="24" stroke="#8B5CF6" stroke-width="2"/>
+  <line x1="20" y1="32" x2="28" y2="32" stroke="#8B5CF6" stroke-width="2"/>
+  <line x1="20" y1="40" x2="28" y2="40" stroke="#8B5CF6" stroke-width="2"/>
+  <line x1="20" y1="48" x2="28" y2="48" stroke="#8B5CF6" stroke-width="2"/>
+  <line x1="20" y1="56" x2="28" y2="56" stroke="#8B5CF6" stroke-width="2"/>
+  <line x1="20" y1="64" x2="28" y2="64" stroke="#8B5CF6" stroke-width="2"/>
+  <line x1="20" y1="72" x2="28" y2="72" stroke="#8B5CF6" stroke-width="2"/>
+  
+  <!-- 文字线条 -->
+  <line x1="32" y1="28" x2="64" y2="28" stroke="#E5E7EB" stroke-width="2"/>
+  <line x1="32" y1="36" x2="60" y2="36" stroke="#E5E7EB" stroke-width="2"/>
+  <line x1="32" y1="44" x2="64" y2="44" stroke="#E5E7EB" stroke-width="2"/>
+  <line x1="32" y1="52" x2="56" y2="52" stroke="#E5E7EB" stroke-width="2"/>
+  
+  <!-- 笔 -->
+  <line x1="60" y1="60" x2="72" y2="72" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="58" cy="58" r="3" fill="#F59E0B"/>
+</svg>

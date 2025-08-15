@@ -8,6 +8,7 @@ import * as $api_name_ from "./routes/api/[name].tsx";
 import * as $api_book_chapters from "./routes/api/book/chapters.ts";
 import * as $api_book_content from "./routes/api/book/content.ts";
 import * as $api_book_info from "./routes/api/book/info.ts";
+import * as $api_health from "./routes/api/health.ts";
 import * as $api_login_check from "./routes/api/login/check.ts";
 import * as $api_login_sse from "./routes/api/login/sse.ts";
 import * as $api_notes from "./routes/api/notes.ts";
@@ -30,6 +31,7 @@ import * as $profile from "./routes/profile.tsx";
 import * as $reader_bookId_chapterUid_ from "./routes/reader/[bookId]/[chapterUid].tsx";
 import * as $search from "./routes/search.tsx";
 import * as $shelf from "./routes/shelf.tsx";
+import * as $sitemap_xml from "./routes/sitemap.xml.ts";
 import * as $BookDetailComponent from "./islands/BookDetailComponent.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $DashboardComponent from "./islands/DashboardComponent.tsx";
@@ -53,6 +55,7 @@ const manifest = {
     "./routes/api/book/chapters.ts": $api_book_chapters,
     "./routes/api/book/content.ts": $api_book_content,
     "./routes/api/book/info.ts": $api_book_info,
+    "./routes/api/health.ts": $api_health,
     "./routes/api/login/check.ts": $api_login_check,
     "./routes/api/login/sse.ts": $api_login_sse,
     "./routes/api/notes.ts": $api_notes,
@@ -75,6 +78,7 @@ const manifest = {
     "./routes/reader/[bookId]/[chapterUid].tsx": $reader_bookId_chapterUid_,
     "./routes/search.tsx": $search,
     "./routes/shelf.tsx": $shelf,
+    "./routes/sitemap.xml.ts": $sitemap_xml,
   },
   islands: {
     "./islands/BookDetailComponent.tsx": $BookDetailComponent,

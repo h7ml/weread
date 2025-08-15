@@ -1,0 +1,68 @@
+<svg width="375" height="812" viewBox="0 0 375 812" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 手机背景 -->
+  <rect width="375" height="812" fill="#FFFBEB"/>
+  
+  <!-- 头部 -->
+  <rect width="375" height="88" fill="#1F2937"/>
+  <text x="187.5" y="56" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#FFFFFF" text-anchor="middle">第一章 开端</text>
+  
+  <!-- 阅读内容区域 -->
+  <rect x="24" y="104" width="327" height="560" fill="transparent"/>
+  
+  <!-- 文章标题 -->
+  <text x="32" y="136" font-family="serif" font-size="20" font-weight="600" fill="#1F2937">第一章 故事的开始</text>
+  
+  <!-- 段落文本 -->
+  <text x="32" y="168" font-family="serif" font-size="16" line-height="24" fill="#374151">
+    <tspan x="32" dy="0">这是一个关于阅读的故事。在这个数字化的时代，</tspan>
+    <tspan x="32" dy="28">人们越来越依赖电子设备来获取知识和娱乐。</tspan>
+    <tspan x="32" dy="28">微信读书作为一个现代化的阅读平台，为用户</tspan>
+    <tspan x="32" dy="28">提供了丰富的图书资源和优质的阅读体验。</tspan>
+  </text>
+  
+  <text x="32" y="284" font-family="serif" font-size="16" line-height="24" fill="#374151">
+    <tspan x="32" dy="0">通过先进的TTS技术，读者可以选择用耳朵</tspan>
+    <tspan x="32" dy="28">"阅读"，让阅读变得更加便捷和有趣。无论是</tspan>
+    <tspan x="32" dy="28">在通勤路上，还是在家中休息时，都可以随时</tspan>
+    <tspan x="32" dy="28">享受阅读的乐趣。</tspan>
+  </text>
+  
+  <text x="32" y="400" font-family="serif" font-size="16" line-height="24" fill="#374151">
+    <tspan x="32" dy="0">这个Web应用基于Deno和Fresh框架构建，</tspan>
+    <tspan x="32" dy="28">采用现代化的技术栈，为用户提供流畅的</tspan>
+    <tspan x="32" dy="28">使用体验。支持离线阅读、进度同步、笔记</tspan>
+    <tspan x="32" dy="28">管理等多项实用功能。</tspan>
+  </text>
+  
+  <!-- 高亮显示的当前句子 -->
+  <rect x="28" y="508" width="319" height="28" fill="#FEF3C7" rx="4"/>
+  <text x="32" y="528" font-family="serif" font-size="16" fill="#92400E">让我们一起开启这段美妙的阅读之旅吧！</text>
+  
+  <!-- 进度条 -->
+  <rect x="24" y="680" width="327" height="4" fill="#E5E7EB" rx="2"/>
+  <rect x="24" y="680" width="98" height="4" fill="#3B82F6" rx="2"/>
+  
+  <text x="32" y="704" font-family="system-ui, sans-serif" font-size="12" fill="#6B7280">30% · 第1章</text>
+  <text x="319" y="704" font-family="system-ui, sans-serif" font-size="12" fill="#6B7280" text-anchor="end">15:42</text>
+  
+  <!-- 底部控制栏 -->
+  <rect y="720" width="375" height="92" fill="#FFFFFF" stroke="#E5E7EB"/>
+  
+  <!-- TTS 控制按钮 -->
+  <circle cx="75" cy="756" r="20" fill="#3B82F6"/>
+  <polygon points="69,750 69,762 81,756" fill="#FFFFFF"/>
+  
+  <!-- 设置按钮 -->
+  <circle cx="150" cy="756" r="18" fill="#F3F4F6"/>
+  <text x="150" y="760" font-family="system-ui, sans-serif" font-size="12" fill="#6B7280" text-anchor="middle">Aa</text>
+  
+  <!-- 目录按钮 -->
+  <circle cx="225" cy="756" r="18" fill="#F3F4F6"/>
+  <rect x="219" y="750" width="12" height="2" fill="#6B7280"/>
+  <rect x="219" y="754" width="12" height="2" fill="#6B7280"/>
+  <rect x="219" y="758" width="12" height="2" fill="#6B7280"/>
+  
+  <!-- 书签按钮 -->
+  <circle cx="300" cy="756" r="18" fill="#F3F4F6"/>
+  <path d="M294 750 L294 762 L300 758 L306 762 L306 750 Z" fill="#6B7280"/>
+</svg>

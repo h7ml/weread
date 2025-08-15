@@ -1,0 +1,20 @@
+<!-- 由于无法直接生成ICO文件，我们创建一个16x16的简化SVG版本 -->
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="16" height="16" rx="2" fill="#3B82F6"/>
+  
+  <!-- 书本 -->
+  <rect x="3" y="2" width="10" height="12" rx="1" fill="#FFFFFF"/>
+  
+  <!-- 书脊 -->
+  <rect x="3" y="2" width="2" height="12" fill="#1E40AF"/>
+  
+  <!-- 页面线条 -->
+  <line x1="6" y1="5" x2="12" y2="5" stroke="#E5E7EB" stroke-width="0.5"/>
+  <line x1="6" y1="7" x2="12" y2="7" stroke="#E5E7EB" stroke-width="0.5"/>
+  <line x1="6" y1="9" x2="11" y2="9" stroke="#E5E7EB" stroke-width="0.5"/>
+  <line x1="6" y1="11" x2="12" y2="11" stroke="#E5E7EB" stroke-width="0.5"/>
+  
+  <!-- 书签 -->
+  <rect x="11" y="2" width="1" height="4" fill="#EF4444"/>
+</svg>
