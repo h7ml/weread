@@ -1,6 +1,7 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
+import BottomNavigation from "../components/BottomNavigation.tsx";
 
 // 工具函数
 const formatTime = (minutes) => {
@@ -103,17 +104,25 @@ export default function DashboardComponent() {
   const error = useSignal("");
   const selectedPeriod = useSignal("month");
   const selectedYear = useSignal(new Date().getFullYear());
+  const isLoggedIn = useSignal(false);
 
   useEffect(() => {
-    loadDashboardData();
+    checkLoginAndLoadData();
   }, [selectedPeriod.value, selectedYear.value]);
 
-  const loadDashboardData = async () => {
+  const checkLoginAndLoadData = async () => {
     const token = localStorage.getItem("weread_token");
     if (!token) {
-      globalThis.location.href = "/login";
+      isLoggedIn.value = false;
+      loading.value = false;
       return;
     }
+    
+    isLoggedIn.value = true;
+    await loadDashboardData(token);
+  };
+
+  const loadDashboardData = async (token: string) => {
 
     try {
       loading.value = true;
@@ -195,6 +204,89 @@ export default function DashboardComponent() {
     return 0;
   };
 
+  // 未登录状态
+  if (!loading.value && !isLoggedIn.value) {
+    return (
+      <>
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @media (max-width: 399px) {
+              .dashboard-container {
+                padding-bottom: 5rem !important;
+              }
+            }
+          `
+        }} />
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100">
+          <div className="dashboard-container">
+            <Navigation
+              title="阅读统计"
+              icon="home"
+              showUser={false}
+              currentPath="/dashboard"
+            />
+            
+            <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+              <div className="text-center max-w-md mx-auto p-8">
+                <div className="w-24 h-24 mx-auto mb-6 bg-purple-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-12 h-12 text-purple-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  查看阅读统计
+                </h2>
+                <p className="text-gray-600 mb-8">
+                  登录后可查看详细的阅读数据、趋势分析和个人成就
+                </p>
+                <div className="space-y-4">
+                  <a
+                    href="/login"
+                    className="inline-flex items-center justify-center w-full px-6 py-3 text-base font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    立即登录
+                  </a>
+                  <a
+                    href="/"
+                    className="inline-flex items-center justify-center w-full px-6 py-3 text-base font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                  >
+                    返回首页
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            {/* 底部导航 */}
+            <BottomNavigation currentPath="/dashboard" />
+          </div>
+        </div>
+      </>
+    );
+  }
+
   if (loading.value) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 flex items-center justify-center">
@@ -226,6 +318,16 @@ export default function DashboardComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media (max-width: 399px) {
+            .dashboard-container {
+              padding-bottom: 5rem !important;
+            }
+          }
+        `
+      }} />
+      <div className="dashboard-container">
       <Navigation
         title="阅读统计"
         icon="home"
@@ -517,6 +619,10 @@ export default function DashboardComponent() {
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* 底部导航 */}
+      <BottomNavigation currentPath="/dashboard" />
       </div>
     </div>
   );

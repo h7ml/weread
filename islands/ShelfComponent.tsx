@@ -1,6 +1,7 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
+import BottomNavigation from "../components/BottomNavigation.tsx";
 
 export default function ShelfComponent() {
   const books = useSignal<any[]>([]);
@@ -123,7 +124,18 @@ export default function ShelfComponent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media (max-width: 399px) {
+            .shelf-container {
+              padding-bottom: 5rem !important;
+            }
+          }
+        `
+      }} />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="shelf-container">
       <Navigation
         title="我的书架"
         icon="shelf"
@@ -521,6 +533,11 @@ export default function ShelfComponent() {
           </div>
         )}
       </main>
+      
+      {/* 底部导航 */}
+      <BottomNavigation currentPath="/shelf" />
+      </div>
     </div>
+    </>
   );
 }

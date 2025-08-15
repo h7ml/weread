@@ -57,6 +57,7 @@ declare module "preact" {
   }
 
   export type ComponentType<P = {}> = ComponentConstructor<P> | FunctionComponent<P>;
+  export type ComponentChildren = any;
 
   export function createElement(type: any, props?: any, ...children: any[]): any;
   export function render(vnode: any, parent: Element | Document | ShadowRoot | DocumentFragment): void;

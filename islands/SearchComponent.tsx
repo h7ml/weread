@@ -1,6 +1,7 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
+import BottomNavigation from "../components/BottomNavigation.tsx";
 
 // 视图模式配置
 const VIEW_MODES = {
@@ -441,7 +442,37 @@ export default function SearchComponent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media (max-width: 399px) {
+            .search-container {
+              padding-bottom: 5rem !important;
+            }
+          }
+          .search-input-container {
+            outline: none !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+          }
+          .search-input-container:focus-within {
+            outline: none !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            border-color: rgb(229, 231, 235) !important;
+          }
+          .search-input {
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          .search-input:focus {
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+        `
+      }} />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="search-container">
       <Navigation
         title="书籍搜索"
         icon="search"
@@ -453,11 +484,11 @@ export default function SearchComponent() {
         {/* 搜索区域 */}
         <div className="mb-8">
           <div className="max-w-3xl mx-auto">
-            <div className="relative flex items-center bg-white rounded-full shadow-lg border border-gray-200 hover:shadow-xl focus-within:shadow-xl transition-all duration-300">
+            <div className="search-input-container relative flex items-center bg-white rounded-full border border-gray-200 transition-all duration-300">
               {/* 搜索图标 */}
-              <div className="pl-6 pr-3">
+              <div className="p-10 pr-3">
                 <svg
-                  className="h-5 w-5 text-gray-400"
+                  className="h-5 w-10 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -474,7 +505,7 @@ export default function SearchComponent() {
                   searchQuery.value = (e.target as HTMLInputElement).value}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="搜索书名、作者或关键词..."
-                className="flex-1 py-4 text-lg bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500"
+                className="search-input flex-1 py-4 pl-20 text-lg bg-transparent placeholder-gray-500"
               />
 
               {/* 清除按钮 */}
@@ -742,6 +773,11 @@ export default function SearchComponent() {
           </div>
         )}
       </main>
+      
+      {/* 底部导航 */}
+      <BottomNavigation currentPath="/search" />
+      </div>
     </div>
+    </>
   );
 }

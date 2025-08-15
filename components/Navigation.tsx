@@ -109,34 +109,164 @@ export default function Navigation({ title, icon = "home", showUser = false, cur
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* 左侧品牌区域 */}
-          <div className="flex items-center space-x-6">
-            {/* Logo和标题 */}
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  {getIcon(icon)}
-                </svg>
-              </div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                {title}
-              </h1>
-            </div>
-            
-            {/* 用户信息 */}
-            {showUser && user.value && (
-              <div className="hidden sm:flex items-center space-x-3 bg-gray-50 rounded-lg px-3 py-2">
-                <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center">
+    <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media (max-width: 767px) {
+            .nav-pc-only {
+              display: none !important;
+            }
+            .nav-mobile-only {
+              display: flex !important;
+            }
+            .nav-full-hide-mobile {
+              display: none !important;
+            }
+          }
+          @media (min-width: 768px) {
+            .nav-pc-only {
+              display: flex !important;
+            }
+            .nav-mobile-only {
+              display: none !important;
+            }
+            .nav-full-hide-mobile {
+              display: block !important;
+            }
+          }
+        `
+      }} />
+      <nav className="nav-full-hide-mobile bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            {/* 左侧品牌区域 */}
+            <div className="flex items-center space-x-6">
+              {/* Logo和标题 */}
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <svg
-                    className="w-4 h-4 text-white"
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    {getIcon(icon)}
+                  </svg>
+                </div>
+                <h1 className="text-xl font-semibold text-gray-900">
+                  {title}
+                </h1>
+              </div>
+              
+              {/* 用户信息 - 只在PC端显示 */}
+              {showUser && user.value && (
+                <div className="nav-pc-only items-center space-x-3 bg-gray-50 rounded-lg px-3 py-2">
+                  <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-gray-700">
+                    <div className="text-xs text-gray-500">欢迎</div>
+                    <div className="text-sm font-medium">{user.value.name}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 右侧导航区域 - 只在PC端显示 */}
+            <div className="nav-pc-only items-center space-x-1">
+              {/* 默认导航链接 */}
+              {navLinks.map((link) => {
+                const isActive = isActiveLink(link.href);
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className={`px-3 py-2 font-medium transition-colors rounded-md ${
+                      isActive
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                  >
+                    {link.label}
+                  </a>
+                );
+              })}
+
+              {/* 自定义操作按钮 */}
+              {actions.map((action, index) => {
+                if (action.type === "link" || action.href) {
+                  const isActive = isActiveAction(action);
+                  return (
+                    <a
+                      key={index}
+                      href={action.href}
+                      className={`px-3 py-2 font-medium transition-colors rounded-md ${
+                        isActive
+                          ? "bg-blue-600 text-white"
+                          : action.variant === "primary"
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : action.variant === "danger"
+                          ? "text-red-600 hover:text-red-700 hover:bg-red-50"
+                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      }`}
+                    >
+                      {action.label}
+                    </a>
+                  );
+                } else {
+                  return (
+                    <button
+                      key={index}
+                      onClick={action.onClick}
+                      className={`p-2 font-medium transition-colors rounded-md ${
+                        action.variant === "primary"
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : action.variant === "danger"
+                          ? "text-red-600 hover:text-red-700 hover:bg-red-50"
+                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      }`}
+                      title={action.label}
+                    >
+                      {action.icon ? (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          dangerouslySetInnerHTML={{ __html: action.icon }}
+                        />
+                      ) : (
+                        action.label
+                      )}
+                    </button>
+                  );
+                }
+              })}
+
+              {/* 退出按钮 */}
+              {showUser && user.value && (
+                <button
+                  onClick={() => {
+                    localStorage.clear();
+                    globalThis.location.href = "/login";
+                  }}
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors rounded-md"
+                  title="退出登录"
+                >
+                  <svg
+                    className="w-5 h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -145,117 +275,15 @@ export default function Navigation({ title, icon = "home", showUser = false, cur
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                     />
                   </svg>
-                </div>
-                <div className="text-gray-700">
-                  <div className="text-xs text-gray-500">欢迎</div>
-                  <div className="text-sm font-medium">{user.value.name}</div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 右侧导航区域 */}
-          <div className="flex items-center space-x-1">
-            {/* 默认导航链接 */}
-            {navLinks.map((link) => {
-              const isActive = isActiveLink(link.href);
-              return (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3 py-2 font-medium transition-colors rounded-md ${
-                    isActive
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-                >
-                  {link.label}
-                </a>
-              );
-            })}
-
-            {/* 自定义操作按钮 */}
-            {actions.map((action, index) => {
-              if (action.type === "link" || action.href) {
-                const isActive = isActiveAction(action);
-                return (
-                  <a
-                    key={index}
-                    href={action.href}
-                    className={`px-3 py-2 font-medium transition-colors rounded-md ${
-                      isActive
-                        ? "bg-blue-600 text-white"
-                        : action.variant === "primary"
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : action.variant === "danger"
-                        ? "text-red-600 hover:text-red-700 hover:bg-red-50"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    {action.label}
-                  </a>
-                );
-              } else {
-                return (
-                  <button
-                    key={index}
-                    onClick={action.onClick}
-                    className={`p-2 font-medium transition-colors rounded-md ${
-                      action.variant === "primary"
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : action.variant === "danger"
-                        ? "text-red-600 hover:text-red-700 hover:bg-red-50"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
-                    title={action.label}
-                  >
-                    {action.icon ? (
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        dangerouslySetInnerHTML={{ __html: action.icon }}
-                      />
-                    ) : (
-                      action.label
-                    )}
-                  </button>
-                );
-              }
-            })}
-
-            {/* 退出按钮 */}
-            {showUser && user.value && (
-              <button
-                onClick={() => {
-                  localStorage.clear();
-                  globalThis.location.href = "/login";
-                }}
-                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors rounded-md"
-                title="退出登录"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-              </button>
-            )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 }

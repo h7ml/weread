@@ -1,6 +1,7 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
+import BottomNavigation from "../components/BottomNavigation.tsx";
 
 // 数据配置
 const STATS_CONFIG = [
@@ -400,6 +401,16 @@ export default function HomeComponent() {
     // 已登录用户 - 显示增强版仪表板
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @media (max-width: 399px) {
+              .home-container {
+                padding-bottom: 5rem !important;
+              }
+            }
+          `
+        }} />
+        <div className="home-container">
         <Navigation
           title="微信读书助手"
           icon="home"
@@ -465,243 +476,8 @@ export default function HomeComponent() {
 
           {/* 快捷操作 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {
-              /* <a
-              href="/shelf"
-              className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
-            >
-              <div className="text-blue-600 mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-12 h-12"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-blue-600 transition-colors">
-                我的书架
-              </h3>
-              <p className="text-gray-600 mb-4">
-                查看和管理您的所有书籍，继续上次的阅读
-              </p>
-              <div className="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform duration-300">
-                <span className="text-sm font-medium">立即前往</span>
-                <svg
-                  className="ml-1 w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </a> */
-            }
-
-            {
-              /* 暂时隐藏 - dashboard 功能有问题
-            <a
-              href="/dashboard"
-              className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
-            >
-              <div className="text-green-600 mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-12 h-12"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-green-600 transition-colors">
-                阅读统计
-              </h3>
-              <p className="text-gray-600 mb-4">
-                查看详细的阅读数据和进度统计信息
-              </p>
-              <div className="flex items-center text-green-600 group-hover:translate-x-1 transition-transform duration-300">
-                <span className="text-sm font-medium">查看统计</span>
-                <svg
-                  className="ml-1 w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </a>
-            */
-            }
-
-            {
-              /* 暂时隐藏 - notes 功能有问题
-            <a
-              href="/notes"
-              className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
-            >
-              <div className="text-purple-600 mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-12 h-12"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-600 transition-colors">
-                笔记管理
-              </h3>
-              <p className="text-gray-600 mb-4">
-                管理您的阅读笔记、书签和书评
-              </p>
-              <div className="flex items-center text-purple-600 group-hover:translate-x-1 transition-transform duration-300">
-                <span className="text-sm font-medium">管理笔记</span>
-                <svg
-                  className="ml-1 w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </a>
-            */
-            }
-
-            {
-              /* 暂时隐藏 - profile 功能有问题
-            <a
-              href="/profile"
-              className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
-            >
-              <div className="text-indigo-600 mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-12 h-12"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-indigo-600 transition-colors">
-                个人中心
-              </h3>
-              <p className="text-gray-600 mb-4">
-                查看个人资料、成就和阅读目标
-              </p>
-              <div className="flex items-center text-indigo-600 group-hover:translate-x-1 transition-transform duration-300">
-                <span className="text-sm font-medium">个人中心</span>
-                <svg
-                  className="ml-1 w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </a>
-            */
-            }
+            {/* 快捷操作卡片现在被注释掉了，因为功能有问题 */}
           </div>
-
-          {/* 阅读设置 */}
-          {
-            /* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
-              <div className="text-teal-600 mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-12 h-12"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-teal-600 transition-colors">
-                阅读设置
-              </h3>
-              <p className="text-gray-600 mb-4">
-                个性化您的阅读体验，调整字体、主题等
-              </p>
-              <div className="flex items-center text-teal-600 group-hover:translate-x-1 transition-transform duration-300">
-                <span className="text-sm font-medium">个性定制</span>
-                <svg
-                  className="ml-1 w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div> */
-          }
 
           {/* 使用提示 */}
           <div className="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
@@ -746,6 +522,10 @@ export default function HomeComponent() {
             </div>
           </div>
         </main>
+
+        {/* 底部导航 */}
+        <BottomNavigation currentPath="/" />
+        </div>
 
         <style
           dangerouslySetInnerHTML={{
