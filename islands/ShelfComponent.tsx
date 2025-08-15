@@ -128,6 +128,7 @@ export default function ShelfComponent() {
         title="我的书架"
         icon="shelf"
         showUser={true}
+        currentPath="/shelf"
         actions={[
           {
             label: "刷新书架",

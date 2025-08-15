@@ -203,8 +203,9 @@ export default function ProfileComponent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Navigation
         title="个人中心"
-        icon="profile"
+        icon="home"
         showUser={true}
+        currentPath="/profile"
         actions={[
           {
             label: "刷新数据",

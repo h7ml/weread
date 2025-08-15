@@ -5,6 +5,7 @@ interface NavigationProps {
   title: string;
   icon?: "home" | "search" | "shelf" | "book";
   showUser?: boolean;
+  currentPath?: string;
   actions?: Array<{
     label: string;
     href?: string;
@@ -15,7 +16,7 @@ interface NavigationProps {
   }>;
 }
 
-export default function Navigation({ title, icon = "home", showUser = false, actions = [] }: NavigationProps) {
+export default function Navigation({ title, icon = "home", showUser = false, currentPath, actions = [] }: NavigationProps) {
   const user = useSignal(null);
 
   useEffect(() => {
@@ -32,6 +33,14 @@ export default function Navigation({ title, icon = "home", showUser = false, act
       }
     }
   }, [showUser]);
+
+  // 获取当前路径
+  const getCurrentPath = () => {
+    if (currentPath) return currentPath;
+    return globalThis.location?.pathname || "";
+  };
+
+  const activePath = getCurrentPath();
 
   // 图标映射
   const getIcon = (iconType: string) => {
@@ -77,11 +86,27 @@ export default function Navigation({ title, icon = "home", showUser = false, act
     { label: "我的书架", href: "/shelf" },
   ];
 
-  // 过滤掉当前页面的链接
+  // 过滤掉与自定义actions重复的链接，但保留所有默认导航链接用于显示
   const navLinks = defaultNavLinks.filter(link => {
-    const currentPath = globalThis.location?.pathname || "";
-    return link.href !== currentPath;
+    // 过滤掉与自定义actions中href重复的链接
+    const hasActionWithSameHref = actions.some(action => action.href === link.href);
+    return !hasActionWithSameHref;
   });
+
+  // 判断链接是否为激活状态
+  const isActiveLink = (href: string) => {
+    if (href === "/" && activePath === "/") return true;
+    if (href !== "/" && activePath === href) return true;
+    // 对于嵌套路径的判断，例如 /book/123 应该激活 /book
+    if (href !== "/" && href !== "/search" && href !== "/shelf" && activePath.startsWith(href + "/")) return true;
+    return false;
+  };
+
+  // 判断action是否为激活状态
+  const isActiveAction = (action: any) => {
+    if (!action.href) return false;
+    return isActiveLink(action.href);
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
@@ -135,25 +160,35 @@ export default function Navigation({ title, icon = "home", showUser = false, act
           {/* 右侧导航区域 */}
           <div className="flex items-center space-x-1">
             {/* 默认导航链接 */}
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors rounded-md"
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = isActiveLink(link.href);
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-2 font-medium transition-colors rounded-md ${
+                    isActive
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
 
             {/* 自定义操作按钮 */}
             {actions.map((action, index) => {
               if (action.type === "link" || action.href) {
+                const isActive = isActiveAction(action);
                 return (
                   <a
                     key={index}
                     href={action.href}
                     className={`px-3 py-2 font-medium transition-colors rounded-md ${
-                      action.variant === "primary"
+                      isActive
+                        ? "bg-blue-600 text-white"
+                        : action.variant === "primary"
                         ? "bg-blue-600 text-white hover:bg-blue-700"
                         : action.variant === "danger"
                         ? "text-red-600 hover:text-red-700 hover:bg-red-50"

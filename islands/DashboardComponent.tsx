@@ -228,8 +228,9 @@ export default function DashboardComponent() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100">
       <Navigation
         title="阅读统计"
-        icon="dashboard"
+        icon="home"
         showUser={true}
+        currentPath="/dashboard"
         actions={[
           {
             label: "刷新数据",

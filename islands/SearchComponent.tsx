@@ -316,7 +316,7 @@ export default function SearchComponent() {
             <img
               src={book.cover}
               alt={book.title}
-              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
             {book.rating > 0 && (
@@ -332,7 +332,7 @@ export default function SearchComponent() {
             <p className="text-gray-600 text-sm mb-2">{book.author}</p>
             {book.intro && (
               <p className="text-gray-500 text-xs line-clamp-2 mb-3">
-                {book.intro}
+                {book.intro.length > 100 ? book.intro.substring(0, 100) + '...' : book.intro}
               </p>
             )}
             {book.fragments && book.fragments.length > 0 && (
@@ -446,6 +446,7 @@ export default function SearchComponent() {
         title="书籍搜索"
         icon="search"
         showUser={false}
+        currentPath="/search"
       />
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">

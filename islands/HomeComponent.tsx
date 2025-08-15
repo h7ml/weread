@@ -404,6 +404,7 @@ export default function HomeComponent() {
           title="微信读书助手"
           icon="home"
           showUser={true}
+          currentPath="/"
           actions={[
             {
               label: "搜索书籍",
@@ -414,7 +415,6 @@ export default function HomeComponent() {
               label: "我的书架",
               href: "/shelf",
               type: "link",
-              variant: "primary",
             },
           ]}
         />
@@ -774,17 +774,12 @@ export default function HomeComponent() {
         title="微信读书助手"
         icon="home"
         showUser={false}
+        currentPath="/"
         actions={[
           {
             label: "登录",
             href: "/login",
             type: "link",
-          },
-          {
-            label: "立即体验",
-            href: "/login",
-            type: "link",
-            variant: "primary",
           },
         ]}
       />

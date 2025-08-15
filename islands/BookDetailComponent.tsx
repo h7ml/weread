@@ -1,7 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
-import ProgressSyncComponent from "./ProgressSyncComponent.tsx";
 
 export default function BookDetailComponent() {
   const bookInfo = useSignal(null);
@@ -9,7 +8,7 @@ export default function BookDetailComponent() {
   const loading = useSignal(true);
   const error = useSignal("");
   const chaptersLoading = useSignal(false);
-  const showChapters = useSignal(false);
+  const showChapters = useSignal(true); // 默认显示章节列表
   const chapterSearchQuery = useSignal("");
   const filteredChapters = useSignal([]);
 
@@ -68,6 +67,8 @@ export default function BookDetailComponent() {
 
       if (data.success) {
         bookInfo.value = data.data;
+        // 默认加载章节列表
+        loadChapters(token, data.data.bookId);
       } else {
         error.value = data.error || "加载失败";
       }
@@ -79,15 +80,12 @@ export default function BookDetailComponent() {
     }
   };
 
-  const loadChapters = async () => {
-    if (!bookInfo.value) return;
-
+  const loadChapters = async (token: string, bookId: string) => {
     try {
       chaptersLoading.value = true;
-      const token = localStorage.getItem("weread_token");
 
       const response = await fetch(
-        `/api/book/chapters?bookId=${bookInfo.value.bookId}&token=${token}`,
+        `/api/book/chapters?bookId=${bookId}&token=${token}`,
       );
 
       if (!response.ok) {
@@ -98,13 +96,12 @@ export default function BookDetailComponent() {
 
       if (data.success) {
         chapters.value = data.data.chapters || [];
-        showChapters.value = true;
       } else {
         throw new Error(data.error || "加载失败");
       }
     } catch (err) {
       console.error("Failed to load chapters:", err);
-      alert(`加载章节列表失败: ${err.message}`);
+      // 章节加载失败不影响主流程，只显示console错误
     } finally {
       chaptersLoading.value = false;
     }
@@ -247,6 +244,7 @@ export default function BookDetailComponent() {
         title="书籍详情"
         icon="book"
         showUser={false}
+        currentPath={bookInfo.value ? `/book/${bookInfo.value.bookId}` : "/book"}
         actions={[
           {
             label: "返回",
@@ -260,13 +258,13 @@ export default function BookDetailComponent() {
         {bookInfo.value && (
           <div>
             {/* 书籍信息卡片 */}
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-shrink-0">
+            <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
+              <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
+                <div className="flex-shrink-0 mx-auto sm:mx-0">
                   <img
                     src={bookInfo.value.cover}
                     alt={bookInfo.value.title}
-                    className="w-48 h-64 object-cover rounded-lg shadow-md"
+                    className="w-32 h-44 sm:w-40 sm:h-52 md:w-48 md:h-64 object-cover rounded-lg shadow-md"
                     onError={(e) => {
                       e.currentTarget.src =
                         "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDE5MiAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMjU2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02NCA2NEgxMjhWMTkySDY0VjY0WiIgZmlsbD0iI0Q1RDVENCY+Cjx0ZXh0IHg9Ijk2IiB5PSIyMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2QjcyODAiIGZvbnQtc2l6ZT0iMTYiPuaXoOaaguWwgTwvdGV4dD4KPC9zdmc+Cg==";
@@ -274,27 +272,27 @@ export default function BookDetailComponent() {
                   />
                 </div>
 
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                <div className="flex-1 text-center sm:text-left">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">
                     {bookInfo.value.title}
                   </h1>
 
-                  <div className="space-y-3 text-gray-600">
-                    <div className="flex items-center">
-                      <span className="font-medium w-16">作者:</span>
+                  <div className="space-y-2 md:space-y-3 text-sm md:text-base text-gray-600">
+                    <div className="flex items-center justify-center sm:justify-start">
+                      <span className="font-medium w-12 sm:w-16">作者:</span>
                       <span>{bookInfo.value.author}</span>
                     </div>
 
                     {bookInfo.value.category && (
-                      <div className="flex items-center">
-                        <span className="font-medium w-16">分类:</span>
+                      <div className="flex items-center justify-center sm:justify-start">
+                        <span className="font-medium w-12 sm:w-16">分类:</span>
                         <span>{bookInfo.value.category}</span>
                       </div>
                     )}
 
                     {bookInfo.value.totalWords && (
-                      <div className="flex items-center">
-                        <span className="font-medium w-16">字数:</span>
+                      <div className="flex items-center justify-center sm:justify-start">
+                        <span className="font-medium w-12 sm:w-16">字数:</span>
                         <span>
                           {bookInfo.value.totalWords.toLocaleString()} 字
                         </span>
@@ -302,8 +300,8 @@ export default function BookDetailComponent() {
                     )}
 
                     {bookInfo.value.rating && (
-                      <div className="flex items-center">
-                        <span className="font-medium w-16">评分:</span>
+                      <div className="flex items-center justify-center sm:justify-start">
+                        <span className="font-medium w-12 sm:w-16">评分:</span>
                         <span>{bookInfo.value.rating} 分</span>
                       </div>
                     )}
@@ -319,23 +317,21 @@ export default function BookDetailComponent() {
                   )}
 
                   {/* 操作按钮 */}
-                  <div className="mt-6 flex flex-wrap gap-4">
+                  <div className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
                     <button
-                      onClick={loadChapters}
+                      onClick={() => loadChapters(localStorage.getItem("weread_token"), bookInfo.value.bookId)}
                       disabled={chaptersLoading.value}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                      className="w-full sm:w-auto px-4 md:px-6 py-2 md:py-3 bg-blue-600 text-white text-sm md:text-base rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
                     >
                       {chaptersLoading.value
                         ? "加载中..."
-                        : showChapters.value
-                        ? "刷新章节"
-                        : "查看章节"}
+                        : "刷新章节"}
                     </button>
 
                     {chapters.value.length > 0 && (
                       <button
                         onClick={downloadAllChapters}
-                        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        className="w-full sm:w-auto px-4 md:px-6 py-2 md:py-3 bg-green-600 text-white text-sm md:text-base rounded-lg hover:bg-green-700 font-medium"
                       >
                         下载全书
                       </button>
@@ -345,31 +341,23 @@ export default function BookDetailComponent() {
               </div>
             </div>
 
-            {/* 阅读进度同步组件 */}
-            <ProgressSyncComponent
-              bookId={bookInfo.value.bookId}
-              onProgressUpdate={(progress) => {
-                console.log("Progress updated:", progress);
-              }}
-            />
-
             {/* 章节列表 */}
             {showChapters.value && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">
+              <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+                <div className="flex flex-col gap-4 mb-4 md:mb-6">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-900">
                     章节列表 ({filteredChapters.value.length})
                   </h2>
 
                   {/* 章节搜索 */}
-                  <div className="flex-1 max-w-md">
+                  <div className="w-full">
                     <input
                       type="text"
                       value={chapterSearchQuery.value}
                       onInput={(e) =>
                         chapterSearchQuery.value = e.currentTarget.value}
                       placeholder="搜索章节..."
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -383,43 +371,45 @@ export default function BookDetailComponent() {
                     </div>
                   )
                   : (
-                    <div className="grid gap-2">
+                    <div className="grid gap-2 md:gap-3">
                       {filteredChapters.value.map((chapter, index) => (
                         <div
                           key={chapter.chapterUid}
-                          className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
                         >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <span className="text-sm text-gray-500 w-12">
+                          <div className="flex-1 mb-3 sm:mb-0">
+                            <div className="flex items-start sm:items-center gap-2 md:gap-3">
+                              <span className="text-xs md:text-sm text-gray-500 w-8 md:w-12 flex-shrink-0 mt-1 sm:mt-0">
                                 {String(index + 1).padStart(3, "0")}
                               </span>
-                              <h3 className="font-medium text-gray-900">
-                                {chapter.title}
-                              </h3>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium text-gray-900 text-sm md:text-base line-clamp-2 break-words">
+                                  {chapter.title}
+                                </h3>
+                                {chapter.wordCount && (
+                                  <p className="text-xs md:text-sm text-gray-500 mt-1">
+                                    约 {chapter.wordCount} 字
+                                  </p>
+                                )}
+                              </div>
                               {!chapter.isFree && (
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">
+                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded flex-shrink-0">
                                   付费
                                 </span>
                               )}
                             </div>
-                            {chapter.wordCount && (
-                              <p className="text-sm text-gray-500 mt-1 ml-15">
-                                约 {chapter.wordCount} 字
-                              </p>
-                            )}
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             <button
                               onClick={() => openReader(chapter.chapterUid)}
-                              className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
                             >
                               阅读
                             </button>
                             <button
                               onClick={() => downloadChapter(chapter)}
-                              className="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                              className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-green-600 hover:bg-green-50 rounded-lg transition-colors font-medium"
                             >
                               下载
                             </button>
@@ -433,6 +423,31 @@ export default function BookDetailComponent() {
           </div>
         )}
       </main>
+
+      {/* 添加CSS样式 */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          
+          /* 移动端触摸优化 */}
+          @media (max-width: 640px) {
+            .hover\\:bg-gray-50:hover {
+              background-color: rgb(249 250 251);
+            }
+            .hover\\:bg-blue-50:hover {
+              background-color: rgb(239 246 255);
+            }
+            .hover\\:bg-green-50:hover {
+              background-color: rgb(240 253 244);
+            }
+          }
+        `
+      }} />
     </div>
   );
 }

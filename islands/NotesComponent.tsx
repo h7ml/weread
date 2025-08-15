@@ -276,8 +276,9 @@ export default function NotesComponent() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100">
       <Navigation
         title="我的笔记"
-        icon="notes"
+        icon="home"
         showUser={true}
+        currentPath="/notes"
         actions={[
           {
             label: "刷新笔记",
