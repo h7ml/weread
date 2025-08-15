@@ -10,22 +10,37 @@ import * as $api_book_content from "./routes/api/book/content.ts";
 import * as $api_book_info from "./routes/api/book/info.ts";
 import * as $api_login_check from "./routes/api/login/check.ts";
 import * as $api_login_sse from "./routes/api/login/sse.ts";
+import * as $api_notes from "./routes/api/notes.ts";
+import * as $api_progress from "./routes/api/progress.ts";
+import * as $api_search from "./routes/api/search.ts";
 import * as $api_shelf from "./routes/api/shelf.ts";
+import * as $api_shelf_manage from "./routes/api/shelf/manage.ts";
+import * as $api_stats from "./routes/api/stats.ts";
 import * as $api_tts_index from "./routes/api/tts/index.ts";
 import * as $api_tts_openxing_voices from "./routes/api/tts/openxing-voices.ts";
 import * as $api_tts_openxing from "./routes/api/tts/openxing.ts";
 import * as $api_tts_voices from "./routes/api/tts/voices.ts";
+import * as $api_user_profile from "./routes/api/user/profile.ts";
 import * as $book_id_ from "./routes/book/[id].tsx";
+import * as $dashboard from "./routes/dashboard.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $notes from "./routes/notes.tsx";
+import * as $profile from "./routes/profile.tsx";
 import * as $reader_bookId_chapterUid_ from "./routes/reader/[bookId]/[chapterUid].tsx";
+import * as $search from "./routes/search.tsx";
 import * as $shelf from "./routes/shelf.tsx";
 import * as $BookDetailComponent from "./islands/BookDetailComponent.tsx";
 import * as $Counter from "./islands/Counter.tsx";
+import * as $DashboardComponent from "./islands/DashboardComponent.tsx";
 import * as $HomeComponent from "./islands/HomeComponent.tsx";
 import * as $LoginComponent from "./islands/LoginComponent.tsx";
 import * as $NotFound404Island from "./islands/NotFound404Island.tsx";
+import * as $NotesComponent from "./islands/NotesComponent.tsx";
+import * as $ProfileComponent from "./islands/ProfileComponent.tsx";
+import * as $ProgressSyncComponent from "./islands/ProgressSyncComponent.tsx";
 import * as $ReaderComponent from "./islands/ReaderComponent.tsx";
+import * as $SearchComponent from "./islands/SearchComponent.tsx";
 import * as $ShelfComponent from "./islands/ShelfComponent.tsx";
 import * as $WeReadStyleReaderComponent from "./islands/WeReadStyleReaderComponent.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -40,24 +55,39 @@ const manifest = {
     "./routes/api/book/info.ts": $api_book_info,
     "./routes/api/login/check.ts": $api_login_check,
     "./routes/api/login/sse.ts": $api_login_sse,
+    "./routes/api/notes.ts": $api_notes,
+    "./routes/api/progress.ts": $api_progress,
+    "./routes/api/search.ts": $api_search,
     "./routes/api/shelf.ts": $api_shelf,
+    "./routes/api/shelf/manage.ts": $api_shelf_manage,
+    "./routes/api/stats.ts": $api_stats,
     "./routes/api/tts/index.ts": $api_tts_index,
     "./routes/api/tts/openxing-voices.ts": $api_tts_openxing_voices,
     "./routes/api/tts/openxing.ts": $api_tts_openxing,
     "./routes/api/tts/voices.ts": $api_tts_voices,
+    "./routes/api/user/profile.ts": $api_user_profile,
     "./routes/book/[id].tsx": $book_id_,
+    "./routes/dashboard.tsx": $dashboard,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/notes.tsx": $notes,
+    "./routes/profile.tsx": $profile,
     "./routes/reader/[bookId]/[chapterUid].tsx": $reader_bookId_chapterUid_,
+    "./routes/search.tsx": $search,
     "./routes/shelf.tsx": $shelf,
   },
   islands: {
     "./islands/BookDetailComponent.tsx": $BookDetailComponent,
     "./islands/Counter.tsx": $Counter,
+    "./islands/DashboardComponent.tsx": $DashboardComponent,
     "./islands/HomeComponent.tsx": $HomeComponent,
     "./islands/LoginComponent.tsx": $LoginComponent,
     "./islands/NotFound404Island.tsx": $NotFound404Island,
+    "./islands/NotesComponent.tsx": $NotesComponent,
+    "./islands/ProfileComponent.tsx": $ProfileComponent,
+    "./islands/ProgressSyncComponent.tsx": $ProgressSyncComponent,
     "./islands/ReaderComponent.tsx": $ReaderComponent,
+    "./islands/SearchComponent.tsx": $SearchComponent,
     "./islands/ShelfComponent.tsx": $ShelfComponent,
     "./islands/WeReadStyleReaderComponent.tsx": $WeReadStyleReaderComponent,
   },

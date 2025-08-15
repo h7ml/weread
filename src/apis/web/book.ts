@@ -271,12 +271,89 @@ export async function getChapterContent(
 }
 
 /**
- * 搜索书籍
+ * 搜索书籍 - 使用新的商店搜索接口
  */
 export async function searchBooks(
   keyword: string,
-  count = 20,
+  count = 10,
+  cookie?: string,
 ): Promise<Book[]> {
+  const params = {
+    count,
+    keyword: encodeURIComponent(keyword),
+    rnVersion: 6,
+    v: 3,
+  };
+
+  // 使用新的搜索客户端
+  const searchClient = new HttpClient("https://i.weread.qq.com");
+  const url = `/store/search?${buildQueryString(params)}`;
+
+  // 设置基础请求头
+  const headers: HeadersInit = {
+    "Host": "i.weread.qq.com",
+    "Accept": "*/*",
+    "Accept-Language": "zh-Hans-CN;q=1",
+    "User-Agent": "WeRead/9.3.5 (iPhone; iOS 26.0; Scale/3.00)",
+    "Connection": "keep-alive",
+    "channelId": "AppStore",
+    "basever": "9.3.5.48",
+    "v": "9.3.5.48",
+  };
+
+  // 如果提供了 cookie，添加认证信息
+  if (cookie) {
+    headers.Cookie = cookie;
+  }
+
+  try {
+    const response = await searchClient.get<any>(url, { headers });
+
+    // 处理新API的响应格式
+    if (!response.results || !Array.isArray(response.results)) {
+      return [];
+    }
+
+    // 找到电子书结果
+    const ebookResult = response.results.find((result: any) =>
+      result.title === "电子书" && result.books && Array.isArray(result.books)
+    );
+
+    if (!ebookResult) {
+      return [];
+    }
+
+    return ebookResult.books.map((item: any) => ({
+      bookId: item.bookInfo.bookId,
+      title: item.bookInfo.title,
+      author: item.bookInfo.author,
+      cover: item.bookInfo.cover,
+      intro: item.bookInfo.intro || "",
+      category: item.bookInfo.category || "",
+      price: item.bookInfo.price || 0,
+      rating: item.bookInfo.newRating ? item.bookInfo.newRating / 100 : 0, // 转换评分格式
+      payType: item.bookInfo.payType,
+      readingCount: item.readingCount,
+      inshelf: item.inshelf,
+    }));
+  } catch (error) {
+    console.error("搜索书籍失败:", error);
+    // 如果新接口失败，回退到旧接口
+    return searchBooksLegacy(keyword, count, cookie);
+  }
+}
+
+/**
+ * 搜索书籍 - 旧版本接口（作为备用）
+ */
+async function searchBooksLegacy(
+  keyword: string,
+  count = 20,
+  cookie?: string,
+): Promise<Book[]> {
+  const headers: HeadersInit = {};
+  if (cookie) headers.Cookie = cookie;
+
   const params = {
     keyword,
     maxIdx: 0,
@@ -286,7 +363,7 @@ export async function searchBooks(
   };
 
   const url = `/web/search/searchBooks?${buildQueryString(params)}`;
-  const response = await client.get<any>(url);
+  const response = await client.get<any>(url, { headers });
 
   if (!response.books || !Array.isArray(response.books)) {
     return [];
@@ -305,6 +382,163 @@ export async function searchBooks(
 }
 
 /**
+ * 全局搜索 - 返回书籍内容片段
+ */
+export async function searchGlobal(
+  keyword: string,
+  maxIdx = 0,
+  fragmentSize = 120,
+  count = 10, // 减少默认数量
+  cookie?: string,
+): Promise<{
+  books: Array<{
+    bookId: string;
+    title: string;
+    author: string;
+    cover: string;
+    fragments: Array<{
+      text: string;
+      chapterTitle: string;
+    }>;
+  }>;
+  hasMore: boolean;
+  nextIdx: number;
+}> {
+  const headers: HeadersInit = {
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "zh-CN,zh;q=0.9",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Referer": "https://weread.qq.com/web/search/books",
+    "User-Agent":
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+  };
+
+  if (cookie) {
+    headers.Cookie = cookie;
+  }
+
+  const params = {
+    keyword: encodeURIComponent(keyword),
+    maxIdx,
+    fragmentSize,
+    count,
+    sid: Math.random().toString(36).substring(2, 15), // 随机 sid
+  };
+
+  const url = `/web/search/global?${buildQueryString(params)}`;
+
+  try {
+    const response = await client.get<any>(url, { headers });
+
+    if (!response.books || !Array.isArray(response.books)) {
+      return {
+        books: [],
+        hasMore: false,
+        nextIdx: maxIdx,
+      };
+    }
+
+    // 只返回前几条数据，减少数据量
+    const limitedBooks = response.books.slice(0, count).map((item: any) => ({
+      bookId: item.bookInfo?.bookId || "",
+      title: item.bookInfo?.title || "",
+      author: item.bookInfo?.author || "",
+      cover: item.bookInfo?.cover || "",
+      fragments: (item.fragments || []).slice(0, 3).map((fragment: any) => ({
+        text: fragment.text || "",
+        chapterTitle: fragment.chapterTitle || "",
+      })),
+    }));
+
+    return {
+      books: limitedBooks,
+      hasMore: response.books.length >= count,
+      nextIdx: response.nextIdx || (maxIdx + count),
+    };
+  } catch (error) {
+    console.error("全局搜索失败:", error);
+    return {
+      books: [],
+      hasMore: false,
+      nextIdx: maxIdx,
+    };
+  }
+}
+
+/**
+ * 搜索建议
+ */
+export async function searchSuggest(
+  keyword: string,
+  count = 10, // 减少默认数量
+  cookie?: string,
+): Promise<{
+  suggestions: Array<{
+    text: string;
+    type: string;
+  }>;
+  books: Array<{
+    bookId: string;
+    title: string;
+    author: string;
+    cover: string;
+    rating?: number;
+  }>;
+}> {
+  const headers: HeadersInit = {
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "zh-CN,zh;q=0.9",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Referer": "https://weread.qq.com/web/search/books",
+    "User-Agent":
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+  };
+
+  if (cookie) {
+    headers.Cookie = cookie;
+  }
+
+  const params = {
+    keyword: encodeURIComponent(keyword),
+    count,
+  };
+
+  const url = `/web/search/search_suggest?${buildQueryString(params)}`;
+
+  try {
+    const response = await client.get<any>(url, { headers });
+
+    const suggestions = (response.suggestions || []).slice(0, 5).map((
+      item: any,
+    ) => ({
+      text: item.text || item.suggestion || "",
+      type: item.type || "keyword",
+    }));
+
+    const books = (response.books || []).slice(0, count).map((item: any) => ({
+      bookId: item.bookId || "",
+      title: item.title || "",
+      author: item.author || "",
+      cover: item.cover || "",
+      rating: item.newRating || item.rating,
+    }));
+
+    return {
+      suggestions,
+      books,
+    };
+  } catch (error) {
+    console.error("搜索建议失败:", error);
+    return {
+      suggestions: [],
+      books: [],
+    };
+  }
+}
+
+/**
  * 获取阅读进度
  */
 export async function getReadProgress(
@@ -319,22 +553,27 @@ export async function getReadProgress(
     readingBookIndex: 1,
   };
 
-  const url = `/web/book/read/info?${buildQueryString(params)}`;
-  const response = await client.get<any>(url, { headers });
+  try {
+    const url = `/web/book/read/info?${buildQueryString(params)}`;
+    const response = await client.get<any>(url, { headers });
 
-  if (!response.data) {
-    return null;
+    if (!response.data) {
+      return null;
+    }
+
+    return {
+      bookId,
+      chapterUid: response.data.chapterUid,
+      chapterIdx: response.data.chapterIdx,
+      chapterOffset: response.data.chapterOffset,
+      readingTime: response.data.readingTime,
+      percent: response.data.progress,
+      updateTime: response.data.updateTime,
+    };
+  } catch (error) {
+    console.error(`Failed to get read progress for book ${bookId}:`, error);
+    throw error; // Re-throw so we can get specific error information
   }
-
-  return {
-    bookId,
-    chapterUid: response.data.chapterUid,
-    chapterIdx: response.data.chapterIdx,
-    chapterOffset: response.data.chapterOffset,
-    readingTime: response.data.readingTime,
-    percent: response.data.progress,
-    updateTime: response.data.updateTime,
-  };
 }
 
 /**
@@ -374,7 +613,8 @@ export async function updateReadProgress(
   try {
     await client.post("/web/book/read/update", body, { headers });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    console.error(`Failed to update read progress for book ${bookId}:`, error);
+    throw error; // Re-throw so we can get specific error information
   }
 }

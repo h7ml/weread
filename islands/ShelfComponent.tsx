@@ -18,6 +18,9 @@ export default function ShelfComponent() {
     hasNext: false,
     hasPrev: false,
   });
+  const selectedBooks = useSignal(new Set());
+  const isManageMode = useSignal(false);
+  const actionLoading = useSignal("");
 
   useEffect(() => {
     // 检查登录状态
@@ -113,6 +116,158 @@ export default function ShelfComponent() {
     globalThis.location.href = `/book/${bookId}`;
   };
 
+  // 书架管理操作
+  const performShelfAction = async (
+    action: string,
+    bookId: string,
+    bookTitle: string = "",
+  ) => {
+    const token = localStorage.getItem("weread_token");
+    if (!token) {
+      error.value = "请先登录";
+      return;
+    }
+
+    try {
+      actionLoading.value = `${action}-${bookId}`;
+
+      const response = await fetch("/api/shelf/manage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action,
+          bookId,
+          token,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // 成功后刷新书架
+        await loadShelf(token, currentPage.value, searchQuery.value);
+
+        // 显示成功消息
+        const messages = {
+          remove: `《${bookTitle}》已从书架移除`,
+          add: `《${bookTitle}》已添加到书架`,
+          archive: `《${bookTitle}》已归档`,
+          unarchive: `《${bookTitle}》已取消归档`,
+        };
+
+        // 简单的成功提示
+        const alertDiv = document.createElement("div");
+        alertDiv.className =
+          "fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50";
+        alertDiv.textContent = messages[action] || data.message;
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+          document.body.removeChild(alertDiv);
+        }, 3000);
+      } else {
+        // Better error messaging
+        let errorMessage = data.message || data.error || "操作失败";
+        if (errorMessage.includes("HTTP 403")) {
+          errorMessage = "没有权限执行此操作";
+        } else if (errorMessage.includes("HTTP 404")) {
+          errorMessage = "书籍不存在或已被移除";
+        } else if (errorMessage.includes("HTTP 401")) {
+          errorMessage = "登录已过期，请重新登录";
+        }
+        error.value = errorMessage;
+      }
+    } catch (err) {
+      console.error("Shelf action error:", err);
+      error.value = `操作失败: ${err.message}`;
+    } finally {
+      actionLoading.value = "";
+    }
+  };
+
+  // 切换管理模式
+  const toggleManageMode = () => {
+    isManageMode.value = !isManageMode.value;
+    selectedBooks.value = new Set();
+  };
+
+  // 切换书籍选择
+  const toggleBookSelection = (bookId: string) => {
+    const newSelected = new Set(selectedBooks.value);
+    if (newSelected.has(bookId)) {
+      newSelected.delete(bookId);
+    } else {
+      newSelected.add(bookId);
+    }
+    selectedBooks.value = newSelected;
+  };
+
+  // 批量操作
+  const performBatchAction = async (action: string) => {
+    if (selectedBooks.value.size === 0) {
+      error.value = "请先选择要操作的书籍";
+      return;
+    }
+
+    const token = localStorage.getItem("weread_token");
+    if (!token) {
+      error.value = "请先登录";
+      return;
+    }
+
+    try {
+      actionLoading.value = `batch-${action}`;
+
+      const promises = Array.from(selectedBooks.value).map((bookId) =>
+        fetch("/api/shelf/manage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action,
+            bookId,
+            token,
+          }),
+        })
+      );
+
+      const responses = await Promise.all(promises);
+      const results = await Promise.all(responses.map((r) => r.json()));
+
+      const successCount = results.filter((r) => r.success).length;
+      const totalCount = selectedBooks.value.size;
+
+      if (successCount > 0) {
+        await loadShelf(token, currentPage.value, searchQuery.value);
+
+        const alertDiv = document.createElement("div");
+        alertDiv.className =
+          "fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50";
+        alertDiv.textContent = `成功操作 ${successCount}/${totalCount} 本书`;
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+          document.body.removeChild(alertDiv);
+        }, 3000);
+      }
+
+      if (successCount < totalCount) {
+        error.value = `部分操作失败，成功 ${successCount}/${totalCount}`;
+      }
+
+      selectedBooks.value = new Set();
+      isManageMode.value = false;
+    } catch (err) {
+      console.error("Batch action error:", err);
+      error.value = `批量操作失败: ${err.message}`;
+    } finally {
+      actionLoading.value = "";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 导航栏 */}
@@ -129,6 +284,16 @@ export default function ShelfComponent() {
             </div>
             <div className="flex items-center space-x-4">
               <a href="/" className="text-gray-600 hover:text-gray-900">首页</a>
+              <button
+                onClick={toggleManageMode}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  isManageMode.value
+                    ? "bg-blue-600 text-white"
+                    : "text-blue-600 hover:bg-blue-50"
+                }`}
+              >
+                {isManageMode.value ? "取消管理" : "管理书架"}
+              </button>
               <button
                 onClick={() =>
                   loadShelf(
@@ -209,11 +374,40 @@ export default function ShelfComponent() {
 
           {/* 统计信息 */}
           {!loading.value && (
-            <div className="mt-4 text-sm text-gray-600">
-              共 {pagination.value.total} 本书
-              {searchQuery.value && ` | 搜索结果: ${books.value.length} 本`}
-              {pagination.value.totalPages > 1 &&
-                ` | 第 ${pagination.value.page}/${pagination.value.totalPages} 页`}
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                共 {pagination.value.total} 本书
+                {searchQuery.value && ` | 搜索结果: ${books.value.length} 本`}
+                {pagination.value.totalPages > 1 &&
+                  ` | 第 ${pagination.value.page}/${pagination.value.totalPages} 页`}
+              </div>
+
+              {/* 批量操作按钮 */}
+              {isManageMode.value && selectedBooks.value.size > 0 && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">
+                    已选择 {selectedBooks.value.size} 本书:
+                  </span>
+                  <button
+                    onClick={() => performBatchAction("remove")}
+                    disabled={actionLoading.value.startsWith("batch")}
+                    className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                  >
+                    {actionLoading.value === "batch-remove"
+                      ? "移除中..."
+                      : "批量移除"}
+                  </button>
+                  <button
+                    onClick={() => performBatchAction("archive")}
+                    disabled={actionLoading.value.startsWith("batch")}
+                    className="px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+                  >
+                    {actionLoading.value === "batch-archive"
+                      ? "归档中..."
+                      : "批量归档"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -336,51 +530,115 @@ export default function ShelfComponent() {
                   {books.value.map((book) => (
                     <div
                       key={book.bookId}
-                      onClick={() => openBookDetail(book.bookId)}
-                      className="bg-white rounded-lg shadow hover:shadow-lg transition-all duration-200 cursor-pointer group"
+                      className="bg-white rounded-lg shadow hover:shadow-lg transition-all duration-200 relative group"
                     >
-                      <div className="aspect-w-3 aspect-h-4">
-                        <img
-                          src={book.cover}
-                          alt={book.title}
-                          className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-200"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDIwMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03MC41IDcwSDEyOS41VjE3MEg3MC41VjcwWiIgZmlsbD0iI0Q1RDVENS8+Cjx0ZXh0IHg9IjEwMCIgeT0iMjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNkI3MjgwIiBmb250LXNpemU9IjE0Ij7ml6DmmYLlsIE+PC90ZXh0Pgo8L3N2Zz4K";
-                          }}
-                        />
-                      </div>
-                      <div className="p-3">
-                        <h3
-                          className="font-medium text-sm text-gray-900 truncate"
-                          title={book.title}
-                        >
-                          {book.title}
-                        </h3>
-                        <p
-                          className="text-xs text-gray-500 truncate mt-1"
-                          title={book.author}
-                        >
-                          {book.author}
-                        </p>
-                        {book.readProgress !== undefined &&
-                          book.readProgress > 0 && (
-                          <div className="mt-2">
-                            <div className="bg-gray-200 rounded-full h-1.5">
-                              <div
-                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                                style={{
-                                  width: `${Math.min(book.readProgress, 100)}%`,
-                                }}
-                              >
+                      {/* 管理模式选择框 */}
+                      {isManageMode.value && (
+                        <div className="absolute top-2 left-2 z-10">
+                          <input
+                            type="checkbox"
+                            checked={selectedBooks.value.has(book.bookId)}
+                            onChange={() => toggleBookSelection(book.bookId)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                        </div>
+                      )}
+
+                      {/* 书籍封面和信息 */}
+                      <div
+                        onClick={() =>
+                          !isManageMode.value && openBookDetail(book.bookId)}
+                        className={isManageMode.value ? "" : "cursor-pointer"}
+                      >
+                        <div className="aspect-w-3 aspect-h-4">
+                          <img
+                            src={book.cover}
+                            alt={book.title}
+                            className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-200"
+                            onError={(e) => {
+                              e.currentTarget.src =
+                                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDIwMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03MC41IDcwSDEyOS41VjE3MEg3MC41VjcwWiIgZmlsbD0iI0Q1RDVENS8+Cjx0ZXh0IHg9IjEwMCIgeT0iMjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNkI3MjgwIiBmb250LXNpemU9IjE0Ij7ml6DmmYLlsIE+PC90ZXh0Pgo8L3N2Zz4K";
+                            }}
+                          />
+                        </div>
+                        <div className="p-3">
+                          <h3
+                            className="font-medium text-sm text-gray-900 truncate"
+                            title={book.title}
+                          >
+                            {book.title}
+                          </h3>
+                          <p
+                            className="text-xs text-gray-500 truncate mt-1"
+                            title={book.author}
+                          >
+                            {book.author}
+                          </p>
+                          {book.readProgress !== undefined &&
+                            book.readProgress > 0 && (
+                            <div className="mt-2">
+                              <div className="bg-gray-200 rounded-full h-1.5">
+                                <div
+                                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                  style={{
+                                    width: `${
+                                      Math.min(book.readProgress, 100)
+                                    }%`,
+                                  }}
+                                >
+                                </div>
                               </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                已读 {Math.round(book.readProgress)}%
+                              </p>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                              已读 {Math.round(book.readProgress)}%
-                            </p>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
+
+                      {/* 管理按钮 */}
+                      {!isManageMode.value && (
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="bg-white rounded-lg shadow-lg p-1 flex space-x-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                performShelfAction(
+                                  "remove",
+                                  book.bookId,
+                                  book.title,
+                                );
+                              }}
+                              disabled={actionLoading.value ===
+                                `remove-${book.bookId}`}
+                              className="p-1 text-red-500 hover:bg-red-50 rounded text-xs"
+                              title="移除"
+                            >
+                              {actionLoading.value === `remove-${book.bookId}`
+                                ? "..."
+                                : "🗑️"}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                performShelfAction(
+                                  "archive",
+                                  book.bookId,
+                                  book.title,
+                                );
+                              }}
+                              disabled={actionLoading.value ===
+                                `archive-${book.bookId}`}
+                              className="p-1 text-yellow-500 hover:bg-yellow-50 rounded text-xs"
+                              title="归档"
+                            >
+                              {actionLoading.value === `archive-${book.bookId}`
+                                ? "..."
+                                : "📦"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -391,6 +649,29 @@ export default function ShelfComponent() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
+                        {/* 选择框列 */}
+                        {isManageMode.value && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <input
+                              type="checkbox"
+                              checked={selectedBooks.value.size ===
+                                  books.value.length && books.value.length > 0}
+                              onChange={() => {
+                                if (
+                                  selectedBooks.value.size ===
+                                    books.value.length
+                                ) {
+                                  selectedBooks.value = new Set();
+                                } else {
+                                  selectedBooks.value = new Set(
+                                    books.value.map((b) => b.bookId),
+                                  );
+                                }
+                              }}
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                          </th>
+                        )}
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           书籍
                         </th>
@@ -409,10 +690,29 @@ export default function ShelfComponent() {
                       {books.value.map((book) => (
                         <tr
                           key={book.bookId}
-                          className="hover:bg-gray-50 cursor-pointer"
-                          onClick={() => openBookDetail(book.bookId)}
+                          className="hover:bg-gray-50"
                         >
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          {/* 选择框 */}
+                          {isManageMode.value && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={selectedBooks.value.has(book.bookId)}
+                                onChange={() =>
+                                  toggleBookSelection(book.bookId)}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                            </td>
+                          )}
+
+                          <td
+                            className={`px-6 py-4 whitespace-nowrap ${
+                              !isManageMode.value ? "cursor-pointer" : ""
+                            }`}
+                            onClick={() =>
+                              !isManageMode.value &&
+                              openBookDetail(book.bookId)}
+                          >
                             <div className="flex items-center">
                               <img
                                 src={book.cover}
@@ -461,15 +761,54 @@ export default function ShelfComponent() {
                               )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openBookDetail(book.bookId);
-                              }}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              查看详情
-                            </button>
+                            <div className="flex space-x-2">
+                              {!isManageMode.value && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openBookDetail(book.bookId);
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800"
+                                >
+                                  查看详情
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  performShelfAction(
+                                    "remove",
+                                    book.bookId,
+                                    book.title,
+                                  );
+                                }}
+                                disabled={actionLoading.value ===
+                                  `remove-${book.bookId}`}
+                                className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                              >
+                                {actionLoading.value === `remove-${book.bookId}`
+                                  ? "移除中..."
+                                  : "移除"}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  performShelfAction(
+                                    "archive",
+                                    book.bookId,
+                                    book.title,
+                                  );
+                                }}
+                                disabled={actionLoading.value ===
+                                  `archive-${book.bookId}`}
+                                className="text-yellow-600 hover:text-yellow-800 disabled:opacity-50"
+                              >
+                                {actionLoading.value ===
+                                    `archive-${book.bookId}`
+                                  ? "归档中..."
+                                  : "归档"}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

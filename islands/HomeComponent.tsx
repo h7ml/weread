@@ -196,6 +196,12 @@ export default function HomeComponent() {
                   <span>欢迎，{user.value.name}</span>
                 </div>
                 <a
+                  href="/search"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                >
+                  搜索书籍
+                </a>
+                <a
                   href="/shelf"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
                 >
@@ -330,7 +336,7 @@ export default function HomeComponent() {
           </div>
 
           {/* 快捷操作 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <a
               href="/shelf"
               className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
@@ -374,7 +380,10 @@ export default function HomeComponent() {
               </div>
             </a>
 
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+            <a
+              href="/dashboard"
+              className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
               <div className="text-green-600 mb-6 group-hover:scale-110 transition-transform duration-300">
                 <svg
                   className="w-12 h-12"
@@ -397,7 +406,7 @@ export default function HomeComponent() {
                 查看详细的阅读数据和进度统计信息
               </p>
               <div className="flex items-center text-green-600 group-hover:translate-x-1 transition-transform duration-300">
-                <span className="text-sm font-medium">敬请期待</span>
+                <span className="text-sm font-medium">查看统计</span>
                 <svg
                   className="ml-1 w-4 h-4"
                   fill="none"
@@ -412,10 +421,99 @@ export default function HomeComponent() {
                   />
                 </svg>
               </div>
-            </div>
+            </a>
 
-            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+            <a
+              href="/notes"
+              className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
               <div className="text-purple-600 mb-6 group-hover:scale-110 transition-transform duration-300">
+                <svg
+                  className="w-12 h-12"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-600 transition-colors">
+                笔记管理
+              </h3>
+              <p className="text-gray-600 mb-4">
+                管理您的阅读笔记、书签和书评
+              </p>
+              <div className="flex items-center text-purple-600 group-hover:translate-x-1 transition-transform duration-300">
+                <span className="text-sm font-medium">管理笔记</span>
+                <svg
+                  className="ml-1 w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </a>
+
+            <a
+              href="/profile"
+              className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <div className="text-indigo-600 mb-6 group-hover:scale-110 transition-transform duration-300">
+                <svg
+                  className="w-12 h-12"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-indigo-600 transition-colors">
+                个人中心
+              </h3>
+              <p className="text-gray-600 mb-4">
+                查看个人资料、成就和阅读目标
+              </p>
+              <div className="flex items-center text-indigo-600 group-hover:translate-x-1 transition-transform duration-300">
+                <span className="text-sm font-medium">个人中心</span>
+                <svg
+                  className="ml-1 w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </a>
+          </div>
+
+          {/* 阅读设置 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            <div className="group bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/50 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+              <div className="text-teal-600 mb-6 group-hover:scale-110 transition-transform duration-300">
                 <svg
                   className="w-12 h-12"
                   fill="none"
@@ -436,13 +534,13 @@ export default function HomeComponent() {
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-600 transition-colors">
+              <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-teal-600 transition-colors">
                 阅读设置
               </h3>
               <p className="text-gray-600 mb-4">
                 个性化您的阅读体验，调整字体、主题等
               </p>
-              <div className="flex items-center text-purple-600 group-hover:translate-x-1 transition-transform duration-300">
+              <div className="flex items-center text-teal-600 group-hover:translate-x-1 transition-transform duration-300">
                 <span className="text-sm font-medium">个性定制</span>
                 <svg
                   className="ml-1 w-4 h-4"

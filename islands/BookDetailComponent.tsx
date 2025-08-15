@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import ProgressSyncComponent from "./ProgressSyncComponent.tsx";
 
 export default function BookDetailComponent() {
   const bookInfo = useSignal(null);
@@ -360,6 +361,14 @@ export default function BookDetailComponent() {
                 </div>
               </div>
             </div>
+
+            {/* 阅读进度同步组件 */}
+            <ProgressSyncComponent
+              bookId={bookInfo.value.bookId}
+              onProgressUpdate={(progress) => {
+                console.log("Progress updated:", progress);
+              }}
+            />
 
             {/* 章节列表 */}
             {showChapters.value && (

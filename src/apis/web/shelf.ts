@@ -52,8 +52,9 @@ export async function addToShelf(
   try {
     await client.post("/web/shelf/add", body, { headers });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    console.error(`Failed to add book ${bookId} to shelf:`, error);
+    throw error; // Re-throw so we can get the specific error message
   }
 }
 
@@ -73,8 +74,9 @@ export async function removeFromShelf(
   try {
     await client.post("/web/shelf/remove", body, { headers });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    console.error(`Failed to remove book ${bookId} from shelf:`, error);
+    throw error; // Re-throw so we can get the specific error message
   }
 }
 
@@ -95,8 +97,9 @@ export async function archiveBook(
   try {
     await client.post("/web/shelf/archive", body, { headers });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    console.error(`Failed to archive book ${bookId}:`, error);
+    throw error; // Re-throw so we can get the specific error message
   }
 }
 
@@ -117,7 +120,8 @@ export async function unarchiveBook(
   try {
     await client.post("/web/shelf/archive", body, { headers });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    console.error(`Failed to unarchive book ${bookId}:`, error);
+    throw error; // Re-throw so we can get the specific error message
   }
 }
