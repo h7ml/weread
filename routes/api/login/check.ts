@@ -1,8 +1,8 @@
-import { FreshContext } from "fresh";
+import type { HandlerContext } from "$fresh/server.ts";
 import { getByToken } from "@/kv";
 import { jsonResponse } from "@/utils";
 
-export async function handler(req: Request, _ctx: FreshContext) {
+export async function handler(req: Request, _ctx: HandlerContext) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
 

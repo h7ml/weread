@@ -1,5 +1,3 @@
-/** @jsx h */
-import { h } from "preact";
 import { define } from "../utils.ts";
 import LoginComponent from "../islands/LoginComponent.tsx";
 

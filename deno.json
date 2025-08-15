@@ -1,13 +1,13 @@
 {
-  "nodeModulesDir": "auto",
+  "lock": false,
   "tasks": {
-    "check": "deno fmt --check . && deno lint .",
-    "check-types": "deno check",
-    "check-all": "deno fmt --check . && deno lint . && deno check",
+    "check": "deno fmt --check . && deno lint . && deno check **/*.ts && deno check **/*.tsx",
     "dev": "deno run -A --unstable-kv --unstable-cron --watch=static/,routes/ dev.ts",
     "build": "deno run -A dev.ts build",
-    "start": "deno serve -A --unstable-kv --unstable-cron _fresh.js",
-    "update": "deno run -A -r jsr:@fresh/update ."
+    "start": "deno run -A --unstable-kv --unstable-cron main.ts",
+    "preview": "deno run -A main.ts",
+    "update": "deno run -A -r https://fresh.deno.dev/update .",
+    "tailwind:build": "deno run -A npm:tailwindcss@3.4.0 -i ./static/styles.css -o ./static/styles.css --watch"
   },
   "lint": {
     "rules": {
@@ -30,17 +30,15 @@
     "static/qrcode.min.js"
   ],
   "imports": {
-    "fresh": "jsr:@fresh/core@^2.0.0-alpha.34",
-    "preact": "npm:preact@^10.27.0",
-    "preact/jsx-runtime": "npm:preact@^10.27.0/jsx-runtime",
-    "@preact/signals": "npm:@preact/signals@^2.2.1",
-    "tailwindcss": "npm:tailwindcss@^4.1.10",
-    "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@^0.0.1-alpha.9",
-    "@tailwindcss/postcss": "npm:@tailwindcss/postcss@^4.1.10",
-    "postcss": "npm:postcss@^8.5.6",
-    "crypto-js": "npm:crypto-js@4.2.0",
-    "xss": "npm:xss@1.0.14",
-    "parse5": "npm:parse5@7.1.2",
+    "$fresh/": "https://deno.land/x/fresh@1.7.3/",
+    "preact": "https://esm.sh/preact@10.22.0",
+    "preact/": "https://esm.sh/preact@10.22.0/",
+    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
+    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
+    "$std/": "https://deno.land/std@0.216.0/",
+    "crypto-js": "https://esm.sh/crypto-js@4.2.0",
+    "xss": "https://esm.sh/xss@1.0.14",
+    "parse5": "https://esm.sh/parse5@7.1.2",
     "@/utils": "./src/utils/mod.ts",
     "@/apis": "./src/apis/mod.ts",
     "@/kv": "./src/kv/mod.ts",
@@ -56,15 +54,15 @@
       "deno.ns",
       "deno.unstable"
     ],
-    "jsx": "precompile",
-    "jsxImportSource": "preact",
-    "jsxPrecompileSkipElements": [
-      "a",
-      "img",
-      "source",
-      "body",
-      "html",
-      "head"
-    ]
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
+  "deploy": {
+    "project": "df97c7e4-f9da-4ba1-9b4e-67440eeca773",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "main.ts"
   }
 }

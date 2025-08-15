@@ -1,5 +1,3 @@
-/** @jsx h */
-import { h } from "preact";
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 

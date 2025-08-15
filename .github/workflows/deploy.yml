@@ -32,5 +32,3 @@ jobs:
           project: "h7ml-weread-55"
           entrypoint: "main.ts"
           root: "."
-          
-          
