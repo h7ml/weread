@@ -1,5 +1,27 @@
 # 微信读书 Web 阅读应用
 
+<div align="center">
+
+[![Deploy](https://github.com/h7ml/weread/actions/workflows/deploy.yml/badge.svg)](https://github.com/h7ml/weread/actions/workflows/deploy.yml)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-webook.linuxcloudlab.com-blue?style=flat&logo=vercel)](https://webook.linuxcloudlab.com/)
+[![Deno Version](https://img.shields.io/badge/Deno-1.40+-black?style=flat&logo=deno)](https://deno.land/)
+[![Fresh Version](https://img.shields.io/badge/Fresh-1.7.3-green?style=flat&logo=deno)](https://fresh.deno.dev/)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4.0-06B6D4?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+[![Preact](https://img.shields.io/badge/Preact-10.22.0-673AB8?style=flat&logo=preact)](https://preactjs.com/)
+[![Code Style](https://img.shields.io/badge/Code%20Style-Deno%20fmt-black?style=flat&logo=deno)](https://deno.land/manual/tools/formatter)
+
+[![GitHub Stars](https://img.shields.io/github/stars/h7ml/weread?style=social)](https://github.com/h7ml/weread/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/h7ml/weread?style=social)](https://github.com/h7ml/weread/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/h7ml/weread?style=flat&logo=github)](https://github.com/h7ml/weread/issues)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/h7ml/weread?style=flat&logo=github)](https://github.com/h7ml/weread/commits)
+
+</div>
+
+---
+
 基于 Fresh (Deno) 构建的现代化微信读书 Web 阅读应用，具有高级 TTS
 功能和优雅的阅读界面。
 
