@@ -1,3 +1,4 @@
+/// <reference lib="deno.unstable" />
 /**
  * KV数据库实例管理
  */

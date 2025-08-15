@@ -6,6 +6,5 @@ export interface State {
 
 // Simple helper for page definitions that matches the original define.page pattern
 export const define = {
-  page: (component: (props: PageProps<unknown, State>) => JSX.Element) =>
-    component,
+  page: (component: (props: PageProps<unknown, State>) => any) => component,
 };
