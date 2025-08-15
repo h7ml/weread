@@ -42,15 +42,19 @@ export default function LoginComponent() {
 
   // 生成大图二维码
   const generateLargeQRCode = (url: string) => {
+    console.log("generateLargeQRCode called with URL:", url);
     if (!largeQRRef.current) {
+      console.log("largeQRRef.current is null");
       return;
     }
 
+    console.log("largeQRRef.current found, generating QR code");
     // 清空之前的二维码
     largeQRRef.current.innerHTML = "";
 
     try {
       if (globalThis.QRCode && largeQRRef.current) {
+        console.log("Using QRCode library for large QR");
         // 生成更大的二维码，使用更小的尺寸以适应容器
         new globalThis.QRCode(largeQRRef.current, {
           text: url,
@@ -60,6 +64,7 @@ export default function LoginComponent() {
           colorLight: "#ffffff",
           correctLevel: globalThis.QRCode?.CorrectLevel?.H || 3, // 使用最高纠错等级
         });
+        console.log("QRCode generated successfully");
 
         // 为大图二维码添加微信长按识别支持
         setTimeout(() => {
@@ -77,11 +82,14 @@ export default function LoginComponent() {
           }
         }, 100);
       } else {
+        console.log("Using fallback QR generation for large QR");
         // 使用备用方案生成大图二维码
         const img = document.createElement("img");
         img.src =
           `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${
-            encodeURIComponent(url)
+            encodeURIComponent(
+              url,
+            )
           }`;
         img.alt = "登录二维码（大图）";
         img.style.width = "280px";
@@ -107,7 +115,9 @@ export default function LoginComponent() {
         const img = document.createElement("img");
         img.src =
           `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${
-            encodeURIComponent(url)
+            encodeURIComponent(
+              url,
+            )
           }`;
         img.alt = "登录二维码（大图）";
         img.style.width = "280px";
@@ -130,12 +140,20 @@ export default function LoginComponent() {
 
   // 显示大图二维码
   const showLargeQRCode = () => {
+    console.log("showLargeQRCode called", {
+      qrCodeUrl: qrCodeUrl.value,
+      showLargeQR: showLargeQR.value,
+    });
     if (qrCodeUrl.value) {
       showLargeQR.value = true;
+      console.log("showLargeQR set to true");
       // 延迟生成，确保DOM已渲染
       setTimeout(() => {
+        console.log("Generating large QR code");
         generateLargeQRCode(qrCodeUrl.value);
       }, 100);
+    } else {
+      console.log("No QR code URL available");
     }
   };
 
@@ -237,7 +255,9 @@ export default function LoginComponent() {
                   const img = document.createElement("img");
                   img.src =
                     `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${
-                      encodeURIComponent(url)
+                      encodeURIComponent(
+                        url,
+                      )
                     }`;
                   img.alt = "登录二维码";
                   img.style.width = "200px";
@@ -264,7 +284,9 @@ export default function LoginComponent() {
             const img = document.createElement("img");
             img.src =
               `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${
-                encodeURIComponent(url)
+                encodeURIComponent(
+                  url,
+                )
               }`;
             img.alt = "登录二维码";
             img.style.width = "200px";
@@ -452,7 +474,8 @@ export default function LoginComponent() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">安全登录</h3>
                 <p className="text-blue-100/80 text-sm leading-relaxed">
-                  使用微信扫码快速登录<br />
+                  使用微信扫码快速登录
+                  <br />
                   安全便捷，一键即可
                 </p>
               </div>
@@ -511,7 +534,11 @@ export default function LoginComponent() {
               <div className="mb-8">
                 {/* 二维码容器 */}
                 <div className="relative mx-auto mb-6">
-                  <div className="w-56 h-56 bg-white rounded-3xl p-4 shadow-2xl mx-auto relative overflow-hidden">
+                  <div
+                    className="w-56 h-56 bg-white rounded-3xl p-4 shadow-2xl mx-auto relative overflow-hidden cursor-pointer hover:shadow-3xl transition-shadow duration-300"
+                    onClick={showLargeQRCode}
+                    title="点击查看大图二维码"
+                  >
                     {/* 二维码装饰边框 */}
                     <div className="absolute inset-2 rounded-2xl border-2 border-gray-100">
                     </div>
@@ -523,12 +550,17 @@ export default function LoginComponent() {
                     </div>
                     <div className="absolute bottom-2 right-2 w-6 h-6 border-r-4 border-b-4 border-blue-500 rounded-br-lg">
                     </div>
+                    
+                    {/* 放大镜图标提示 */}
+                    <div className="absolute top-3 right-3 w-8 h-8 bg-blue-500/90 rounded-full flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
 
                     <div
                       ref={qrCodeRef}
-                      className="w-full h-full flex items-center justify-center rounded-2xl cursor-pointer"
-                      onDoubleClick={showLargeQRCode}
-                      title="双击查看大图二维码"
+                      className="w-full h-full flex items-center justify-center rounded-2xl"
                     >
                       <div className="relative">
                         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin">
@@ -567,7 +599,7 @@ export default function LoginComponent() {
                   {statusMessage.value || "打开微信扫一扫，扫描上方二维码"}
                 </p>
                 <p className="text-blue-100/50 text-xs mb-4">
-                  💡 提示：双击二维码可查看大图，长按识别更容易
+                  💡 提示：点击二维码可查看大图，长按识别更容易
                 </p>
 
                 {/* 操作按钮组 */}
@@ -710,6 +742,7 @@ export default function LoginComponent() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn"
           onClick={hideLargeQRCode}
         >
+          {console.log("Rendering large QR modal")}
           <div
             className="relative bg-white rounded-3xl p-6 shadow-2xl max-w-md mx-4 animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
@@ -797,8 +830,10 @@ export default function LoginComponent() {
                     </p>
                     <p className="text-blue-700 text-xs leading-relaxed">
                       1. 打开微信，点击右上角 "+" 号<br />
-                      2. 选择 "扫一扫" 功能<br />
-                      3. 对准二维码进行扫描<br />
+                      2. 选择 "扫一扫" 功能
+                      <br />
+                      3. 对准二维码进行扫描
+                      <br />
                       4. 在微信中确认登录
                     </p>
                   </div>
@@ -837,21 +872,31 @@ export default function LoginComponent() {
 
       <style jsx>
         {`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.9); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-        .animate-scaleIn {
-          animation: scaleIn 0.3s ease-out;
-        }
-      `}
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+          @keyframes scaleIn {
+            from {
+              opacity: 0;
+              transform: scale(0.9);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.2s ease-out;
+          }
+          .animate-scaleIn {
+            animation: scaleIn 0.3s ease-out;
+          }
+        `}
       </style>
     </div>
   );
