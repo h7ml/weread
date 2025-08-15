@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import Navigation from "../components/Navigation.tsx";
 
 // 工具函数
 const formatTime = (minutes) => {
@@ -29,7 +30,11 @@ const STATS_CARDS_CONFIG = [
     ),
     valueFormat: (stats) => ({
       main: formatTime(stats.totalReadingTime || 0),
-      sub: `平均 ${formatTime((stats.totalReadingTime || 0) / Math.max(stats.totalBooks || 1, 1))} / 本`,
+      sub: `平均 ${
+        formatTime(
+          (stats.totalReadingTime || 0) / Math.max(stats.totalBooks || 1, 1),
+        )
+      } / 本`,
     }),
   },
   {
@@ -164,7 +169,11 @@ export default function DashboardComponent() {
     const startDate = new Date(year, 0, 1);
     const endDate = new Date(year, 11, 31);
 
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    for (
+      let d = new Date(startDate);
+      d <= endDate;
+      d.setDate(d.getDate() + 1)
+    ) {
       days.push(new Date(d));
     }
     return days;
@@ -217,27 +226,21 @@ export default function DashboardComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100">
-      {/* 顶部导航 */}
-      <nav className="bg-white/80 backdrop-blur-lg shadow-sm border-b border-white/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <a href="/" className="text-purple-600 hover:text-purple-800 mr-6">
-                ← 返回首页
-              </a>
-              <h1 className="text-xl font-bold text-gray-900">阅读统计</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/shelf" className="text-gray-600 hover:text-gray-900">
-                我的书架
-              </a>
-              <a href="/notes" className="text-gray-600 hover:text-gray-900">
-                我的笔记
-              </a>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation
+        title="阅读统计"
+        icon="dashboard"
+        showUser={true}
+        actions={[
+          {
+            label: "刷新数据",
+            onClick: () => {
+              loadDashboardData();
+            },
+            type: "button",
+            variant: "secondary",
+          },
+        ]}
+      />
 
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* 总体统计卡片 */}
@@ -246,9 +249,14 @@ export default function DashboardComponent() {
             {STATS_CARDS_CONFIG.map((card) => {
               const values = card.valueFormat(overallStats.value);
               return (
-                <div key={card.key} className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
+                <div
+                  key={card.key}
+                  className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6"
+                >
                   <div className="flex items-center">
-                    <div className={`p-3 bg-gradient-to-r from-${card.colorFrom} to-${card.colorTo} rounded-lg`}>
+                    <div
+                      className={`p-3 bg-gradient-to-r from-${card.colorFrom} to-${card.colorTo} rounded-lg`}
+                    >
                       <svg
                         className="w-6 h-6 text-white"
                         fill="none"
@@ -303,7 +311,10 @@ export default function DashboardComponent() {
                           : 0;
 
                         return (
-                          <div key={index} className="flex items-center space-x-4">
+                          <div
+                            key={index}
+                            className="flex items-center space-x-4"
+                          >
                             <div className="w-20 text-sm text-gray-600">
                               {new Date(day.date).toLocaleDateString("zh-CN", {
                                 month: "short",
@@ -359,30 +370,32 @@ export default function DashboardComponent() {
                 ? (
                   <div className="space-y-2">
                     <div className="grid grid-cols-53 gap-1">
-                      {generateDaysInYear(selectedYear.value).map((date, index) => {
-                        const intensity = getHeatmapIntensity(date);
-                        const intensityColors = [
-                          "bg-gray-100", // 0
-                          "bg-green-200", // 1
-                          "bg-green-300", // 2
-                          "bg-green-500", // 3
-                          "bg-green-700", // 4
-                        ];
+                      {generateDaysInYear(selectedYear.value).map(
+                        (date, index) => {
+                          const intensity = getHeatmapIntensity(date);
+                          const intensityColors = [
+                            "bg-gray-100", // 0
+                            "bg-green-200", // 1
+                            "bg-green-300", // 2
+                            "bg-green-500", // 3
+                            "bg-green-700", // 4
+                          ];
 
-                        return (
-                          <div
-                            key={index}
-                            className={`w-2 h-2 rounded-sm ${
-                              intensityColors[intensity]
-                            }`}
-                            title={`${date.toLocaleDateString()}: ${
-                              heatmapData.value.dailyData?.[
-                                date.toISOString().split("T")[0]
-                              ]?.readingTime || 0
-                            }分钟`}
-                          />
-                        );
-                      })}
+                          return (
+                            <div
+                              key={index}
+                              className={`w-2 h-2 rounded-sm ${
+                                intensityColors[intensity]
+                              }`}
+                              title={`${date.toLocaleDateString()}: ${
+                                heatmapData.value.dailyData?.[
+                                  date.toISOString().split("T")[0]
+                                ]?.readingTime || 0
+                              }分钟`}
+                            />
+                          );
+                        },
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-gray-500 mt-4">
@@ -429,7 +442,10 @@ export default function DashboardComponent() {
                         "bg-gray-500",
                       ];
                       return (
-                        <div key={index} className="flex items-center justify-between">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between"
+                        >
                           <div className="flex items-center space-x-3">
                             <div
                               className={`w-3 h-3 rounded-full ${

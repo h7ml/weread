@@ -7,14 +7,25 @@ const VIEW_MODES = {
   grid: {
     name: "网格",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+      />
     ),
-    gridClasses: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8",
+    gridClasses:
+      "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8",
   },
   list: {
     name: "列表",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 6h16M4 10h16M4 14h16M4 18h16"
+      />
     ),
     gridClasses: "space-y-4 mb-8",
   },
@@ -23,7 +34,7 @@ const VIEW_MODES = {
 // 热门搜索关键词配置
 const HOT_KEYWORDS = [
   "人工智能",
-  "心理学", 
+  "心理学",
   "历史",
   "小说",
   "编程",
@@ -36,23 +47,81 @@ const HOT_KEYWORDS = [
 
 // UI 图标配置
 const UI_ICONS = {
-  search: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
-  clear: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />,
+  search: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+    />
+  ),
+  clear: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M6 18L18 6M6 6l12 12"
+    />
+  ),
   loading: (
     <>
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      >
+      </circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      >
+      </path>
     </>
   ),
-  clock: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  clock: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  ),
   fire: (
     <>
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"
+      />
     </>
   ),
-  lightbulb: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />,
-  error: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  lightbulb: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+    />
+  ),
+  error: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  ),
 };
 
 export default function SearchComponent() {
@@ -76,7 +145,7 @@ export default function SearchComponent() {
     // 从 localStorage 加载搜索历史和视图模式
     const savedHistory = localStorage.getItem("weread_search_history");
     const savedViewMode = localStorage.getItem("weread_search_view_mode");
-    
+
     if (savedHistory) {
       try {
         searchHistory.value = JSON.parse(savedHistory);
@@ -84,19 +153,22 @@ export default function SearchComponent() {
         console.error("Failed to parse search history:", e);
       }
     }
-    
-    if (savedViewMode && (savedViewMode === "grid" || savedViewMode === "list")) {
+
+    if (
+      savedViewMode && (savedViewMode === "grid" || savedViewMode === "list")
+    ) {
       viewMode.value = savedViewMode;
     }
 
     // 添加滚动监听
     const handleScroll = () => {
       if (loadingMore.value || !hasMore.value) return;
-      
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      const scrollTop = window.pageYOffset ||
+        document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-      
+
       if (scrollTop + windowHeight >= documentHeight - 200) {
         loadMoreResults();
       }
@@ -131,7 +203,10 @@ export default function SearchComponent() {
     localStorage.removeItem("weread_search_history");
   };
 
-  const performSearch = async (keyword: string = searchQuery.value, isLoadMore = false) => {
+  const performSearch = async (
+    keyword: string = searchQuery.value,
+    isLoadMore = false,
+  ) => {
     if (!keyword.trim()) {
       error.value = "请输入搜索关键词";
       return;
@@ -162,7 +237,7 @@ export default function SearchComponent() {
       if (data.success) {
         const newBooks = data.data.books || [];
         const newSuggestions = data.data.suggestions || [];
-        
+
         if (isLoadMore) {
           searchResults.value = [...searchResults.value, ...newBooks];
         } else {
@@ -229,7 +304,7 @@ export default function SearchComponent() {
 
   const renderBookCard = (book: any, index: number) => {
     const isGridMode = viewMode.value === "grid";
-    
+
     if (isGridMode) {
       // 网格模式
       return (
@@ -256,15 +331,27 @@ export default function SearchComponent() {
             </h3>
             <p className="text-gray-600 text-sm mb-2">{book.author}</p>
             {book.intro && (
-              <p className="text-gray-500 text-xs line-clamp-2 mb-3">{book.intro}</p>
+              <p className="text-gray-500 text-xs line-clamp-2 mb-3">
+                {book.intro}
+              </p>
             )}
             {book.fragments && book.fragments.length > 0 && (
               <div className="mb-3">
                 <div className="text-xs text-gray-400 mb-1">内容片段:</div>
-                {book.fragments.slice(0, 1).map((fragment: any, fragIndex: number) => (
-                  <div key={fragIndex} className="bg-gray-50 p-2 rounded text-xs">
-                    <div className="text-gray-500 mb-1">{fragment.chapterTitle}</div>
-                    <div className="text-gray-700 line-clamp-2">{fragment.text}</div>
+                {book.fragments.slice(0, 1).map((
+                  fragment: any,
+                  fragIndex: number,
+                ) => (
+                  <div
+                    key={fragIndex}
+                    className="bg-gray-50 p-2 rounded text-xs"
+                  >
+                    <div className="text-gray-500 mb-1">
+                      {fragment.chapterTitle}
+                    </div>
+                    <div className="text-gray-700 line-clamp-2">
+                      {fragment.text}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -314,15 +401,21 @@ export default function SearchComponent() {
             </div>
             <p className="text-gray-600 mb-2">{book.author}</p>
             {book.intro && (
-              <p className="text-gray-500 text-sm line-clamp-2 mb-3">{book.intro}</p>
+              <p className="text-gray-500 text-sm line-clamp-2 mb-3">
+                {book.intro}
+              </p>
             )}
             {book.fragments && book.fragments.length > 0 && (
               <div className="mb-3">
                 <div className="text-xs text-gray-400 mb-2">相关内容:</div>
                 {book.fragments.map((fragment: any, fragIndex: number) => (
                   <div key={fragIndex} className="bg-gray-50 p-3 rounded mb-2">
-                    <div className="text-gray-500 text-xs mb-1">{fragment.chapterTitle}</div>
-                    <div className="text-gray-700 text-sm line-clamp-3">{fragment.text}</div>
+                    <div className="text-gray-500 text-xs mb-1">
+                      {fragment.chapterTitle}
+                    </div>
+                    <div className="text-gray-700 text-sm line-clamp-3">
+                      {fragment.text}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -362,21 +455,27 @@ export default function SearchComponent() {
             <div className="relative flex items-center bg-white rounded-full shadow-lg border border-gray-200 hover:shadow-xl focus-within:shadow-xl transition-all duration-300">
               {/* 搜索图标 */}
               <div className="pl-6 pr-3">
-                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="h-5 w-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   {UI_ICONS.search}
                 </svg>
               </div>
-              
+
               {/* 输入框 */}
               <input
                 type="text"
                 value={searchQuery.value}
-                onInput={(e) => searchQuery.value = (e.target as HTMLInputElement).value}
+                onInput={(e) =>
+                  searchQuery.value = (e.target as HTMLInputElement).value}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="搜索书名、作者或关键词..."
                 className="flex-1 py-4 text-lg bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500"
               />
-              
+
               {/* 清除按钮 */}
               {searchQuery.value && (
                 <button
@@ -384,31 +483,43 @@ export default function SearchComponent() {
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
                   title="清空"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     {UI_ICONS.clear}
                   </svg>
                 </button>
               )}
-              
+
               {/* 分割线 */}
               <div className="h-8 w-px bg-gray-200 mx-3"></div>
-              
+
               {/* 搜索按钮 */}
               <button
                 onClick={handleSearch}
                 disabled={loading.value || !searchQuery.value.trim()}
                 className="mr-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium rounded-full transition-all duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed flex items-center"
               >
-                {loading.value ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      {UI_ICONS.loading}
-                    </svg>
-                    搜索中
-                  </>
-                ) : (
-                  "搜索"
-                )}
+                {loading.value
+                  ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        {UI_ICONS.loading}
+                      </svg>
+                      搜索中
+                    </>
+                  )
+                  : (
+                    "搜索"
+                  )}
               </button>
             </div>
           </div>
@@ -418,7 +529,12 @@ export default function SearchComponent() {
             <div className="max-w-2xl mx-auto mt-4">
               <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                  <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-4 h-4 text-blue-500 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     {UI_ICONS.lightbulb}
                   </svg>
                   相关推荐
@@ -447,7 +563,12 @@ export default function SearchComponent() {
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                      <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-5 h-5 text-gray-500 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         {UI_ICONS.clock}
                       </svg>
                       搜索历史
@@ -460,7 +581,10 @@ export default function SearchComponent() {
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {searchHistory.value.map((keyword: string, index: number) => (
+                    {searchHistory.value.map((
+                      keyword: string,
+                      index: number,
+                    ) => (
                       <button
                         key={index}
                         onClick={() => handleKeywordClick(keyword)}
@@ -478,7 +602,12 @@ export default function SearchComponent() {
             <div className="mb-8">
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <svg className="w-5 h-5 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5 text-orange-500 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     {UI_ICONS.fire}
                   </svg>
                   热门搜索
@@ -527,7 +656,12 @@ export default function SearchComponent() {
                       }`}
                       title={`${config.name}视图`}
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         {config.icon}
                       </svg>
                     </button>
@@ -541,7 +675,12 @@ export default function SearchComponent() {
               <div className="max-w-2xl mx-auto mb-8">
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-5 h-5 text-red-500 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       {UI_ICONS.error}
                     </svg>
                     <p className="text-red-700">{error.value}</p>
@@ -553,7 +692,8 @@ export default function SearchComponent() {
             {/* 加载状态 */}
             {loading.value && (
               <div className="flex justify-center items-center py-20">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600">
+                </div>
                 <span className="ml-4 text-gray-600">搜索中...</span>
               </div>
             )}
@@ -562,31 +702,38 @@ export default function SearchComponent() {
             {searchResults.value.length > 0 && (
               <>
                 <div className={VIEW_MODES[viewMode.value].gridClasses}>
-                  {searchResults.value.map((book: any, index: number) => renderBookCard(book, index))}
+                  {searchResults.value.map((book: any, index: number) =>
+                    renderBookCard(book, index)
+                  )}
                 </div>
 
                 {/* 加载更多指示器 */}
                 {hasMore.value && (
                   <div className="flex justify-center py-8">
-                    {loadingMore.value ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
-                        <span className="text-gray-600">加载更多...</span>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={loadMoreResults}
-                        className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-3 rounded-xl font-medium transition-colors"
-                      >
-                        点击加载更多
-                      </button>
-                    )}
+                    {loadingMore.value
+                      ? (
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3">
+                          </div>
+                          <span className="text-gray-600">加载更多...</span>
+                        </div>
+                      )
+                      : (
+                        <button
+                          onClick={loadMoreResults}
+                          className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-3 rounded-xl font-medium transition-colors"
+                        >
+                          点击加载更多
+                        </button>
+                      )}
                   </div>
                 )}
 
                 {!hasMore.value && searchResults.value.length > 10 && (
                   <div className="text-center py-4">
-                    <p className="text-gray-500">已显示全部 {searchResults.value.length} 个结果</p>
+                    <p className="text-gray-500">
+                      已显示全部 {searchResults.value.length} 个结果
+                    </p>
                   </div>
                 )}
               </>

@@ -7,7 +7,7 @@ const THEME_OPTIONS = [
     key: "light",
     name: "默认",
     bg: "bg-white",
-    text: "text-gray-900", 
+    text: "text-gray-900",
     ring: "ring-gray-300",
   },
   {
@@ -1732,15 +1732,20 @@ export default function WeReadStyleReaderComponent() {
                         {FONT_OPTIONS.map((font) => (
                           <button
                             key={font.key}
-                            onClick={() => updateReadingSettings("fontFamily", font.key)}
+                            onClick={() =>
+                              updateReadingSettings("fontFamily", font.key)}
                             className={`p-3 rounded-xl border-2 transition-all btn-scale ${
                               fontFamily.value === font.key
                                 ? "border-blue-500 bg-blue-50 text-blue-700"
                                 : "border-current/20 hover:bg-current/5"
                             }`}
                           >
-                            <div className="text-sm font-medium">{font.name}</div>
-                            <div className="text-xs opacity-60">{font.desc}</div>
+                            <div className="text-sm font-medium">
+                              {font.name}
+                            </div>
+                            <div className="text-xs opacity-60">
+                              {font.desc}
+                            </div>
                           </button>
                         ))}
                       </div>

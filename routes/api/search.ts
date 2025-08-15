@@ -20,7 +20,7 @@ export async function handler(req: Request) {
   // 获取认证信息（如果有）
   const token = url.searchParams.get("token") ||
     req.headers.get("Authorization")?.replace("Bearer ", "");
-  
+
   let cookie = "";
   if (token) {
     try {
@@ -28,7 +28,8 @@ export async function handler(req: Request) {
       for await (const entry of kv.list({ prefix: ["user"] })) {
         if (entry.value.skey === token) {
           const userInfo = entry.value;
-          cookie = `wr_vid=${userInfo.vid}; wr_skey=${userInfo.skey}; wr_rt=${userInfo.rt}`;
+          cookie =
+            `wr_vid=${userInfo.vid}; wr_skey=${userInfo.skey}; wr_rt=${userInfo.rt}`;
           break;
         }
       }
@@ -39,7 +40,9 @@ export async function handler(req: Request) {
   }
 
   try {
-    logger.info(`Unified search - type: ${type}, keyword: ${keyword}, count: ${count}`);
+    logger.info(
+      `Unified search - type: ${type}, keyword: ${keyword}, count: ${count}`,
+    );
 
     let result = {
       suggestions: [],
@@ -54,7 +57,8 @@ export async function handler(req: Request) {
       "Cache-Control": "no-cache",
       "Pragma": "no-cache",
       "Referer": "https://weread.qq.com/web/search/books",
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
     };
 
     if (cookie) {
@@ -71,17 +75,19 @@ export async function handler(req: Request) {
 
         const suggestResponse = await client.get<any>(
           `/web/search/search_suggest?${suggestParams}`,
-          { headers }
+          { headers },
         );
 
         if (suggestResponse?.books) {
-          result.suggestions = suggestResponse.books.slice(0, 5).map((item: any) => ({
+          result.suggestions = suggestResponse.books.slice(0, 5).map((
+            item: any,
+          ) => ({
             bookId: item.bookId || "",
             title: item.title || "",
             author: item.author || "",
             cover: item.cover || "",
             rating: item.newRating || item.rating || 0,
-            type: "book"
+            type: "book",
           }));
         }
       } catch (error) {
@@ -102,24 +108,29 @@ export async function handler(req: Request) {
 
         const globalResponse = await client.get<any>(
           `/web/search/global?${globalParams}`,
-          { headers }
+          { headers },
         );
 
         if (globalResponse?.books) {
-          result.globalResults = globalResponse.books.slice(0, count).map((item: any) => ({
+          result.globalResults = globalResponse.books.slice(0, count).map((
+            item: any,
+          ) => ({
             bookId: item.bookInfo?.bookId || "",
             title: item.bookInfo?.title || "",
             author: item.bookInfo?.author || "",
             cover: item.bookInfo?.cover || "",
             intro: item.bookInfo?.intro || "",
             rating: item.bookInfo?.newRating || 0,
-            fragments: (item.fragments || []).slice(0, 2).map((fragment: any) => ({
+            fragments: (item.fragments || []).slice(0, 2).map((
+              fragment: any,
+            ) => ({
               text: fragment.text || "",
               chapterTitle: fragment.chapterTitle || "",
             })),
           }));
 
-          result.totalCount = globalResponse.totalCount || result.globalResults.length;
+          result.totalCount = globalResponse.totalCount ||
+            result.globalResults.length;
         }
       } catch (error) {
         logger.warn("Global search failed:", error);
@@ -148,13 +159,14 @@ export async function handler(req: Request) {
       hasMore: result.totalCount > count,
     };
 
-    logger.info(`Search completed - found ${result.globalResults.length} books, ${result.suggestions.length} suggestions`);
+    logger.info(
+      `Search completed - found ${result.globalResults.length} books, ${result.suggestions.length} suggestions`,
+    );
 
     return jsonResponse({
       success: true,
       data: responseData,
     });
-
   } catch (error) {
     logger.error("Unified search error:", error);
     return jsonResponse({

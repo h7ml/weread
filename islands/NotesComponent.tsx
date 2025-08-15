@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import Navigation from "../components/Navigation.tsx";
 
 // Tab配置
 const TABS_CONFIG = [
@@ -50,13 +51,13 @@ const EMPTY_STATES = {
     description: "开始阅读并做笔记吧！",
   },
   bookmarks: {
-    icon: "🔖", 
+    icon: "🔖",
     title: "暂无书签",
     description: "在阅读时添加书签标记重要位置！",
   },
   reviews: {
     icon: "✍️",
-    title: "暂无书评", 
+    title: "暂无书评",
     description: "读完书籍后写下你的感受吧！",
   },
 };
@@ -101,7 +102,9 @@ export default function NotesComponent() {
         });
 
         if (selectedNoteType.value !== "all") {
-          const noteTypeOption = NOTE_TYPE_OPTIONS.find(opt => opt.value === selectedNoteType.value);
+          const noteTypeOption = NOTE_TYPE_OPTIONS.find((opt) =>
+            opt.value === selectedNoteType.value
+          );
           if (noteTypeOption?.typeValue) {
             params.append("noteType", noteTypeOption.typeValue);
           }
@@ -247,7 +250,7 @@ export default function NotesComponent() {
   const renderEmptyState = (tabKey: string) => {
     const emptyState = EMPTY_STATES[tabKey];
     if (!emptyState) return null;
-    
+
     return (
       <div className="text-center py-12">
         <div className="text-6xl mb-4">{emptyState.icon}</div>
@@ -271,26 +274,22 @@ export default function NotesComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100">
-      {/* 顶部导航 */}
-      <nav className="bg-white/80 backdrop-blur-lg shadow-sm border-b border-white/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <a href="/" className="text-green-600 hover:text-green-800 mr-6">
-                ← 返回首页
-              </a>
-              <h1 className="text-xl font-bold text-gray-900">笔记管理</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              {NAV_LINKS.map((link) => (
-                <a key={link.href} href={link.href} className="text-gray-600 hover:text-gray-900">
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation
+        title="我的笔记"
+        icon="notes"
+        showUser={true}
+        actions={[
+          {
+            label: "刷新笔记",
+            onClick: () => {
+              currentPage.value = 1;
+              loadNotesData();
+            },
+            type: "button",
+            variant: "secondary",
+          },
+        ]}
+      />
 
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* 搜索和筛选区域 */}

@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import Navigation from "../components/Navigation.tsx";
 
 // 统计卡片配置
 const STATS_CARDS_CONFIG = [
@@ -16,7 +17,8 @@ const STATS_CARDS_CONFIG = [
         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
       />
     ),
-    getValue: (stats) => `${Math.floor((stats.total?.readingTime || 0) / 60)}分钟`,
+    getValue: (stats) =>
+      `${Math.floor((stats.total?.readingTime || 0) / 60)}分钟`,
   },
   {
     key: "booksCount",
@@ -46,7 +48,8 @@ const STATS_CARDS_CONFIG = [
         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
       />
     ),
-    getValue: (stats) => `${((stats.total?.readWords || 0) / 10000).toFixed(1)}万字`,
+    getValue: (stats) =>
+      `${((stats.total?.readWords || 0) / 10000).toFixed(1)}万字`,
   },
   {
     key: "daysCount",
@@ -73,7 +76,7 @@ const PROFILE_TABS = [
   { key: "settings", label: "设置", icon: "⚙️" },
 ];
 
-// 本周统计卡片配置  
+// 本周统计卡片配置
 const WEEKLY_STATS_CONFIG = [
   {
     key: "thisWeek",
@@ -83,11 +86,12 @@ const WEEKLY_STATS_CONFIG = [
     textColor: "blue-600",
     valueColor: "blue-900",
     icon: "📖",
-    getValue: (stats, formatTime) => formatTime(stats.thisWeek?.readingTime || 0),
+    getValue: (stats, formatTime) =>
+      formatTime(stats.thisWeek?.readingTime || 0),
   },
   {
     key: "today",
-    title: "今日阅读", 
+    title: "今日阅读",
     colorFrom: "green-50",
     colorTo: "green-100",
     textColor: "green-600",
@@ -99,11 +103,12 @@ const WEEKLY_STATS_CONFIG = [
     key: "readWords",
     title: "阅读进度",
     colorFrom: "purple-50",
-    colorTo: "purple-100", 
+    colorTo: "purple-100",
     textColor: "purple-600",
     valueColor: "purple-900",
     icon: "📈",
-    getValue: (stats) => `${((stats.today?.readWords || 0) / 1000).toFixed(1)}k字`,
+    getValue: (stats) =>
+      `${((stats.today?.readWords || 0) / 1000).toFixed(1)}k字`,
   },
 ];
 
@@ -196,33 +201,21 @@ export default function ProfileComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* 顶部导航 */}
-      <nav className="bg-white/80 backdrop-blur-lg shadow-sm border-b border-white/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <a href="/" className="text-blue-600 hover:text-blue-800 mr-6">
-                ← 返回首页
-              </a>
-              <h1 className="text-xl font-bold text-gray-900">个人中心</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a href="/shelf" className="text-gray-600 hover:text-gray-900">
-                我的书架
-              </a>
-              <button
-                onClick={() => {
-                  localStorage.clear();
-                  globalThis.location.href = "/login";
-                }}
-                className="text-red-600 hover:text-red-800"
-              >
-                退出登录
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation
+        title="个人中心"
+        icon="profile"
+        showUser={true}
+        actions={[
+          {
+            label: "刷新数据",
+            onClick: () => {
+              loadProfileData();
+            },
+            type: "button",
+            variant: "secondary",
+          },
+        ]}
+      />
 
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* 用户信息卡片 */}
@@ -271,7 +264,10 @@ export default function ProfileComponent() {
         {userStats.value && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {STATS_CARDS_CONFIG.map((card) => (
-              <div key={card.key} className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
+              <div
+                key={card.key}
+                className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6"
+              >
                 <div className="flex items-center">
                   <div className={`p-3 ${card.bgColor} rounded-lg`}>
                     <svg
@@ -328,13 +324,20 @@ export default function ProfileComponent() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {WEEKLY_STATS_CONFIG.map((stat) => (
-                    <div key={stat.key} className={`bg-gradient-to-r from-${stat.colorFrom} to-${stat.colorTo} rounded-lg p-4`}>
+                    <div
+                      key={stat.key}
+                      className={`bg-gradient-to-r from-${stat.colorFrom} to-${stat.colorTo} rounded-lg p-4`}
+                    >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className={`${stat.textColor} text-sm font-medium`}>
+                          <p
+                            className={`${stat.textColor} text-sm font-medium`}
+                          >
                             {stat.title}
                           </p>
-                          <p className={`text-2xl font-bold ${stat.valueColor}`}>
+                          <p
+                            className={`text-2xl font-bold ${stat.valueColor}`}
+                          >
                             {stat.getValue(userStats.value, formatTime)}
                           </p>
                         </div>
