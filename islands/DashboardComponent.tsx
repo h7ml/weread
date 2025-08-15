@@ -3,209 +3,25 @@ import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
 import BottomNavigation from "../components/BottomNavigation.tsx";
 
-// 工具函数
-const formatTime = (minutes) => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-
-  if (hours > 0) {
-    return `${hours}小时${mins}分钟`;
-  }
-  return `${mins}分钟`;
-};
-
-// 统计卡片配置
-const STATS_CARDS_CONFIG = [
-  {
-    key: "totalReadingTime",
-    title: "总阅读时长",
-    colorFrom: "blue-400",
-    colorTo: "blue-600",
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    ),
-    valueFormat: (stats) => ({
-      main: formatTime(stats.totalReadingTime || 0),
-      sub: `平均 ${
-        formatTime(
-          (stats.totalReadingTime || 0) / Math.max(stats.totalBooks || 1, 1),
-        )
-      } / 本`,
-    }),
-  },
-  {
-    key: "totalBooks",
-    title: "阅读书籍",
-    colorFrom: "green-400",
-    colorTo: "green-600",
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-      />
-    ),
-    valueFormat: (stats) => ({
-      main: `${stats.totalBooks || 0}`,
-      sub: `完成 ${stats.finishedBooks || 0} 本`,
-    }),
-  },
-  {
-    key: "totalNotes",
-    title: "笔记数量",
-    colorFrom: "purple-400",
-    colorTo: "purple-600",
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-      />
-    ),
-    valueFormat: (stats) => ({
-      main: `${stats.totalNotes || 0}`,
-      sub: `书签 ${stats.totalBookmarks || 0} 个`,
-    }),
-  },
-  {
-    key: "currentStreak",
-    title: "连续阅读",
-    colorFrom: "orange-400",
-    colorTo: "orange-600",
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
-      />
-    ),
-    valueFormat: (stats) => ({
-      main: `${stats.currentStreak || 0}天`,
-      sub: `最长 ${stats.longestStreak || 0} 天`,
-    }),
-  },
-];
-
 export default function DashboardComponent() {
-  const overallStats = useSignal(null);
-  const readingTrend = useSignal([]);
-  const categoryStats = useSignal([]);
-  const heatmapData = useSignal(null);
-  const bookStats = useSignal([]);
-  const loading = useSignal(true);
-  const error = useSignal("");
-  const selectedPeriod = useSignal("month");
-  const selectedYear = useSignal(new Date().getFullYear());
+  const loading = useSignal(false);
   const isLoggedIn = useSignal(false);
 
   useEffect(() => {
-    checkLoginAndLoadData();
-  }, [selectedPeriod.value, selectedYear.value]);
+    checkLoginStatus();
+  }, []);
 
-  const checkLoginAndLoadData = async () => {
+  const checkLoginStatus = async () => {
     const token = localStorage.getItem("weread_token");
     if (!token) {
       isLoggedIn.value = false;
-      loading.value = false;
       return;
     }
-    
     isLoggedIn.value = true;
-    await loadDashboardData(token);
-  };
-
-  const loadDashboardData = async (token: string) => {
-
-    try {
-      loading.value = true;
-
-      const [
-        overallRes,
-        trendRes,
-        categoryRes,
-        heatmapRes,
-        booksRes,
-      ] = await Promise.all([
-        fetch(`/api/stats/overall?token=${token}`),
-        fetch(`/api/stats/trend?token=${token}&period=${selectedPeriod.value}`),
-        fetch(`/api/stats/categories?token=${token}`),
-        fetch(`/api/stats/heatmap?token=${token}&year=${selectedYear.value}`),
-        fetch(`/api/stats/books?token=${token}&limit=10&sortBy=readingTime`),
-      ]);
-
-      if (overallRes.ok) {
-        const data = await overallRes.json();
-        overallStats.value = data.data;
-      }
-
-      if (trendRes.ok) {
-        const data = await trendRes.json();
-        readingTrend.value = data.data || [];
-      }
-
-      if (categoryRes.ok) {
-        const data = await categoryRes.json();
-        categoryStats.value = data.data || [];
-      }
-
-      if (heatmapRes.ok) {
-        const data = await heatmapRes.json();
-        heatmapData.value = data.data;
-      }
-
-      if (booksRes.ok) {
-        const data = await booksRes.json();
-        bookStats.value = data.data || [];
-      }
-    } catch (err) {
-      console.error("Failed to load dashboard data:", err);
-      error.value = "加载统计数据失败";
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  const generateDaysInYear = (year) => {
-    const days = [];
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31);
-
-    for (
-      let d = new Date(startDate);
-      d <= endDate;
-      d.setDate(d.getDate() + 1)
-    ) {
-      days.push(new Date(d));
-    }
-    return days;
-  };
-
-  const getHeatmapIntensity = (date) => {
-    if (!heatmapData.value || !heatmapData.value.dailyData) return 0;
-
-    const dateString = date.toISOString().split("T")[0];
-    const dayData = heatmapData.value.dailyData[dateString];
-
-    if (!dayData || !dayData.readingTime) return 0;
-
-    // 根据阅读时长计算强度等级 (0-4)
-    if (dayData.readingTime >= 120) return 4; // 2小时以上
-    if (dayData.readingTime >= 60) return 3; // 1-2小时
-    if (dayData.readingTime >= 30) return 2; // 30分钟-1小时
-    if (dayData.readingTime >= 10) return 1; // 10-30分钟
-    return 0;
   };
 
   // 未登录状态
-  if (!loading.value && !isLoggedIn.value) {
+  if (!isLoggedIn.value) {
     return (
       <>
         <style dangerouslySetInnerHTML={{
@@ -287,37 +103,9 @@ export default function DashboardComponent() {
     );
   }
 
-  if (loading.value) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin h-12 w-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4">
-          </div>
-          <p className="text-gray-600">加载统计数据中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error.value) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <p className="text-gray-600 mb-4">{error.value}</p>
-          <button
-            onClick={loadDashboardData}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
-          >
-            重试
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // 登录状态 - 正在开发中页面
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       <style dangerouslySetInnerHTML={{
         __html: `
           @media (max-width: 399px) {
@@ -325,304 +113,171 @@ export default function DashboardComponent() {
               padding-bottom: 5rem !important;
             }
           }
+          .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+          .development-animation {
+            animation: pulse 2s infinite;
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+          .gear-rotate {
+            animation: rotate 3s linear infinite;
+          }
+          @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
         `
       }} />
       <div className="dashboard-container">
-      <Navigation
-        title="阅读统计"
-        icon="home"
-        showUser={true}
-        currentPath="/dashboard"
-        actions={[
-          {
-            label: "刷新数据",
-            onClick: () => {
-              loadDashboardData();
-            },
-            type: "button",
-            variant: "secondary",
-          },
-        ]}
-      />
+        <Navigation
+          title="阅读统计"
+          icon="home"
+          showUser={true}
+          currentPath="/dashboard"
+        />
 
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* 总体统计卡片 */}
-        {overallStats.value && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {STATS_CARDS_CONFIG.map((card) => {
-              const values = card.valueFormat(overallStats.value);
-              return (
-                <div
-                  key={card.key}
-                  className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6"
-                >
-                  <div className="flex items-center">
-                    <div
-                      className={`p-3 bg-gradient-to-r from-${card.colorFrom} to-${card.colorTo} rounded-lg`}
-                    >
-                      <svg
-                        className="w-6 h-6 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        {card.icon}
-                      </svg>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-500">
-                        {card.title}
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {values.main}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {values.sub}
-                      </p>
-                    </div>
-                  </div>
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          {/* 正在开发中的主要内容 */}
+          <div className="text-center py-16">
+            <div className="glass-card rounded-3xl shadow-xl p-12 mb-8">
+              {/* 动画图标 */}
+              <div className="relative mb-8">
+                <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center shadow-2xl">
+                  <svg
+                    className="w-16 h-16 text-white gear-rotate"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
                 </div>
-              );
-            })}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 左侧：阅读趋势和热力图 */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* 阅读趋势图 */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                阅读趋势
-              </h3>
-
-              {readingTrend.value.length > 0
-                ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>阅读时长 (分钟)</span>
-                      <span>日期</span>
-                    </div>
-
-                    <div className="space-y-2">
-                      {readingTrend.value.slice(0, 7).map((day, index) => {
-                        const maxTime = Math.max(
-                          ...readingTrend.value.map((d) => d.readingTime),
-                        );
-                        const percentage = maxTime > 0
-                          ? (day.readingTime / maxTime) * 100
-                          : 0;
-
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center space-x-4"
-                          >
-                            <div className="w-20 text-sm text-gray-600">
-                              {new Date(day.date).toLocaleDateString("zh-CN", {
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </div>
-                            <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
-                              <div
-                                className="bg-gradient-to-r from-purple-400 to-blue-500 h-4 rounded-full transition-all duration-300"
-                                style={{ width: `${percentage}%` }}
-                              />
-                              <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-700">
-                                {formatTime(day.readingTime)}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )
-                : (
-                  <div className="text-center py-8 text-gray-500">
-                    暂无趋势数据
-                  </div>
-                )}
-            </div>
-
-            {/* 阅读热力图 */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  阅读热力图
-                </h3>
-                <select
-                  value={selectedYear.value}
-                  onChange={(e) =>
-                    selectedYear.value = parseInt(e.target.value)}
-                  className="px-3 py-1 border border-gray-300 rounded-md text-sm"
-                >
-                  {Array.from({ length: 5 }, (_, i) => {
-                    const year = new Date().getFullYear() - i;
-                    return (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    );
-                  })}
-                </select>
+                {/* 装饰性圆环 */}
+                <div className="absolute inset-0 w-32 h-32 mx-auto border-4 border-purple-200 rounded-full development-animation" />
+                <div className="absolute inset-2 w-28 h-28 mx-auto border-2 border-blue-200 rounded-full development-animation" style={{animationDelay: '0.5s'}} />
               </div>
 
-              {heatmapData.value
-                ? (
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-53 gap-1">
-                      {generateDaysInYear(selectedYear.value).map(
-                        (date, index) => {
-                          const intensity = getHeatmapIntensity(date);
-                          const intensityColors = [
-                            "bg-gray-100", // 0
-                            "bg-green-200", // 1
-                            "bg-green-300", // 2
-                            "bg-green-500", // 3
-                            "bg-green-700", // 4
-                          ];
+              {/* 标题和描述 */}
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-700 bg-clip-text text-transparent mb-4">
+                统计功能开发中
+              </h1>
+              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                我们正在为您打造全新的阅读统计体验，包含详细的数据分析、趋势图表和个人阅读报告
+              </p>
 
-                          return (
-                            <div
-                              key={index}
-                              className={`w-2 h-2 rounded-sm ${
-                                intensityColors[intensity]
-                              }`}
-                              title={`${date.toLocaleDateString()}: ${
-                                heatmapData.value.dailyData?.[
-                                  date.toISOString().split("T")[0]
-                                ]?.readingTime || 0
-                              }分钟`}
-                            />
-                          );
-                        },
-                      )}
-                    </div>
+              {/* 开发进度 */}
+              <div className="max-w-md mx-auto mb-8">
+                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                  <span>开发进度</span>
+                  <span>75%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div className="bg-gradient-to-r from-purple-500 to-blue-600 h-3 rounded-full transition-all duration-1000" style={{width: '75%'}} />
+                </div>
+              </div>
 
-                    <div className="flex items-center justify-between text-xs text-gray-500 mt-4">
-                      <span>少</span>
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-100 rounded-sm" />
-                        <div className="w-2 h-2 bg-green-200 rounded-sm" />
-                        <div className="w-2 h-2 bg-green-300 rounded-sm" />
-                        <div className="w-2 h-2 bg-green-500 rounded-sm" />
-                        <div className="w-2 h-2 bg-green-700 rounded-sm" />
-                      </div>
-                      <span>多</span>
-                    </div>
-                  </div>
-                )
-                : (
-                  <div className="text-center py-8 text-gray-500">
-                    暂无热力图数据
-                  </div>
-                )}
-            </div>
-          </div>
+              {/* 预期功能 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="glass-card rounded-xl p-6">
+                  <div className="text-3xl mb-3">📊</div>
+                  <h3 className="font-semibold text-gray-900 mb-2">数据概览</h3>
+                  <p className="text-sm text-gray-600">阅读时长、书籍数量等核心数据统计</p>
+                </div>
+                <div className="glass-card rounded-xl p-6">
+                  <div className="text-3xl mb-3">📈</div>
+                  <h3 className="font-semibold text-gray-900 mb-2">趋势分析</h3>
+                  <p className="text-sm text-gray-600">阅读习惯趋势和热力图可视化</p>
+                </div>
+                <div className="glass-card rounded-xl p-6">
+                  <div className="text-3xl mb-3">🏆</div>
+                  <h3 className="font-semibold text-gray-900 mb-2">成就系统</h3>
+                  <p className="text-sm text-gray-600">阅读成就和个人阅读报告</p>
+                </div>
+              </div>
 
-          {/* 右侧：分类统计和热门书籍 */}
-          <div className="space-y-8">
-            {/* 分类统计 */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                阅读分类
-              </h3>
-
-              {categoryStats.value.length > 0
-                ? (
-                  <div className="space-y-3">
-                    {categoryStats.value.slice(0, 8).map((category, index) => {
-                      const colors = [
-                        "bg-blue-500",
-                        "bg-green-500",
-                        "bg-purple-500",
-                        "bg-yellow-500",
-                        "bg-red-500",
-                        "bg-indigo-500",
-                        "bg-pink-500",
-                        "bg-gray-500",
-                      ];
-                      return (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div
-                              className={`w-3 h-3 rounded-full ${
-                                colors[index % colors.length]
-                              }`}
-                            />
-                            <span className="text-sm text-gray-700">
-                              {category.category}
-                            </span>
-                          </div>
-                          <span className="text-sm font-medium text-gray-900">
-                            {category.count}本
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )
-                : (
-                  <div className="text-center py-8 text-gray-500">
-                    暂无分类数据
-                  </div>
-                )}
+              {/* 操作按钮 */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <a
+                  href="/"
+                  className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-gradient-to-r from-purple-600 to-blue-700 rounded-full hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                  开始阅读
+                </a>
+                <a
+                  href="/profile"
+                  className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-purple-600 bg-purple-50 rounded-full hover:bg-purple-100 transition-all duration-300"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  个人中心
+                </a>
+              </div>
             </div>
 
-            {/* 热门书籍 */}
-            <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                阅读最多的书籍
-              </h3>
-
-              {bookStats.value.length > 0
-                ? (
-                  <div className="space-y-4">
-                    {bookStats.value.slice(0, 5).map((book, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <div className="flex-shrink-0">
-                          <img
-                            src={book.cover}
-                            alt={book.title}
-                            className="w-12 h-16 object-cover rounded"
-                            onError={(e) => {
-                              e.target.src =
-                                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA0OCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNiAyNEgzMlY0MEgxNlYyNFoiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg==";
-                            }}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {book.title}
-                          </p>
-                          <p className="text-sm text-gray-500 truncate">
-                            {book.author}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            阅读 {formatTime(book.readingTime || 0)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+            {/* 开发时间线 */}
+            <div className="glass-card rounded-2xl shadow-lg p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">开发时间线</h2>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="w-4 h-4 bg-green-500 rounded-full flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">基础框架 ✅</h3>
+                    <p className="text-sm text-gray-600">页面结构和导航系统</p>
                   </div>
-                )
-                : (
-                  <div className="text-center py-8 text-gray-500">
-                    暂无书籍数据
+                  <span className="text-sm text-green-600 font-medium">已完成</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0 development-animation" />
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">数据统计 🔄</h3>
+                    <p className="text-sm text-gray-600">阅读数据收集和分析</p>
                   </div>
-                )}
+                  <span className="text-sm text-blue-600 font-medium">进行中</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="w-4 h-4 bg-gray-300 rounded-full flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-500">图表可视化 ⏳</h3>
+                    <p className="text-sm text-gray-600">趋势图表和热力图</p>
+                  </div>
+                  <span className="text-sm text-gray-500 font-medium">计划中</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="w-4 h-4 bg-gray-300 rounded-full flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-500">个性化报告 ⏳</h3>
+                    <p className="text-sm text-gray-600">智能分析和建议</p>
+                  </div>
+                  <span className="text-sm text-gray-500 font-medium">计划中</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* 底部导航 */}
-      <BottomNavigation currentPath="/dashboard" />
+        
+        {/* 底部导航 */}
+        <BottomNavigation currentPath="/dashboard" />
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import {
   getReadingStats,
   getUserInfo,
   getUserProfile,
+  getWeReadUserInfo,
+  transformUserInfo,
 } from "@/apis";
 
 export async function handler(req: Request, ctx: FreshContext) {
@@ -59,39 +61,85 @@ export async function handler(req: Request, ctx: FreshContext) {
       );
     }
 
-    // 构建cookie字符串
-    const cookie =
-      `wr_vid=${userInfo.vid}; wr_skey=${userInfo.skey}; wr_rt=${userInfo.rt}`;
-
     if (req.method === "GET") {
-      // 并行获取用户信息、档案和阅读统计
-      const [userInfoData, userProfile, readingStatsData] = await Promise.all([
-        getUserInfo(userInfo.vid, cookie).catch(() => null),
-        getUserProfile(userInfo.vid, cookie).catch(() => null),
-        getReadingStats(cookie).catch(() => null),
-      ]);
+      try {
+        // 使用新的微信读书API获取用户信息
+        const wereadUser = await getWeReadUserInfo(
+          userInfo.vid,
+          userInfo.skey,
+          userInfo.vid.toString()
+        );
 
-      const responseData = {
-        user: userInfoData || {
-          vid: userInfo.vid,
-          name: userInfo.name || "用户",
-          avatarUrl: "",
-          gender: 0,
-        },
-        profile: userProfile,
-        stats: readingStatsData,
-      };
+        // 转换为项目内部格式
+        const transformedUserInfo = transformUserInfo(wereadUser);
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: responseData,
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+        // 构建cookie字符串用于其他API调用
+        const cookie = `wr_vid=${userInfo.vid}; wr_skey=${userInfo.skey}; wr_rt=${userInfo.rt}`;
+
+        // 并行获取其他数据（使用兼容接口）
+        const [readingStatsData] = await Promise.all([
+          getReadingStats(cookie).catch(() => null),
+        ]);
+
+        const responseData = {
+          user: transformedUserInfo,
+          profile: null, // 暂时不支持，可以后续扩展
+          stats: readingStatsData,
+          // 包含原始微信读书数据以便调试
+          rawWereadUser: wereadUser,
+        };
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: responseData,
+          }),
+          {
+            status: 200,
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+            },
+          },
+        );
+      } catch (apiError) {
+        console.error("WeRead API error:", apiError);
+        
+        // 如果新API失败，回退到原有方式
+        const cookie = `wr_vid=${userInfo.vid}; wr_skey=${userInfo.skey}; wr_rt=${userInfo.rt}`;
+        
+        const [userInfoData, userProfile, readingStatsData] = await Promise.all([
+          getUserInfo(userInfo.vid, cookie).catch(() => null),
+          getUserProfile(userInfo.vid, cookie).catch(() => null),
+          getReadingStats(cookie).catch(() => null),
+        ]);
+
+        const responseData = {
+          user: userInfoData || {
+            vid: userInfo.vid,
+            name: userInfo.name || "用户",
+            avatarUrl: "",
+            gender: 0,
+          },
+          profile: userProfile,
+          stats: readingStatsData,
+          fallback: true, // 标识使用了回退方案
+        };
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: responseData,
+          }),
+          {
+            status: 200,
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+            },
+          },
+        );
+      }
     }
 
     if (req.method === "PUT") {
@@ -106,7 +154,10 @@ export async function handler(req: Request, ctx: FreshContext) {
         }),
         {
           status: 200,
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
         },
       );
     }
@@ -127,10 +178,14 @@ export async function handler(req: Request, ctx: FreshContext) {
       JSON.stringify({
         success: false,
         error: "获取用户信息失败",
+        details: error.message,
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
       },
     );
   }

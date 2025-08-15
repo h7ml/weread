@@ -1,9 +1,36 @@
 import { buildQueryString, HttpClient } from "../../utils/mod.ts";
 
-const client = new HttpClient("https://weread.qq.com");
+const client = new HttpClient("https://i.weread.qq.com");
 
 /**
- * 用户相关接口类型定义
+ * 微信读书用户信息接口响应类型（基于实际API）
+ */
+export interface WeReadUserInfo {
+  userVid: number;
+  name: string;
+  gender: number;
+  avatar: string;
+  nick: string;
+  isV: number;
+  vDesc: string;
+  roleTags: string[];
+  followPromote: string;
+  isDeepV: boolean;
+  deepVTitle: string;
+  isHide: number;
+  medalInfo?: {
+    id: string;
+    desc: string;
+    title: string;
+    levelIndex: number;
+  };
+  signature: string;
+  location: string;
+  publish: number;
+}
+
+/**
+ * 项目内部用户信息类型
  */
 export interface UserInfo {
   vid: number;
@@ -20,6 +47,12 @@ export interface UserInfo {
   friendCount?: number;
   isVip?: boolean;
   vipLevel?: number;
+  medalInfo?: {
+    id: string;
+    desc: string;
+    title: string;
+    level: number;
+  };
 }
 
 export interface UserProfile {
@@ -86,34 +119,75 @@ export interface ReadingStats {
 }
 
 /**
- * 获取用户基本信息
+ * 获取微信读书用户基本信息（基于实际API）
+ */
+export async function getWeReadUserInfo(
+  userVid: number,
+  skey: string,
+  vid: string,
+): Promise<WeReadUserInfo> {
+  const headers: HeadersInit = {
+    'channelid': 'AppStore',
+    'accept': '*/*',
+    'vid': vid,
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'zh-Hans-CN;q=1',
+    'basever': '9.3.5.48',
+    'user-agent': 'WeRead/9.3.5 (iPhone; iOS 26.0; Scale/3.00)',
+    'skey': skey,
+    'v': '9.3.5.48'
+  };
+
+  const response = await client.get<WeReadUserInfo>(`/user?userVid=${userVid}`, {
+    headers,
+  });
+
+  return response;
+}
+
+/**
+ * 转换微信读书用户信息为项目内部格式
+ */
+export function transformUserInfo(wereadUser: WeReadUserInfo): UserInfo {
+  return {
+    vid: wereadUser.userVid,
+    name: wereadUser.name,
+    avatarUrl: wereadUser.avatar,
+    wechatName: wereadUser.nick,
+    gender: wereadUser.gender,
+    location: wereadUser.location || undefined,
+    signature: wereadUser.signature || undefined,
+    isVip: wereadUser.isV === 1,
+    vipLevel: wereadUser.isDeepV ? 2 : (wereadUser.isV === 1 ? 1 : 0),
+    medalInfo: wereadUser.medalInfo ? {
+      id: wereadUser.medalInfo.id,
+      desc: wereadUser.medalInfo.desc,
+      title: wereadUser.medalInfo.title,
+      level: wereadUser.medalInfo.levelIndex,
+    } : undefined,
+  };
+}
+
+/**
+ * 获取用户基本信息（兼容原接口）
  */
 export async function getUserInfo(
   vid: number,
   cookie: string,
 ): Promise<UserInfo> {
-  const headers: HeadersInit = { Cookie: cookie };
+  // 从cookie中提取skey和vid
+  const skeyMatch = cookie.match(/skey=([^;]+)/);
+  const vidMatch = cookie.match(/wr_vid=([^;]+)/);
+  
+  if (!skeyMatch || !vidMatch) {
+    throw new Error('Invalid cookie: missing skey or vid');
+  }
 
-  const response = await client.get<any>(`/web/user/info?userVid=${vid}`, {
-    headers,
-  });
+  const skey = skeyMatch[1];
+  const userVid = vidMatch[1];
 
-  return {
-    vid: response.vid,
-    name: response.name,
-    avatarUrl: response.avatarUrl,
-    wechatName: response.wechatName,
-    gender: response.gender,
-    location: response.location,
-    signature: response.signature,
-    level: response.level,
-    experience: response.experience,
-    followCount: response.followCount,
-    followerCount: response.followerCount,
-    friendCount: response.friendCount,
-    isVip: response.isVip,
-    vipLevel: response.vipLevel,
-  };
+  const wereadUser = await getWeReadUserInfo(vid, skey, userVid);
+  return transformUserInfo(wereadUser);
 }
 
 /**

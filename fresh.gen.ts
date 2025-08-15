@@ -21,7 +21,10 @@ import * as $api_tts_index from "./routes/api/tts/index.ts";
 import * as $api_tts_openxing_voices from "./routes/api/tts/openxing-voices.ts";
 import * as $api_tts_openxing from "./routes/api/tts/openxing.ts";
 import * as $api_tts_voices from "./routes/api/tts/voices.ts";
+import * as $api_user_credential from "./routes/api/user/credential.ts";
 import * as $api_user_profile from "./routes/api/user/profile.ts";
+import * as $api_user_update_credential from "./routes/api/user/update-credential.ts";
+import * as $api_user_weread from "./routes/api/user/weread.ts";
 import * as $book_id_ from "./routes/book/[id].tsx";
 import * as $dashboard from "./routes/dashboard.tsx";
 import * as $index from "./routes/index.tsx";
@@ -68,7 +71,10 @@ const manifest = {
     "./routes/api/tts/openxing-voices.ts": $api_tts_openxing_voices,
     "./routes/api/tts/openxing.ts": $api_tts_openxing,
     "./routes/api/tts/voices.ts": $api_tts_voices,
+    "./routes/api/user/credential.ts": $api_user_credential,
     "./routes/api/user/profile.ts": $api_user_profile,
+    "./routes/api/user/update-credential.ts": $api_user_update_credential,
+    "./routes/api/user/weread.ts": $api_user_weread,
     "./routes/book/[id].tsx": $book_id_,
     "./routes/dashboard.tsx": $dashboard,
     "./routes/index.tsx": $index,
