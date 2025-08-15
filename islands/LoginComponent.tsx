@@ -318,19 +318,6 @@ export default function LoginComponent() {
                   <span>开始登录</span>
                 </div>
               </button>
-
-              {/* 测试按钮 */}
-              <button
-                onClick={() => {
-                  console.log("Test button clicked!");
-                  alert(
-                    "Test button works! Current status: " + loginStatus.value,
-                  );
-                }}
-                className="w-full mt-3 bg-gray-500/20 hover:bg-gray-500/30 text-gray-300 font-medium py-2 px-4 rounded-xl transition-all duration-300 text-sm"
-              >
-                🔧 测试按钮 (点击测试)
-              </button>
             </div>
           )}
 

@@ -1,4 +1,18 @@
 {
+  "name": "weread",
+  "version": "1.0.0",
+  "description": "微信读书 Web 阅读应用 - 基于 Fresh (Deno) 构建的现代化阅读平台",
+  "author": "h7ml <h7ml@qq.com>",
+  "homepage": "https://github.com/h7ml/weread",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/h7ml/weread.git"
+  },
+  "license": "MIT",
+  "keywords": ["weread", "ebook", "reader", "tts", "fresh", "deno"],
+  "exports": {
+    ".": "./main.ts"
+  },
   "lock": false,
   "tasks": {
     "check": "deno fmt --check . && deno lint .",

@@ -1,5 +1,12 @@
 /**
- * 项目配置
+ * 微信读书 Web 阅读应用 - 项目配置
+ * 
+ * @description 应用程序配置文件，包含环境变量和API设置
+ * @author h7ml <h7ml@qq.com>
+ * @version 1.0.0
+ * @license MIT
+ * @homepage https://github.com/h7ml/weread
+ * @created 2025-08-15
  */
 export interface Config {
   // 环境配置
