@@ -2252,7 +2252,7 @@ export default function WeReadStyleReaderComponent() {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-bold mb-6">目录</h2>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
               {chapters.value.map((chapter, index) => (
                 <button
                   key={chapter.chapterUid}

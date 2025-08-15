@@ -788,28 +788,14 @@ export default function LoginComponent() {
 
             {/* 大图二维码容器 */}
             <div className="flex justify-center mb-6">
-              <div className="relative">
-                {/* 二维码装饰边框 */}
-                <div className="absolute -inset-2 rounded-2xl border-2 border-blue-200">
-                </div>
-                <div className="absolute -top-2 -left-2 w-6 h-6 border-l-4 border-t-4 border-blue-500 rounded-tl-lg">
-                </div>
-                <div className="absolute -top-2 -right-2 w-6 h-6 border-r-4 border-t-4 border-blue-500 rounded-tr-lg">
-                </div>
-                <div className="absolute -bottom-2 -left-2 w-6 h-6 border-l-4 border-b-4 border-blue-500 rounded-bl-lg">
-                </div>
-                <div className="absolute -bottom-2 -right-2 w-6 h-6 border-r-4 border-b-4 border-blue-500 rounded-br-lg">
-                </div>
-
-                <div
-                  ref={largeQRRef}
-                  className="w-80 h-80 flex items-center justify-center bg-white rounded-xl p-4 shadow-lg border border-gray-200"
-                >
-                  <div className="relative">
-                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin">
-                    </div>
-                    <div className="absolute inset-0 w-12 h-12 border-4 border-purple-300 border-b-transparent rounded-full animate-spin animation-delay-150">
-                    </div>
+              <div
+                ref={largeQRRef}
+                className="w-80 h-80 flex items-center justify-center bg-white rounded-xl p-4 shadow-lg border border-gray-200"
+              >
+                <div className="relative">
+                  <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin">
+                  </div>
+                  <div className="absolute inset-0 w-12 h-12 border-4 border-purple-300 border-b-transparent rounded-full animate-spin animation-delay-150">
                   </div>
                 </div>
               </div>

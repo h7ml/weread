@@ -1,7 +1,22 @@
 import { useSignal } from "@preact/signals";
-import { useEffect } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
 import BottomNavigation from "../components/BottomNavigation.tsx";
+
+// 防抖函数
+function useDebounce<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): T {
+  const timeoutRef = useRef<number>();
+  
+  return ((...args: Parameters<T>) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => func(...args), delay);
+  }) as T;
+}
 
 export default function BookDetailComponent() {
   const bookInfo = useSignal(null);
@@ -16,6 +31,25 @@ export default function BookDetailComponent() {
   const currentPage = useSignal(1);
   const chaptersPerPage = 20;
   const showAllChapters = useSignal(false);
+
+  // 创建防抖搜索函数
+  const debouncedSearch = useDebounce((query: string) => {
+    if (!query) {
+      filteredChapters.value = chapters.value;
+    } else {
+      const lowerQuery = query.toLowerCase();
+      filteredChapters.value = chapters.value.filter((chapter) =>
+        chapter.title?.toLowerCase().includes(lowerQuery)
+      );
+    }
+    currentPage.value = 1; // 重置到第一页
+  }, 300);
+
+  // 处理搜索输入
+  const handleSearchInput = (value: string) => {
+    chapterSearchQuery.value = value;
+    debouncedSearch(value);
+  };
 
   useEffect(() => {
     // 检查登录状态
@@ -36,18 +70,10 @@ export default function BookDetailComponent() {
     loadBookDetail(token || "", bookId);
   }, []);
 
-  // 更新过滤后的章节列表
+  // 当章节数据加载完成时，初始化过滤列表
   useEffect(() => {
-    if (!chapterSearchQuery.value) {
-      filteredChapters.value = chapters.value;
-    } else {
-      const query = chapterSearchQuery.value.toLowerCase();
-      filteredChapters.value = chapters.value.filter((chapter) =>
-        chapter.title?.toLowerCase().includes(query)
-      );
-    }
-    currentPage.value = 1; // 重置到第一页
-  }, [chapters.value, chapterSearchQuery.value]);
+    filteredChapters.value = chapters.value;
+  }, [chapters.value]);
 
   // 分页计算
   const totalPages = Math.ceil(filteredChapters.value.length / chaptersPerPage);
@@ -92,6 +118,11 @@ export default function BookDetailComponent() {
   const loadChapters = async (token: string, bookId: string) => {
     try {
       chaptersLoading.value = true;
+      // 清空现有数据
+      chapters.value = [];
+      filteredChapters.value = [];
+      currentPage.value = 1;
+      chapterSearchQuery.value = "";
 
       const response = await fetch(
         `/api/book/chapters?bookId=${bookId}&token=${token}`,
@@ -196,6 +227,37 @@ export default function BookDetailComponent() {
       alert("下载完成！");
     } catch (err) {
       alert(`批量下载失败: ${err.message}`);
+    }
+  };
+
+  // 分享功能
+  const shareBook = async () => {
+    const shareData = {
+      title: `《${bookInfo.value.title}》- ${bookInfo.value.author}`,
+      text: `推荐一本好书：《${bookInfo.value.title}》，作者：${bookInfo.value.author}。${bookInfo.value.intro ? bookInfo.value.intro.substring(0, 100) + '...' : ''}`,
+      url: window.location.href
+    };
+
+    try {
+      // 优先使用 Web Share API
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        // 降级到剪贴板
+        const shareText = `${shareData.title}\n\n${shareData.text}\n\n链接: ${shareData.url}`;
+        await navigator.clipboard.writeText(shareText);
+        alert("分享内容已复制到剪贴板！");
+      }
+    } catch (err) {
+      // 最终降级方案
+      const shareText = `${shareData.title}\n\n${shareData.text}\n\n链接: ${shareData.url}`;
+      const textArea = document.createElement("textarea");
+      textArea.value = shareText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      alert("分享内容已复制到剪贴板！");
     }
   };
 
@@ -551,17 +613,51 @@ export default function BookDetailComponent() {
                           <button
                             onClick={() => loadChapters(localStorage.getItem("weread_token"), bookInfo.value.bookId)}
                             disabled={chaptersLoading.value}
-                            className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-lg transition-colors shadow-lg disabled:opacity-50"
+                            className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:scale-105 active:scale-95"
                           >
-                            {chaptersLoading.value ? "加载中..." : "刷新章节"}
+                            <div className="flex items-center justify-center space-x-2">
+                              {chaptersLoading.value ? (
+                                <>
+                                  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                  </svg>
+                                  <span>加载中...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                  </svg>
+                                  <span>刷新章节</span>
+                                </>
+                              )}
+                            </div>
                           </button>
                           {chapters.value.length > 0 && (
-                            <button
-                              onClick={downloadAllChapters}
-                              className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-lg transition-colors shadow-lg"
-                            >
-                              下载全书
-                            </button>
+                            <>
+                              <button
+                                onClick={downloadAllChapters}
+                                className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                              >
+                                <div className="flex items-center justify-center space-x-2">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  <span>下载全书</span>
+                                </div>
+                              </button>
+                              <button
+                                onClick={shareBook}
+                                className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                              >
+                                <div className="flex items-center justify-center space-x-2">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                                  </svg>
+                                  <span>分享图书</span>
+                                </div>
+                              </button>
+                            </>
                           )}
                         </>
                       ) : (
@@ -844,17 +940,51 @@ export default function BookDetailComponent() {
                         <button
                           onClick={() => loadChapters(localStorage.getItem("weread_token"), bookInfo.value.bookId)}
                           disabled={chaptersLoading.value}
-                          className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors shadow-lg disabled:opacity-50"
+                          className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:scale-105 active:scale-95"
                         >
-                          {chaptersLoading.value ? "加载中..." : "刷新章节"}
+                          <div className="flex items-center justify-center space-x-2">
+                            {chaptersLoading.value ? (
+                              <>
+                                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>加载中...</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>刷新章节</span>
+                              </>
+                            )}
+                          </div>
                         </button>
                         {chapters.value.length > 0 && (
-                          <button
-                            onClick={downloadAllChapters}
-                            className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
-                          >
-                            下载全书
-                          </button>
+                          <>
+                            <button
+                              onClick={downloadAllChapters}
+                              className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                            >
+                              <div className="flex items-center justify-center space-x-2">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>下载全书</span>
+                              </div>
+                            </button>
+                            <button
+                              onClick={shareBook}
+                              className="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                            >
+                              <div className="flex items-center justify-center space-x-2">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                                </svg>
+                                <span>分享图书</span>
+                              </div>
+                            </button>
+                          </>
                         )}
                       </>
                     ) : (
@@ -880,7 +1010,7 @@ export default function BookDetailComponent() {
 
             {/* 章节列表 */}
             {showChapters.value && (
-              <div className={`bg-gradient-to-br from-white/90 to-purple-50/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/50 p-6 md:p-8 ${showAllChapters.value ? 'max-h-[48rem] overflow-y-auto custom-scrollbar' : ''}`}>
+              <div className={`bg-gradient-to-br from-white/90 to-purple-50/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/50 p-6 md:p-8 ${showAllChapters.value ? 'max-h-96 overflow-y-auto custom-scrollbar' : ''}`}>
                 <div className="flex flex-col gap-6 mb-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-purple-800 bg-clip-text flex items-center">
@@ -933,7 +1063,7 @@ export default function BookDetailComponent() {
                       type="text"
                       value={chapterSearchQuery.value}
                       onInput={(e) =>
-                        chapterSearchQuery.value = e.currentTarget.value}
+                        handleSearchInput(e.currentTarget.value)}
                       placeholder="    搜索章节..."
                       className="w-full pl-10 pr-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
                     />
@@ -962,7 +1092,7 @@ export default function BookDetailComponent() {
                   )
                   : (
                     <>
-                      <div className="space-y-3">
+                      <div className="space-y-3 max-h-36 overflow-y-auto pr-2">
                         {(showAllChapters.value ? filteredChapters.value : currentChapters).map((chapter, index) => {
                           const actualIndex = showAllChapters.value ? index : startIndex + index;
                           return (

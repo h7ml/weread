@@ -1,7 +1,38 @@
 import { useSignal } from "@preact/signals";
-import { useEffect } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
 import BottomNavigation from "../components/BottomNavigation.tsx";
+
+// 防抖函数
+function useDebounce<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): T {
+  const timeoutRef = useRef<number>();
+  
+  return ((...args: Parameters<T>) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => func(...args), delay);
+  }) as T;
+}
+
+// 节流函数
+function useThrottle<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): T {
+  const lastCallTime = useRef<number>(0);
+  
+  return ((...args: Parameters<T>) => {
+    const now = Date.now();
+    if (now - lastCallTime.current >= delay) {
+      lastCallTime.current = now;
+      func(...args);
+    }
+  }) as T;
+}
 
 // 视图模式配置
 const VIEW_MODES = {
@@ -138,6 +169,29 @@ export default function SearchComponent() {
   const hasMore = useSignal(false);
   const maxIdx = useSignal(0);
   const totalCount = useSignal(0);
+
+  // 防抖搜索建议函数
+  const debouncedGetSuggestions = useDebounce(async (query: string) => {
+    if (!query.trim()) {
+      suggestions.value = [];
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("weread_token");
+      const response = await fetch(
+        `/api/search?q=${encodeURIComponent(query)}&type=suggest&count=5&token=${token || ""}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          suggestions.value = data.data || [];
+        }
+      }
+    } catch (err) {
+      console.error("获取搜索建议失败:", err);
+    }
+  }, 300);
 
   // 热门搜索关键词
   const hotKeywords = HOT_KEYWORDS;
@@ -280,6 +334,22 @@ export default function SearchComponent() {
   const loadMoreResults = () => {
     if (searchQuery.value.trim() && hasMore.value && !loadingMore.value) {
       performSearch(searchQuery.value, true);
+    }
+  };
+
+  // 节流的加载更多函数
+  const throttledLoadMore = useThrottle(loadMoreResults, 1000);
+
+  // 处理搜索输入
+  const handleSearchInput = (value: string) => {
+    searchQuery.value = value;
+    // 如果有输入内容，获取搜索建议
+    if (value.trim()) {
+      showHistory.value = false;
+      debouncedGetSuggestions(value);
+    } else {
+      suggestions.value = [];
+      showHistory.value = true;
     }
   };
 
@@ -502,7 +572,7 @@ export default function SearchComponent() {
                 type="text"
                 value={searchQuery.value}
                 onInput={(e) =>
-                  searchQuery.value = (e.target as HTMLInputElement).value}
+                  handleSearchInput((e.target as HTMLInputElement).value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="搜索书名、作者或关键词..."
                 className="search-input flex-1 py-4 pl-20 text-lg bg-transparent placeholder-gray-500"
@@ -752,7 +822,7 @@ export default function SearchComponent() {
                       )
                       : (
                         <button
-                          onClick={loadMoreResults}
+                          onClick={throttledLoadMore}
                           className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-3 rounded-xl font-medium transition-colors"
                         >
                           点击加载更多
