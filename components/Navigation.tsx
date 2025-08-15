@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import { quickLogout } from "../utils/logout.ts";
 
 interface NavigationProps {
   title: string;
@@ -316,10 +317,7 @@ export default function Navigation({ title, icon = "home", showUser = false, cur
               {/* 退出按钮 */}
               {showUser && user.value && (
                 <button
-                  onClick={() => {
-                    localStorage.clear();
-                    globalThis.location.href = "/login";
-                  }}
+                  onClick={() => quickLogout()}
                   className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors rounded-md"
                   title="退出登录"
                 >

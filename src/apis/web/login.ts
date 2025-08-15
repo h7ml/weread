@@ -2,7 +2,7 @@ import { HttpClient } from "@/utils";
 import { Credential } from "@/kv";
 import { SessionInitResponse } from "@/types";
 
-const client = new HttpClient("https://weread.qq.com");
+const client = new HttpClient("https://weread.qq.com", {}, 15000); // 15秒超时
 
 /**
  * 登录相关接口响应

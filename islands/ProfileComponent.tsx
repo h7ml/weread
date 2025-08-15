@@ -2,6 +2,7 @@ import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import Navigation from "../components/Navigation.tsx";
 import BottomNavigation from "../components/BottomNavigation.tsx";
+import { logout } from "../utils/logout.ts";
 
 // 现代化个人主页统计卡片配置
 const PROFILE_STATS_CONFIG = [
@@ -103,10 +104,42 @@ export default function ProfileComponent() {
   const error = useSignal("");
   const activeTab = useSignal("library");
   const isLoggedIn = useSignal(false);
+  const isLoggingOut = useSignal(false);
 
   useEffect(() => {
     checkLoginAndLoadData();
   }, []);
+
+  // 退出登录功能
+  const handleLogout = async () => {
+    if (isLoggingOut.value) return;
+    
+    try {
+      isLoggingOut.value = true;
+      
+      const success = await logout({
+        showConfirm: true,
+        redirectTo: "/login",
+        silent: false
+      });
+      
+      if (success) {
+        // 清除本地状态
+        userInfo.value = null;
+        userStats.value = null;
+        achievements.value = [];
+        readingGoals.value = [];
+        isLoggedIn.value = false;
+        error.value = "";
+      }
+      
+    } catch (err) {
+      console.error("Logout error:", err);
+      alert("退出登录时发生错误，请刷新页面重试。");
+    } finally {
+      isLoggingOut.value = false;
+    }
+  };
 
   const checkLoginAndLoadData = async () => {
     const token = localStorage.getItem("weread_token");
@@ -915,8 +948,28 @@ export default function ProfileComponent() {
 
                 {/* 底部操作 */}
                 <div className="pt-4">
-                  <button className="w-full bg-red-50 text-red-600 py-3 px-4 rounded-xl font-medium hover:bg-red-100 transition-colors border border-red-200">
-                    退出登录
+                  <button 
+                    onClick={handleLogout}
+                    disabled={isLoggingOut.value}
+                    className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-300 border ${
+                      isLoggingOut.value
+                        ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                        : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 hover:shadow-lg"
+                    }`}
+                  >
+                    {isLoggingOut.value ? (
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                        <span>正在退出...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center space-x-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span>退出登录</span>
+                      </div>
+                    )}
                   </button>
                 </div>
               </div>

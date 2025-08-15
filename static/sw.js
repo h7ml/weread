@@ -27,19 +27,21 @@ const STATIC_ASSETS = [
   '/icons/icon-512x512.png'
 ];
 
-// 需要动态缓存的路径模式
+// 需要动态缓存的路径模式 - 仅缓存必要的静态API
 const CACHE_PATTERNS = [
   /^\/api\/book\/info/,
-  /^\/api\/book\/chapters/,
-  /^\/api\/user\/profile/,
-  /^\/api\/stats/
+  /^\/api\/book\/chapters/
 ];
 
-// 不需要缓存的路径模式
+// 不需要缓存的路径模式 - 扩大不缓存范围
 const NO_CACHE_PATTERNS = [
   /^\/api\/tts/,
   /^\/api\/login/,
-  /^\/api\/progress/
+  /^\/api\/progress/,
+  /^\/api\/user/,
+  /^\/api\/stats/,
+  /^\/api\/search/,
+  /^\/api\/notes/
 ];
 
 // Service Worker 安装事件
@@ -167,7 +169,13 @@ async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   
   try {
-    const response = await fetch(request);
+    // 设置请求超时为10秒
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(request, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
     if (response.status === 200) {
       cache.put(request, response.clone());
     }
@@ -191,7 +199,13 @@ async function networkFirstWithOffline(request, cacheName) {
   const cache = await caches.open(cacheName);
   
   try {
-    const response = await fetch(request);
+    // 设置请求超时为8秒
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    
+    const response = await fetch(request, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
     if (response.status === 200) {
       cache.put(request, response.clone());
     }

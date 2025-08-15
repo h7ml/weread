@@ -29,8 +29,8 @@ export default define.page(function App({ Component, state, url }) {
         {/* 默认标题，如果页面没有设置的话 */}
         {!state?.title && <title>微信读书 Web - 现代化在线阅读平台</title>}
         
-        {/* PWA 组件 */}
-        <PWA enabled={true} />
+        {/* PWA 组件 - 可通过环境变量控制 */}
+        <PWA enabled={Deno.env.get("PWA_ENABLED") !== "false"} />
         
         {/* 统计代码注入 */}
         <Analytics 

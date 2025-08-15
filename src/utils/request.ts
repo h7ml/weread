@@ -163,13 +163,13 @@ export class HttpClient {
 /**
  * 创建微信读书API客户端
  */
-export function createWeReadClient(): HttpClient {
+export function createWeReadClient(timeout = 15000): HttpClient {
   return new HttpClient("https://weread.qq.com", {
     "User-Agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Referer": "https://weread.qq.com/",
     "Accept": "application/json, text/plain, */*",
-  });
+  }, timeout);
 }
 
 /**

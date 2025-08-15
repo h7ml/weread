@@ -11,6 +11,7 @@ import * as $api_book_info from "./routes/api/book/info.ts";
 import * as $api_health from "./routes/api/health.ts";
 import * as $api_login_check from "./routes/api/login/check.ts";
 import * as $api_login_sse from "./routes/api/login/sse.ts";
+import * as $api_logout from "./routes/api/logout.ts";
 import * as $api_notes from "./routes/api/notes.ts";
 import * as $api_progress from "./routes/api/progress.ts";
 import * as $api_search from "./routes/api/search.ts";
@@ -61,6 +62,7 @@ const manifest = {
     "./routes/api/health.ts": $api_health,
     "./routes/api/login/check.ts": $api_login_check,
     "./routes/api/login/sse.ts": $api_login_sse,
+    "./routes/api/logout.ts": $api_logout,
     "./routes/api/notes.ts": $api_notes,
     "./routes/api/progress.ts": $api_progress,
     "./routes/api/search.ts": $api_search,

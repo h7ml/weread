@@ -73,7 +73,7 @@ export async function handler(_req: Request): Promise<Response> {
           sendEvent("status", { message: "请用微信扫描二维码登录..." });
 
           let pollCount = 0;
-          const maxPolls = 120; // 2分钟超时 (120 * 1秒)
+          const maxPolls = 60; // 2分钟超时 (60 * 2秒)
 
           pollInterval = setInterval(async () => {
             if (isClosed || pollCount >= maxPolls) {
@@ -189,23 +189,23 @@ export async function handler(_req: Request): Promise<Response> {
               }
 
               // 更新状态提示
-              if (pollCount % 10 === 0) { // 每10秒更新一次状态
+              if (pollCount % 5 === 0) { // 每10秒更新一次状态（5 * 2秒）
                 const remainingTime = Math.max(0, maxPolls - pollCount);
                 sendEvent("status", {
                   message: `请扫描二维码登录 (${
-                    Math.ceil(remainingTime / 60)
-                  }:${String(remainingTime % 60).padStart(2, "0")})`,
+                    Math.ceil((remainingTime * 2) / 60)
+                  }:${String((remainingTime * 2) % 60).padStart(2, "0")})`,
                 });
               }
             } catch (error) {
               logger.error("Error polling login status:", error);
-              if (pollCount % 30 === 0) { // 每30秒报告一次错误
+              if (pollCount % 15 === 0) { // 每30秒报告一次错误（15 * 2秒）
                 sendEvent("status", {
                   message: "检查登录状态时发生错误，正在重试...",
                 });
               }
             }
-          }, 1000); // 每秒检查一次
+          }, 2000); // 每2秒检查一次，减少轮询频率
         } catch (error) {
           logger.error("Error in WeRead login process:", error);
           sendEvent("error", {
