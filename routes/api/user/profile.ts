@@ -3,7 +3,7 @@ import {
   getReadingStats,
   getUserInfo,
   getUserProfile,
-} from "../../../src/apis/web/user.ts";
+} from "@/apis";
 
 export async function handler(req: Request, ctx: FreshContext) {
   if (req.method === "OPTIONS") {

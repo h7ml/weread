@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns", "deno.unstable", "ES2015", "ES2017", "ES2020", "ES2021"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "strict": false,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "module": "ESNext",
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "allowImportingTsExtensions": false,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "$fresh/*": ["https://deno.land/x/fresh@1.7.3/*"],
+      "$fresh/server.ts": ["https://deno.land/x/fresh@1.7.3/server.ts"],
+      "@/utils": ["./src/utils/mod.ts"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/apis": ["./src/apis/mod.ts"],
+      "@/apis/*": ["./src/apis/*"],
+      "@/kv": ["./src/kv/mod.ts"],
+      "@/kv/*": ["./src/kv/*"],
+      "@/cron": ["./src/cron/mod.ts"],
+      "@/cron/*": ["./src/cron/*"],
+      "@/config": ["./src/config.ts"],
+      "@/types": ["./src/types/mod.ts"],
+      "@/types/*": ["./src/types/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "types.d.ts"
+  ],
+  "exclude": [
+    "**/_fresh/*",
+    "**/node_modules/*",
+    "logs/*",
+    "static/qrcode.min.js"
+  ]
+}

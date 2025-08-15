@@ -1,6 +1,5 @@
 import { getChapterList } from "@/apis";
-import { jsonResponse } from "@/utils";
-import { logger } from "@/utils";
+import { jsonResponse,logger } from "@/utils";
 
 export async function handler(req: Request) {
   const url = new URL(req.url);

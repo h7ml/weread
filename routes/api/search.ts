@@ -1,6 +1,4 @@
-import { jsonResponse } from "../../src/utils/mod.ts";
-import { logger } from "../../src/utils/mod.ts";
-import { HttpClient } from "../../src/utils/mod.ts";
+import { jsonResponse, logger, HttpClient } from "@/utils";
 
 const client = new HttpClient("https://weread.qq.com");
 

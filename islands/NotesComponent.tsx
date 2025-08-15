@@ -185,7 +185,7 @@ export default function NotesComponent() {
     }
   };
 
-  const toggleNoteFavorite = async (noteId, isFavorite) => {
+  const toggleNoteFavorite = async (noteId: string, isFavorite: boolean) => {
     const token = localStorage.getItem("weread_token");
     try {
       const response = await fetch("/api/notes/favorite", {
@@ -205,7 +205,7 @@ export default function NotesComponent() {
     }
   };
 
-  const deleteNote = async (noteId) => {
+  const deleteNote = async (noteId: string) => {
     if (!confirm("确定要删除这条笔记吗？")) return;
 
     const token = localStorage.getItem("weread_token");
@@ -224,7 +224,7 @@ export default function NotesComponent() {
     }
   };
 
-  const formatDate = (timestamp) => {
+  const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString("zh-CN", {
       year: "numeric",
       month: "short",
@@ -234,11 +234,11 @@ export default function NotesComponent() {
     });
   };
 
-  const getNoteTypeIcon = (noteType) => {
+  const getNoteTypeIcon = (noteType: number) => {
     return NOTE_TYPE_ICONS[noteType] || NOTE_TYPE_ICONS.default;
   };
 
-  const getColorStyleClass = (colorStyle) => {
+  const getColorStyleClass = (colorStyle: number) => {
     return COLOR_STYLES[colorStyle] || COLOR_STYLES[0];
   };
 
@@ -248,7 +248,7 @@ export default function NotesComponent() {
 
   // 渲染空状态的辅助函数
   const renderEmptyState = (tabKey: string) => {
-    const emptyState = EMPTY_STATES[tabKey];
+    const emptyState = EMPTY_STATES[tabKey as keyof typeof EMPTY_STATES];
     if (!emptyState) return null;
 
     return (

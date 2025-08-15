@@ -7,7 +7,7 @@ import {
   getReadingHeatmap,
   getReadingTrend,
   getTimeDistribution,
-} from "../../src/apis/web/stats.ts";
+} from "@/apis";
 
 export async function handler(req: Request, ctx: FreshContext) {
   if (req.method === "OPTIONS") {

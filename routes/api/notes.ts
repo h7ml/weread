@@ -11,7 +11,7 @@ import {
   getUserReviews,
   updateNote,
   updateReview,
-} from "../../src/apis/web/note.ts";
+} from "@/apis";
 
 export async function handler(req: Request, ctx: FreshContext) {
   if (req.method === "OPTIONS") {

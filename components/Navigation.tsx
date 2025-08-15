@@ -17,7 +17,7 @@ interface NavigationProps {
 }
 
 export default function Navigation({ title, icon = "home", showUser = false, currentPath, actions = [] }: NavigationProps) {
-  const user = useSignal(null);
+  const user = useSignal<{ name: string; vid: string } | null>(null);
 
   useEffect(() => {
     // 检查用户登录状态

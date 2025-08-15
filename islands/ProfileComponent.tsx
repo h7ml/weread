@@ -210,7 +210,7 @@ export default function ProfileComponent() {
           {
             label: "刷新数据",
             onClick: () => {
-              loadProfileData();
+              // loadProfileData();
             },
             type: "button",
             variant: "secondary",

@@ -1,9 +1,8 @@
 import {
   getReadProgress,
   updateReadProgress,
-} from "../../src/apis/web/book.ts";
-import { jsonResponse } from "../../src/utils/mod.ts";
-import { logger } from "../../src/utils/mod.ts";
+} from "@/apis";
+import { jsonResponse, logger } from "@/utils";
 
 export async function handler(req: Request) {
   const url = new URL(req.url);

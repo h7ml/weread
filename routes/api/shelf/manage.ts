@@ -3,9 +3,8 @@ import {
   archiveBook,
   removeFromShelf,
   unarchiveBook,
-} from "../../../src/apis/web/shelf.ts";
-import { jsonResponse } from "../../../src/utils/mod.ts";
-import { logger } from "../../../src/utils/mod.ts";
+} from "@/apis";
+import { jsonResponse, logger } from "@/utils";
 
 export async function handler(req: Request) {
   if (req.method !== "POST") {

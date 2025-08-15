@@ -4,8 +4,8 @@ import {
   getQRCodeUrl,
   initSession,
   webLogin,
-} from "../../../src/apis/web/login.ts";
-import { logger } from "../../../src/utils/logger.ts";
+} from "@/apis";
+import { logger } from "@/utils";
 
 /**
  * 处理SSE登录 - 真实的微信读书登录
