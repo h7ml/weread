@@ -18,27 +18,15 @@ export default function LoginComponent() {
 
   // 在组件挂载时加载QRCode库
   useEffect(() => {
-    console.log("Component mounted, checking QRCode library...");
-
     // 动态加载本地QRCode.js库
     if (typeof window !== "undefined" && !globalThis.QRCode) {
-      console.log("Loading QRCode library from /qrcode.min.js");
       const script = document.createElement("script");
       script.src = "/qrcode.min.js";
       script.async = false; // 同步加载确保库可用
-      script.onload = () => {
-        console.log("QRCode.js library loaded successfully");
-        console.log("QRCode object:", typeof globalThis.QRCode);
-      };
       script.onerror = () => {
         console.error("Failed to load QRCode.js library from /qrcode.min.js");
       };
       document.head.appendChild(script);
-    } else {
-      console.log(
-        "QRCode library already available:",
-        typeof globalThis.QRCode,
-      );
     }
 
     // 清理函数 - 关闭EventSource连接
@@ -68,7 +56,6 @@ export default function LoginComponent() {
       setTimeout(() => {
         try {
           if (globalThis.QRCode && qrCodeRef.current) {
-            console.log("Generating QR code with QRCode.js for URL:", url);
             qrCodeInstance.current = new globalThis.QRCode(qrCodeRef.current, {
               text: url,
               width: 200,
@@ -77,11 +64,43 @@ export default function LoginComponent() {
               colorLight: "#ffffff",
               correctLevel: globalThis.QRCode?.CorrectLevel?.M || 2,
             });
+
+            // 为二维码添加微信长按识别支持
+            const qrImage = qrCodeRef.current.querySelector("img");
+            if (qrImage) {
+              // 添加微信二维码识别相关属性
+              qrImage.setAttribute("data-qr-text", url);
+              qrImage.setAttribute("data-miniprogram-type", "text");
+              qrImage.style.userSelect = "none";
+              qrImage.style.webkitUserSelect = "none";
+              qrImage.style.webkitTouchCallout = "default";
+              qrImage.style.webkitUserDrag = "none";
+
+              // 添加长按事件处理（针对微信浏览器）
+              let longPressTimer: number;
+              qrImage.addEventListener("touchstart", (e) => {
+                longPressTimer = globalThis.setTimeout(() => {
+                  // 在微信中触发长按菜单
+                  e.preventDefault();
+                }, 500);
+              });
+
+              qrImage.addEventListener("touchend", () => {
+                if (longPressTimer) {
+                  clearTimeout(longPressTimer);
+                }
+              });
+
+              qrImage.addEventListener("touchmove", () => {
+                if (longPressTimer) {
+                  clearTimeout(longPressTimer);
+                }
+              });
+            }
           } else {
             // 如果库还未加载，等待一下再试
             const checkAndGenerate = (retries = 0) => {
               if (globalThis.QRCode && qrCodeRef.current) {
-                console.log("QRCode library ready, generating QR code");
                 qrCodeInstance.current = new globalThis.QRCode(
                   qrCodeRef.current,
                   {
@@ -93,15 +112,20 @@ export default function LoginComponent() {
                     correctLevel: globalThis.QRCode?.CorrectLevel?.M || 2,
                   },
                 );
+
+                // 为二维码添加微信长按识别支持
+                const qrImage = qrCodeRef.current.querySelector("img");
+                if (qrImage) {
+                  qrImage.setAttribute("data-qr-text", url);
+                  qrImage.setAttribute("data-miniprogram-type", "text");
+                  qrImage.style.userSelect = "none";
+                  qrImage.style.webkitUserSelect = "none";
+                  qrImage.style.webkitTouchCallout = "default";
+                  qrImage.style.webkitUserDrag = "none";
+                }
               } else if (retries < 10) {
-                console.log(
-                  `Waiting for QRCode library... retry ${retries + 1}/10`,
-                );
                 setTimeout(() => checkAndGenerate(retries + 1), 300);
               } else {
-                console.warn(
-                  "QRCode library not available, using backup solution",
-                );
                 // 使用备用方案
                 if (qrCodeRef.current) {
                   const img = document.createElement("img");
@@ -112,6 +136,15 @@ export default function LoginComponent() {
                   img.alt = "登录二维码";
                   img.style.width = "200px";
                   img.style.height = "200px";
+
+                  // 为备用二维码也添加微信支持
+                  img.setAttribute("data-qr-text", url);
+                  img.setAttribute("data-miniprogram-type", "text");
+                  img.style.userSelect = "none";
+                  img.style.webkitUserSelect = "none";
+                  img.style.webkitTouchCallout = "default";
+                  img.style.webkitUserDrag = "none";
+
                   qrCodeRef.current.appendChild(img);
                 }
               }
@@ -130,6 +163,15 @@ export default function LoginComponent() {
             img.alt = "登录二维码";
             img.style.width = "200px";
             img.style.height = "200px";
+
+            // 为备用二维码也添加微信支持
+            img.setAttribute("data-qr-text", url);
+            img.setAttribute("data-miniprogram-type", "text");
+            img.style.userSelect = "none";
+            img.style.webkitUserSelect = "none";
+            img.style.webkitTouchCallout = "default";
+            img.style.webkitUserDrag = "none";
+
             qrCodeRef.current.appendChild(img);
           }
         }
@@ -139,8 +181,6 @@ export default function LoginComponent() {
 
   // 开始登录流程
   const startLogin = () => {
-    console.log("Starting WeRead login process...");
-    console.log("Current loginStatus:", loginStatus.value);
     loginStatus.value = "loading";
     statusMessage.value = "正在连接服务器...";
 
@@ -152,18 +192,15 @@ export default function LoginComponent() {
     // 创建SSE连接
     const eventSource = new EventSource("/api/login/sse");
     eventSourceRef.current = eventSource;
-    console.log("Created EventSource for /api/login/sse");
 
     // 监听状态更新事件
     eventSource.addEventListener("status", (event) => {
-      console.log("Received status event:", event.data);
       const data = JSON.parse(event.data);
       statusMessage.value = data.message;
     });
 
     // 监听二维码事件
     eventSource.addEventListener("qrcode", (event) => {
-      console.log("Received qrcode event:", event.data);
       const data = JSON.parse(event.data);
       qrCodeUrl.value = data.url;
       loginStatus.value = "waiting";
@@ -175,7 +212,6 @@ export default function LoginComponent() {
 
     // 监听登录成功事件
     eventSource.addEventListener("success", (event) => {
-      console.log("Login success:", event.data);
       const data = JSON.parse(event.data);
       userName.value = data.name || "微信读书用户";
       loginStatus.value = "success";
@@ -212,8 +248,7 @@ export default function LoginComponent() {
     });
 
     // 监听过期事件（如果有的话）
-    eventSource.addEventListener("expired", (event) => {
-      console.log("QR code expired:", event.data);
+    eventSource.addEventListener("expired", (_event) => {
       loginStatus.value = "expired";
       statusMessage.value = "二维码已过期";
 
@@ -257,6 +292,27 @@ export default function LoginComponent() {
     if (qrCodeRef.current) {
       qrCodeRef.current.innerHTML = "";
     }
+  };
+
+  // 刷新二维码（直接重新开始登录流程）
+  const refreshQRCode = () => {
+    // 关闭之前的连接
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+
+    // 清空当前二维码
+    if (qrCodeRef.current) {
+      qrCodeRef.current.innerHTML = "";
+    }
+
+    if (qrCodeInstance.current) {
+      qrCodeInstance.current = null;
+    }
+
+    // 重新开始登录流程
+    startLogin();
   };
 
   return (
@@ -406,7 +462,7 @@ export default function LoginComponent() {
                 {/* 操作按钮组 */}
                 <div className="space-y-3">
                   <button
-                    onClick={retry}
+                    onClick={refreshQRCode}
                     className="w-full bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20 group"
                   >
                     <div className="flex items-center justify-center space-x-2">

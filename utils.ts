@@ -1,6 +1,6 @@
 /**
  * 微信读书 Web 阅读应用 - 工具函数
- * 
+ *
  * @description Fresh 兼容性工具和页面定义助手
  * @author h7ml <h7ml@qq.com>
  * @version 1.0.0

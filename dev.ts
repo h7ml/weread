@@ -2,7 +2,7 @@
 
 /**
  * 微信读书 Web 阅读应用 - 开发服务器
- * 
+ *
  * @description 开发环境启动文件，提供热重载功能
  * @author h7ml <h7ml@qq.com>
  * @version 1.0.0

@@ -1,6 +1,6 @@
 /**
  * 微信读书 Web 阅读应用 - 404错误页面交互组件
- * 
+ *
  * @description 404页面的交互式岛屿组件，包含搜索、随机推荐、彩蛋等功能
  * @author h7ml <h7ml@qq.com>
  * @version 1.0.0
@@ -313,12 +313,39 @@ export default function NotFound404Island() {
         <div class="mt-8 pt-6 border-t border-gray-200/50">
           <div class="text-center space-y-2">
             <p class="text-sm text-gray-500">
-              © 2025 <a href="https://github.com/h7ml" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 font-medium">h7ml</a>
+              © 2025{" "}
+              <a
+                href="https://github.com/h7ml"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-600 hover:text-blue-800 font-medium"
+              >
+                h7ml
+              </a>
             </p>
             <div class="flex justify-center space-x-4 text-xs text-gray-400">
-              <a href="mailto:h7ml@qq.com" class="hover:text-blue-600 transition-colors">📧 邮箱</a>
-              <a href="https://github.com/h7ml/weread" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors">🔗 GitHub</a>
-              <a href="https://tech-5g8h9y7s90510d9e-1253666439.tcloudbaseapp.com/wechat.jpg" target="_blank" rel="noopener noreferrer" class="hover:text-green-600 transition-colors">💬 微信</a>
+              <a
+                href="mailto:h7ml@qq.com"
+                class="hover:text-blue-600 transition-colors"
+              >
+                📧 邮箱
+              </a>
+              <a
+                href="https://github.com/h7ml/weread"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:text-blue-600 transition-colors"
+              >
+                🔗 GitHub
+              </a>
+              <a
+                href="https://tech-5g8h9y7s90510d9e-1253666439.tcloudbaseapp.com/wechat.jpg"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:text-green-600 transition-colors"
+              >
+                💬 微信
+              </a>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 /**
  * 微信读书 Web 阅读应用
- * 
+ *
  * @description 基于 Fresh (Deno) 构建的现代化微信读书 Web 阅读平台
  * @author h7ml <h7ml@qq.com>
  * @version 1.0.0

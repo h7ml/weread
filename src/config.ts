@@ -1,6 +1,6 @@
 /**
  * 微信读书 Web 阅读应用 - 项目配置
- * 
+ *
  * @description 应用程序配置文件，包含环境变量和API设置
  * @author h7ml <h7ml@qq.com>
  * @version 1.0.0
