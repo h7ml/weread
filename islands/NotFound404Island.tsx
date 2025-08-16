@@ -48,7 +48,7 @@ export default function NotFound404Island() {
   // 搜索功能
   const handleSearch = () => {
     if (searchQuery.value.trim()) {
-      globalThis.location.href = `/?search=${
+      globalThis.location.href = `/search?q=${
         encodeURIComponent(searchQuery.value)
       }`;
     }
