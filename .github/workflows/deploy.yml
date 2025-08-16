@@ -29,6 +29,6 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "h7ml-weread-55"
+          project: "webook"
           entrypoint: "main.ts"
           root: "."
