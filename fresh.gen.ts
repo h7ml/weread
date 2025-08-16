@@ -5,6 +5,11 @@
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_name_ from "./routes/api/[name].tsx";
+import * as $api_ai_analyze from "./routes/api/ai/analyze.ts";
+import * as $api_ai_brainstorm from "./routes/api/ai/brainstorm.ts";
+import * as $api_ai_chat from "./routes/api/ai/chat.ts";
+import * as $api_ai_config from "./routes/api/ai/config.ts";
+import * as $api_ai_status from "./routes/api/ai/status.ts";
 import * as $api_book_chapters from "./routes/api/book/chapters.ts";
 import * as $api_book_content from "./routes/api/book/content.ts";
 import * as $api_book_info from "./routes/api/book/info.ts";
@@ -56,6 +61,11 @@ const manifest = {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/api/[name].tsx": $api_name_,
+    "./routes/api/ai/analyze.ts": $api_ai_analyze,
+    "./routes/api/ai/brainstorm.ts": $api_ai_brainstorm,
+    "./routes/api/ai/chat.ts": $api_ai_chat,
+    "./routes/api/ai/config.ts": $api_ai_config,
+    "./routes/api/ai/status.ts": $api_ai_status,
     "./routes/api/book/chapters.ts": $api_book_chapters,
     "./routes/api/book/content.ts": $api_book_content,
     "./routes/api/book/info.ts": $api_book_info,

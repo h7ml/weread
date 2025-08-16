@@ -30,10 +30,14 @@ export const handler = {
 
     try {
       // 根据引擎选择不同的TTS服务
+      console.log("TTS引擎选择:", engine, "文本:", text.substring(0, 20));
+      
       if (engine === "openxing") {
+        console.log("使用 OpenXing TTS");
         return await handleOpenXingTTS(text, voice);
       } else {
         // 默认使用 leftsite TTS
+        console.log("使用 Leftsite TTS");
         return await handleLeftsiteTTS(text, voice, rate, pitch, style, apiKey);
       }
     } catch (error) {
@@ -104,44 +108,40 @@ async function handleLeftsiteTTS(
   style: string,
   apiKey: string,
 ): Promise<Response> {
-  // 构建请求到 t.leftsite.cn TTS服务
-  const ttsUrl = new URL("https://t.leftsite.cn/tts");
-  ttsUrl.searchParams.set("t", text);
-  ttsUrl.searchParams.set("v", voice);
-  ttsUrl.searchParams.set("r", rate);
-  ttsUrl.searchParams.set("p", pitch);
+  // 构建请求到 t.leftsite.cn TTS服务，完全按照官网逻辑
+  const params = new URLSearchParams({
+    t: text,
+    v: voice,
+    r: rate,
+    p: pitch
+  });
 
   // 只有当style不为空时才添加
-  if (style) {
-    ttsUrl.searchParams.set("s", style);
+  if (style && style.trim()) {
+    params.append("s", style);
   }
 
   // 添加API Key参数（如果有）
-  if (apiKey) {
-    ttsUrl.searchParams.set("api_key", apiKey);
+  if (apiKey && apiKey.trim()) {
+    params.append("api_key", apiKey);
   }
 
-  console.log("代理 Leftsite TTS 请求到:", ttsUrl.toString());
+  const ttsUrl = `https://t.leftsite.cn/tts?${params.toString()}`;
+
+  console.log("代理 Leftsite TTS 请求到:", ttsUrl);
 
   // 设置超时控制
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 增加到30秒超时
 
   try {
-    const response = await fetch(ttsUrl.toString(), {
+    // 首先尝试简化的请求头，减少连接问题
+    const response = await fetch(ttsUrl, {
       method: "GET",
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
-        "Accept": "*/*",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
-        "Referer": "https://t.leftsite.cn/",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-origin",
-        "Priority": "u=1, i",
+        "User-Agent": "Mozilla/5.0 (compatible; WeReadTTS/1.0)",
+        "Accept": "audio/*,*/*;q=0.9",
+        "Connection": "close", // 使用短连接避免连接重置
       },
       signal: controller.signal,
     });
@@ -172,6 +172,25 @@ async function handleLeftsiteTTS(
         response.status,
         response.statusText,
       );
+      
+      // 如果服务端错误，尝试返回直接URL让客户端处理
+      if (response.status >= 500) {
+        return new Response(
+          JSON.stringify({
+            error: "TTS service temporary error",
+            message: "代理服务暂时不可用，尝试直接访问",
+            fallback: "browser",
+            directUrl: ttsUrl, // 提供直接URL供客户端使用
+          }),
+          {
+            status: 503,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+      }
+      
       return new Response(
         JSON.stringify({
           error: "TTS service unavailable",
@@ -226,22 +245,6 @@ async function handleLeftsiteTTS(
 
     console.error("Leftsite TTS 服务连接失败:", fetchError.message);
 
-    // 检查是否是连接错误，如果是则尝试 OpenXing TTS
-    if (fetchError.message.includes("Connection reset") || 
-        fetchError.message.includes("connect") ||
-        fetchError.name === "AbortError") {
-      
-      console.log("Leftsite TTS 不可用，尝试切换到 OpenXing TTS");
-      
-      // 尝试使用 OpenXing TTS 作为备用
-      try {
-        return await handleOpenXingTTS(text, voice || "Dylan");
-      } catch (openxingError) {
-        console.error("OpenXing TTS 也失败了:", openxingError.message);
-        // 都失败了，返回浏览器TTS降级
-      }
-    }
-
     if (fetchError.name === "AbortError") {
       console.warn("Leftsite TTS请求超时");
       return new Response(
@@ -249,6 +252,7 @@ async function handleLeftsiteTTS(
           error: "TTS request timeout",
           message: "外部TTS服务请求超时",
           fallback: "browser",
+          directUrl: ttsUrl, // 提供直接URL
         }),
         {
           status: 504,
@@ -257,7 +261,32 @@ async function handleLeftsiteTTS(
       );
     }
 
-    throw fetchError; // 重新抛出非超时错误
+    // 对于连接重置错误，返回直接URL让客户端处理
+    if (fetchError.message.includes("Connection reset") || 
+        fetchError.message.includes("os error 54")) {
+      console.log("检测到连接重置，返回直接URL供客户端使用");
+      return new Response(
+        JSON.stringify({
+          error: "Connection reset by peer",
+          message: "代理连接被重置，请尝试直接访问",
+          fallback: "browser",
+          directUrl: ttsUrl, // 提供直接URL供客户端使用
+          data: {
+            fallbackToWebSpeech: false, // 先不要直接降级到浏览器TTS
+            originalText: text,
+            voice: voice,
+            useDirectUrl: true, // 标识应该使用直接URL
+          },
+        }),
+        {
+          status: 502,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    // 其他网络错误，抛出供上层处理
+    throw fetchError;
   }
 }
 

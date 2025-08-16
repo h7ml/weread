@@ -144,6 +144,18 @@ export const handler = {
         allVoices = [
           {
             "name":
+              "Microsoft Server Speech Text to Speech Voice (zh-CN, liaoning-XiaobeiNeural)",
+            "display_name": "小贝",
+            "local_name": "小贝",
+            "short_name": "zh-CN-liaoning-XiaobeiNeural",
+            "gender": "Female",
+            "locale": "zh-CN",
+            "locale_name": "Chinese (Mandarin, Simplified)",
+            "sample_rate_hertz": "48000",
+            "provider": "leftsite",
+          },
+          {
+            "name":
               "Microsoft Server Speech Text to Speech Voice (zh-CN, XiaoxiaoNeural)",
             "display_name": "晓晓",
             "local_name": "晓晓",
