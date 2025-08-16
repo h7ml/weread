@@ -1997,6 +1997,10 @@ video {
   padding-bottom: 6rem;
 }
 
+.pb-32 {
+  padding-bottom: 8rem;
+}
+
 .pt-16 {
   padding-top: 4rem;
 }
@@ -3113,6 +3117,40 @@ video {
 
 .chapter-list-scrollbar::-webkit-scrollbar-corner {
   background: #f1f5f9;
+}
+
+/* Settings panel scrollbar - adaptive for different themes */
+.settings-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: currentColor transparent;
+}
+
+.settings-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.settings-scrollbar::-webkit-scrollbar-thumb {
+  background: currentColor;
+  opacity: 0.2;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.settings-scrollbar::-webkit-scrollbar-thumb:hover {
+  opacity: 0.4;
+}
+
+.settings-scrollbar::-webkit-scrollbar-thumb:active {
+  opacity: 0.6;
+}
+
+.settings-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* 移动端触摸优化 */

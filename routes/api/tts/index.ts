@@ -61,7 +61,7 @@ export const handler = {
 
   async POST(req: Request): Promise<Response> {
     // POST 请求用于 OpenXing TTS
-    const { text, voice = "Dylan", engine = "openxing" } = await req.json();
+    const { text, voice = "Dylan", engine = "openxing", rate = "0", pitch = "0", style = "", apiKey = "" } = await req.json();
 
     if (!text) {
       return new Response(
@@ -78,6 +78,8 @@ export const handler = {
 
     if (engine === "openxing") {
       return await handleOpenXingTTS(text, voice);
+    } else if (engine === "leftsite") {
+      return await handleLeftsiteTTS(text, voice, rate, pitch, style, apiKey);
     }
 
     return new Response(
@@ -222,6 +224,24 @@ async function handleLeftsiteTTS(
   } catch (fetchError) {
     clearTimeout(timeoutId);
 
+    console.error("Leftsite TTS 服务连接失败:", fetchError.message);
+
+    // 检查是否是连接错误，如果是则尝试 OpenXing TTS
+    if (fetchError.message.includes("Connection reset") || 
+        fetchError.message.includes("connect") ||
+        fetchError.name === "AbortError") {
+      
+      console.log("Leftsite TTS 不可用，尝试切换到 OpenXing TTS");
+      
+      // 尝试使用 OpenXing TTS 作为备用
+      try {
+        return await handleOpenXingTTS(text, voice || "Dylan");
+      } catch (openxingError) {
+        console.error("OpenXing TTS 也失败了:", openxingError.message);
+        // 都失败了，返回浏览器TTS降级
+      }
+    }
+
     if (fetchError.name === "AbortError") {
       console.warn("Leftsite TTS请求超时");
       return new Response(
@@ -258,7 +278,7 @@ async function handleOpenXingTTS(
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时，因为需要生成音频
 
   try {
-    const response = await fetch("https://tts.openxing.top/api/synthesize", {
+    const response = await fetch("http://tts.openxing.top/api/synthesize", {
       method: "POST",
       headers: {
         "Accept": "*/*",
@@ -266,9 +286,9 @@ async function handleOpenXingTTS(
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
         "Content-Type": "application/json",
-        "Origin": "https://tts.openxing.top",
+        "Origin": "http://tts.openxing.top",
         "Pragma": "no-cache",
-        "Referer": "https://tts.openxing.top/",
+        "Referer": "http://tts.openxing.top/",
         "Sec-Fetch-Dest": "empty",
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "same-origin",
@@ -314,7 +334,7 @@ async function handleOpenXingTTS(
       const audioResult = result.results[0];
       if (audioResult.status === "completed" && audioResult.filename) {
         // 构建音频文件URL
-        const audioUrl = `https://tts.openxing.top/api/audio/${
+        const audioUrl = `http://tts.openxing.top/api/audio/${
           encodeURIComponent(audioResult.filename)
         }`;
 

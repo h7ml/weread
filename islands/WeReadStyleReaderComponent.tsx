@@ -143,6 +143,8 @@ export default function WeReadStyleReaderComponent() {
     azureVoices: [],
     currentAudio: null as HTMLAudioElement | null,
     serviceStatus: "checking" as "checking" | "available" | "unavailable",
+    isPreviewPlaying: false, // 试听状态
+    previewAudio: null as HTMLAudioElement | null, // 试听音频
   });
 
   // 自动阅读状态 - 使用默认值初始化
@@ -214,6 +216,7 @@ export default function WeReadStyleReaderComponent() {
     if (hideTimer.current) clearTimeout(hideTimer.current);
     if (autoScrollTimer.current) clearInterval(autoScrollTimer.current);
     stopTTS();
+    stopPreview(); // 清理试听
     stopAutoReading();
   };
 
@@ -452,6 +455,25 @@ export default function WeReadStyleReaderComponent() {
     }
 
     updateTTSSettings(updates);
+    
+    // 如果正在播放TTS，则重新开始播放以应用新引擎
+    if (ttsState.value.isPlaying) {
+      // 记住当前播放位置
+      const currentIndex = ttsState.value.currentSentenceIndex;
+      
+      // 停止当前播放
+      stopTTS();
+      
+      // 短暂延迟后重新开始播放
+      setTimeout(() => {
+        // 恢复播放位置
+        ttsState.value = {
+          ...ttsState.value,
+          currentSentenceIndex: currentIndex
+        };
+        startTTS();
+      }, 500);
+    }
   };
 
   const loadChapterContent = async (
@@ -919,6 +941,165 @@ export default function WeReadStyleReaderComponent() {
     };
 
     console.log("TTS已停止");
+  };
+
+  // 语音试听功能
+  const previewVoice = async (voiceId?: string) => {
+    const testText = "壬戌之秋，七月既望，苏子与客泛舟游于赤壁之下。清风徐来，水波不兴。";
+    const currentVoice = voiceId || ttsSettings.value.voiceURI;
+    
+    if (!currentVoice) {
+      alert("请先选择一个语音");
+      return;
+    }
+
+    // 停止当前试听
+    stopPreview();
+
+    try {
+      ttsState.value = { ...ttsState.value, isPreviewPlaying: true };
+
+      // 根据引擎选择不同的试听方式
+      if (
+        (ttsSettings.value.engine === "leftsite" ||
+          ttsSettings.value.engine === "openxing") &&
+        ttsState.value.serviceStatus === "available"
+      ) {
+        await previewWithExternalTTS(testText, currentVoice);
+      } else {
+        await previewWithBrowserTTS(testText);
+      }
+    } catch (error) {
+      console.error("语音试听失败:", error);
+      alert("语音试听失败，请重试");
+      stopPreview();
+    }
+  };
+
+  const previewWithExternalTTS = async (text: string, voice: string) => {
+    try {
+      let audioUrl = "";
+      
+      if (ttsSettings.value.engine === "openxing") {
+        // OpenXing TTS 使用POST请求
+        const response = await fetch("/api/tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: text,
+            voice: voice,
+            engine: "openxing",
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`OpenXing TTS请求失败: ${response.status}`);
+        }
+
+        const audioBlob = await response.blob();
+        audioUrl = URL.createObjectURL(audioBlob);
+      } else {
+        // Leftsite TTS 使用GET请求
+        const params = new URLSearchParams({
+          t: text,
+          v: voice,
+          r: Math.round((ttsSettings.value.rate - 1) * 50).toString(),
+          p: ttsSettings.value.pitch.toString(),
+          s: ttsSettings.value.style,
+          engine: "leftsite",
+        });
+
+        audioUrl = `/api/tts?${params.toString()}`;
+      }
+
+      // 创建试听音频元素
+      const audio = new Audio(audioUrl);
+      audio.volume = ttsSettings.value.volume;
+
+      audio.onended = () => {
+        // 清理临时URL
+        if (ttsSettings.value.engine === "openxing") {
+          URL.revokeObjectURL(audioUrl);
+        }
+        stopPreview();
+      };
+
+      audio.onerror = (error) => {
+        console.error("试听音频播放错误:", error);
+        // 清理临时URL
+        if (ttsSettings.value.engine === "openxing") {
+          URL.revokeObjectURL(audioUrl);
+        }
+        // 降级到浏览器TTS试听
+        previewWithBrowserTTS(text);
+      };
+
+      // 更新试听音频引用
+      ttsState.value = {
+        ...ttsState.value,
+        previewAudio: audio,
+      };
+
+      await audio.play();
+      console.log(`${ttsSettings.value.engine.toUpperCase()} TTS试听播放:`, text);
+    } catch (error) {
+      console.error(`${ttsSettings.value.engine.toUpperCase()} TTS试听失败:`, error);
+      throw error;
+    }
+  };
+
+  const previewWithBrowserTTS = async (text: string) => {
+    if (!speechSynthesis.current) return;
+
+    // 创建语音合成utterance
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = ttsSettings.value.rate;
+    utterance.volume = ttsSettings.value.volume;
+    utterance.pitch = ttsSettings.value.pitch;
+
+    // 选择中文语音
+    const chineseVoice = availableVoices.current.find((voice) =>
+      voice.lang.includes("zh") || voice.lang.includes("CN")
+    );
+    if (chineseVoice) {
+      utterance.voice = chineseVoice;
+    }
+
+    // 设置播放完成回调
+    utterance.onend = () => {
+      stopPreview();
+    };
+
+    utterance.onerror = (event) => {
+      console.error("浏览器TTS试听错误:", event);
+      stopPreview();
+    };
+
+    speechSynthesis.current.speak(utterance);
+    console.log("浏览器TTS试听播放:", text);
+  };
+
+  const stopPreview = () => {
+    // 停止试听音频
+    if (ttsState.value.previewAudio) {
+      ttsState.value.previewAudio.pause();
+      ttsState.value.previewAudio.currentTime = 0;
+    }
+
+    // 停止浏览器TTS（只停止试听，不影响正在进行的阅读）
+    if (speechSynthesis.current && !ttsState.value.isPlaying) {
+      speechSynthesis.current.cancel();
+    }
+
+    ttsState.value = {
+      ...ttsState.value,
+      isPreviewPlaying: false,
+      previewAudio: null,
+    };
+
+    console.log("语音试听已停止");
   };
 
   const toggleTTS = () => {
@@ -1570,7 +1751,7 @@ export default function WeReadStyleReaderComponent() {
           </div>
 
           {/* 设置内容区域 */}
-          <div className="flex-1 overflow-y-auto p-6 pb-24">
+          <div className="flex-1 overflow-y-auto p-6 pb-32 settings-scrollbar max-h-screen">{/* 添加最大高度限制 */}
             {/* 显示设置 */}
             {activeSettingsTab.value === "display" && (
               <div className="space-y-8 animate-fade-in">
@@ -1899,6 +2080,64 @@ export default function WeReadStyleReaderComponent() {
                   )}
                 </div>
 
+                {/* 所有引擎的试听功能 */}
+                <div className="bg-current/3 rounded-2xl p-6 settings-card">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <span className="mr-2">🎧</span>
+                    语音试听
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-current/5 rounded-xl">
+                      <div className="text-sm text-current/70 mb-2">
+                        试听内容：前赤壁赋片段
+                      </div>
+                      <div className="text-sm italic text-current/60">
+                        "壬戌之秋，七月既望，苏子与客泛舟游于赤壁之下。清风徐来，水波不兴。"
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        当前引擎：{ttsSettings.value.engine === "browser" ? "浏览器 TTS" : 
+                                  ttsSettings.value.engine === "leftsite" ? "Leftsite TTS" : 
+                                  ttsSettings.value.engine === "openxing" ? "OpenXing TTS" : "未选择"}
+                      </span>
+                      <button
+                        onClick={() => previewVoice()}
+                        disabled={ttsState.value.isPreviewPlaying}
+                        className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                          ttsState.value.isPreviewPlaying
+                            ? "bg-orange-500 text-white"
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
+                      >
+                        {ttsState.value.isPreviewPlaying ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>试听中...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                            </svg>
+                            <span>试听语音</span>
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                    
+                    {ttsState.value.isPreviewPlaying && (
+                      <button
+                        onClick={stopPreview}
+                        className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        停止试听
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {(ttsSettings.value.engine === "leftsite" ||
                   ttsSettings.value.engine === "openxing") &&
                   ttsState.value.serviceStatus === "available" && (
@@ -1907,42 +2146,97 @@ export default function WeReadStyleReaderComponent() {
                       <span className="mr-2">🎤</span>
                       语音选择
                     </h3>
-                    <select
-                      value={ttsSettings.value.voiceURI}
-                      onChange={(e) =>
-                        updateTTSSettings({ voiceURI: e.currentTarget.value })}
-                      className="w-full p-4 border border-current/20 rounded-xl bg-transparent text-base"
-                    >
-                      <option value="">选择语音...</option>
-                      {ttsState.value.azureVoices
-                        .filter((voice: any) => {
-                          if (ttsSettings.value.engine === "leftsite") {
-                            return voice.provider === "leftsite";
-                          } else if (ttsSettings.value.engine === "openxing") {
-                            return voice.provider === "openxing";
+                    <div className="space-y-4">
+                      <select
+                        value={ttsSettings.value.voiceURI}
+                        onChange={(e) => {
+                          const newVoice = e.currentTarget.value;
+                          updateTTSSettings({ voiceURI: newVoice });
+                          
+                          // 如果正在播放TTS，则重新开始播放以应用新语音
+                          if (ttsState.value.isPlaying) {
+                            // 记住当前播放位置
+                            const currentIndex = ttsState.value.currentSentenceIndex;
+                            
+                            // 停止当前播放
+                            stopTTS();
+                            
+                            // 短暂延迟后重新开始播放
+                            setTimeout(() => {
+                              // 恢复播放位置
+                              ttsState.value = {
+                                ...ttsState.value,
+                                currentSentenceIndex: currentIndex
+                              };
+                              startTTS();
+                            }, 500);
                           }
-                          return false;
-                        })
-                        .map((voice: any) => (
-                          <option
-                            key={voice.short_name || voice.name}
-                            value={voice.short_name || voice.name}
-                          >
-                            {voice.display_name || voice.displayName ||
-                              voice.local_name}
-                            {voice.description ? ` - ${voice.description}` : ""}
-                            ({voice.gender === "Female" ? "女声" : "男声"})
-                          </option>
-                        ))}
-                    </select>
+                        }}
+                        className="w-full p-4 border border-current/20 rounded-xl bg-transparent text-base"
+                      >
+                        <option value="">选择语音...</option>
+                        {ttsState.value.azureVoices
+                          .filter((voice: any) => {
+                            if (ttsSettings.value.engine === "leftsite") {
+                              return voice.provider === "leftsite";
+                            } else if (ttsSettings.value.engine === "openxing") {
+                              return voice.provider === "openxing";
+                            }
+                            return false;
+                          })
+                          .map((voice: any) => (
+                            <option
+                              key={voice.short_name || voice.name}
+                              value={voice.short_name || voice.name}
+                            >
+                              {voice.display_name || voice.displayName ||
+                                voice.local_name}
+                              {voice.description ? ` - ${voice.description}` : ""}
+                              ({voice.gender === "Female" ? "女声" : "男声"})
+                            </option>
+                          ))}
+                      </select>
 
-                    {ttsState.value.azureVoices.length === 0 && (
-                      <div className="text-sm text-current/60 mt-2 flex items-center">
-                        <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2">
-                        </div>
-                        加载语音列表中...
+                      {/* 试听按钮 */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-current/70">
+                          试听内容：前赤壁赋片段
+                        </span>
+                        <button
+                          onClick={() => previewVoice()}
+                          disabled={!ttsSettings.value.voiceURI || ttsState.value.isPreviewPlaying}
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                            ttsState.value.isPreviewPlaying
+                              ? "bg-orange-500 text-white"
+                              : !ttsSettings.value.voiceURI
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-blue-600 text-white hover:bg-blue-700"
+                          }`}
+                        >
+                          {ttsState.value.isPreviewPlaying ? (
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <span>试听中...</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                              </svg>
+                              <span>试听语音</span>
+                            </div>
+                          )}
+                        </button>
                       </div>
-                    )}
+
+                      {ttsState.value.azureVoices.length === 0 && (
+                        <div className="text-sm text-current/60 mt-2 flex items-center">
+                          <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2">
+                          </div>
+                          加载语音列表中...
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 

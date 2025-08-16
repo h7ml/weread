@@ -44,7 +44,7 @@ export const handler = {
 
       try {
         const response = await fetch(
-          "https://tts.openxing.top/api/synthesize",
+          "http://tts.openxing.top/api/synthesize",
           {
             method: "POST",
             headers: {
@@ -53,9 +53,9 @@ export const handler = {
               "Cache-Control": "no-cache",
               "Connection": "keep-alive",
               "Content-Type": "application/json",
-              "Origin": "https://tts.openxing.top",
+              "Origin": "http://tts.openxing.top",
               "Pragma": "no-cache",
-              "Referer": "https://tts.openxing.top/",
+              "Referer": "http://tts.openxing.top/",
               "Sec-Fetch-Dest": "empty",
               "Sec-Fetch-Mode": "cors",
               "Sec-Fetch-Site": "same-origin",
@@ -102,7 +102,7 @@ export const handler = {
           const audioResult = result.results[0];
           if (audioResult.status === "completed" && audioResult.filename) {
             // 构建音频文件URL
-            const audioUrl = `https://tts.openxing.top/api/audio/${
+            const audioUrl = `http://tts.openxing.top/api/audio/${
               encodeURIComponent(audioResult.filename)
             }`;
 
