@@ -215,6 +215,14 @@ export default function SearchComponent() {
       viewMode.value = savedViewMode;
     }
 
+    // 检查URL参数中是否有搜索查询
+    const urlParams = new URLSearchParams(globalThis.location.search);
+    const queryFromUrl = urlParams.get('q');
+    if (queryFromUrl) {
+      searchQuery.value = queryFromUrl;
+      performSearch(queryFromUrl);
+    }
+
     // 添加滚动监听
     const handleScroll = () => {
       if (loadingMore.value || !hasMore.value) return;
@@ -377,32 +385,35 @@ export default function SearchComponent() {
     const isGridMode = viewMode.value === "grid";
 
     if (isGridMode) {
-      // 网格模式
+      // 网格模式 - 左右结构
       return (
         <div
           key={`${book.bookId}-${index}`}
-          className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+          className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group p-4 flex gap-4"
         >
-          <div className="relative">
+          {/* 左侧图片 */}
+          <div className="flex-shrink-0 relative">
             <img
               src={book.cover}
               alt={book.title}
-              className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-24 h-32 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
             {book.rating > 0 && (
-              <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              <div className="absolute -top-2 -right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                 ⭐ {book.rating.toFixed(1)}
               </div>
             )}
           </div>
-          <div className="p-4">
+          
+          {/* 右侧文字和操作 */}
+          <div className="flex-1 min-w-0 flex flex-col">
             <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
               {book.title}
             </h3>
             <p className="text-gray-600 text-sm mb-2">{book.author}</p>
             {book.intro && (
-              <p className="text-gray-500 text-xs line-clamp-2 mb-3">
+              <p className="text-gray-500 text-xs line-clamp-2 mb-3 flex-1">
                 {book.intro.length > 100 ? book.intro.substring(0, 100) + '...' : book.intro}
               </p>
             )}
@@ -427,16 +438,16 @@ export default function SearchComponent() {
                 ))}
               </div>
             )}
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-auto">
               <a
                 href={`/book/${book.bookId}`}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors"
               >
                 查看详情
               </a>
               <a
                 href={`/reader/${book.bookId}/1`}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors"
               >
                 开始阅读
               </a>
@@ -513,34 +524,6 @@ export default function SearchComponent() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @media (max-width: 399px) {
-            .search-container {
-              padding-bottom: 5rem !important;
-            }
-          }
-          .search-input-container {
-            outline: none !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-          }
-          .search-input-container:focus-within {
-            outline: none !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-            border-color: rgb(229, 231, 235) !important;
-          }
-          .search-input {
-            outline: none !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-          .search-input:focus {
-            outline: none !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-        `
-      }} />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="search-container">
       <Navigation

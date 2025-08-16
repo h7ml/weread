@@ -321,30 +321,6 @@ export default function BookDetailComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @media (max-width: 767px) {
-            .book-detail-container {
-              padding-bottom: 5rem !important;
-            }
-            .mobile-layout {
-              display: block !important;
-            }
-            .desktop-layout {
-              display: none !important;
-            }
-          }
-          @media (min-width: 768px) {
-            .mobile-layout {
-              display: none !important;
-            }
-            .desktop-layout {
-              display: block !important;
-            }
-          }
-        `
-      }} />
-      
       <Navigation
         title="书籍详情"
         icon="book"
@@ -376,59 +352,63 @@ export default function BookDetailComponent() {
           <div>
             {/* PC端布局 */}
             <div className="desktop-layout">
-              {/* PC端书籍信息卡片 */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8">
-                <div className="flex gap-8">
-                  <div className="flex-shrink-0">
+              {/* PC端书籍信息卡片 - 优化布局 */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-8">
+                <div className="flex">
+                  {/* 左侧图片区域 */}
+                  <div className="w-80 bg-gradient-to-br from-gray-50 to-blue-50 p-8 flex items-center justify-center">
                     <div className="relative group">
                       <img
                         src={bookInfo.value.cover}
                         alt={bookInfo.value.title}
-                        className="w-56 h-64 object-cover rounded-xl shadow-lg transform group-hover:scale-105 transition-transform duration-300"
+                        className="w-56 aspect-[2/3] object-cover rounded-xl shadow-2xl transform group-hover:scale-105 transition-all duration-300 border-4 border-white"
                         onError={(e) => {
                           e.currentTarget.src =
                             "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDE5MiAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMjU2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02NCA2NEgxMjhWMTkySDY0VjY0WiIgZmlsbD0iI0Q1RDVENY0+Cjx0ZXh0IHg9Ijk2IiB5PSIyMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2QjcyODAiIGZvbnQtc2l6ZT0iMTYiPuaXoOaaguWwgTwvdGV4dD4KPC9zdmc+Cg==";
                         }}
                       />
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-6">
-                      {bookInfo.value.title}
-                    </h1>
-
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                      <div className="bg-yellow-50 rounded-xl p-4">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center mr-4">
-                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <div>
-                            <span className="text-yellow-600 text-sm font-medium block">作者</span>
-                            <span className="text-gray-900 font-semibold">{bookInfo.value.author}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {bookInfo.value.category && (
-                        <div className="bg-yellow-50 rounded-xl p-4">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center mr-4">
-                              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <span className="text-yellow-600 text-sm font-medium block">分类</span>
-                              <span className="text-gray-900 font-semibold">{bookInfo.value.category}</span>
-                            </div>
-                          </div>
+                      {/* 评分悬浮标签 */}
+                      {(bookInfo.value.rating || bookInfo.value.newRating) && (
+                        <div className="absolute -top-3 -right-3 bg-yellow-500 text-white px-3 py-2 rounded-xl text-sm font-bold shadow-lg">
+                          ⭐ {bookInfo.value.newRating ? (bookInfo.value.newRating / 100).toFixed(1) : (bookInfo.value.rating / 100).toFixed(1)}
                         </div>
                       )}
+                    </div>
+                  </div>
+                  
+                  {/* 右侧内容区域 */}
+                  <div className="flex-1 p-8">
+                    {/* 标题区域 */}
+                    <div className="mb-8">
+                      <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                        {bookInfo.value.title}
+                      </h1>
+                      <div className="flex items-center gap-4 text-lg text-gray-600">
+                        <button 
+                          onClick={() => globalThis.location.href = `/search?q=${encodeURIComponent(bookInfo.value.author)}`}
+                          className="font-medium hover:text-blue-600 transition-colors duration-200 flex items-center gap-1"
+                        >
+                          作者：{bookInfo.value.author}
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                        </button>
+                        {bookInfo.value.category && (
+                          <button 
+                            onClick={() => globalThis.location.href = `/search?q=${encodeURIComponent(bookInfo.value.category)}`}
+                            className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 hover:text-blue-800 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1"
+                          >
+                            {bookInfo.value.category}
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
+                    {/* 信息卡片网格 - 优化为更紧凑的2列布局 */}
+                    <div className="grid grid-cols-2 gap-4 mb-8">
                       {bookInfo.value.price && (
                         <div className="bg-yellow-50 rounded-xl p-4">
                           <div className="flex items-center">
@@ -523,30 +503,6 @@ export default function BookDetailComponent() {
                         </div>
                       )}
 
-                      {/* 榜单排名 */}
-                      <div className="bg-yellow-50 rounded-xl p-4">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center mr-4">
-                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </div>
-                          <div className="flex-1">
-                            <span className="text-yellow-600 text-sm font-medium block">榜单排名</span>
-                            {(bookInfo.value.ranklist && bookInfo.value.ranklist.seq) ? (
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-900 font-semibold">#{bookInfo.value.ranklist.seq}</span>
-                                <span className="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs font-medium rounded-full">
-                                  {bookInfo.value.ranklist.categoryName}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-gray-500 font-medium">暂无</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
                       {/* 出版信息 */}
                       {bookInfo.value.publisher && (
                         <div className="bg-yellow-50 rounded-xl p-4">
@@ -595,37 +551,18 @@ export default function BookDetailComponent() {
                           </div>
                         </div>
                       )}
-
-                      {/* 文件信息 */}
-                      {bookInfo.value.bookSize && (
-                        <div className="bg-yellow-50 rounded-xl p-4">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center mr-4">
-                              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                            <div>
-                              <span className="text-yellow-600 text-sm font-medium block">文件大小</span>
-                              <span className="text-gray-900 font-semibold">
-                                {(bookInfo.value.bookSize / (1024 * 1024)).toFixed(1)} MB
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
-                    {/* PC端操作按钮 */}
-                    <div className="flex gap-3">
+                    {/* PC端操作按钮 - 4列布局 */}
+                    <div className="grid grid-cols-4 gap-4">
                       {isLoggedIn.value ? (
                         <>
                           <button
                             onClick={startReading}
-                            className="px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ring-2 ring-orange-300"
+                            className="px-6 py-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
                           >
                             <div className="flex items-center justify-center space-x-2">
-                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
                               <span>阅读</span>
@@ -634,7 +571,7 @@ export default function BookDetailComponent() {
                           <button
                             onClick={() => loadChapters(localStorage.getItem("weread_token"), bookInfo.value.bookId)}
                             disabled={chaptersLoading.value}
-                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-base transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:scale-105 active:scale-95"
+                            className="px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:scale-105 active:scale-95"
                           >
                             <div className="flex items-center justify-center space-x-2">
                               {chaptersLoading.value ? (
@@ -642,7 +579,7 @@ export default function BookDetailComponent() {
                                   <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                   </svg>
-                                  <span>加载中...</span>
+                                  <span>刷新中</span>
                                 </>
                               ) : (
                                 <>
@@ -654,11 +591,11 @@ export default function BookDetailComponent() {
                               )}
                             </div>
                           </button>
-                          {chapters.value.length > 0 && (
+                          {chapters.value.length > 0 ? (
                             <>
                               <button
                                 onClick={downloadAllChapters}
-                                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-base transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                                className="px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
                               >
                                 <div className="flex items-center justify-center space-x-2">
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -669,7 +606,32 @@ export default function BookDetailComponent() {
                               </button>
                               <button
                                 onClick={shareBook}
-                                className="px-6 py-3 bg-red-500 hover:bg-red-400 text-white rounded-xl font-semibold text-base transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                                className="px-6 py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                              >
+                                <div className="flex items-center justify-center space-x-2">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                  </svg>
+                                  <span>推荐</span>
+                                </div>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                disabled
+                                className="px-6 py-4 bg-gray-300 text-gray-500 rounded-xl font-semibold cursor-not-allowed shadow-lg"
+                              >
+                                <div className="flex items-center justify-center space-x-2">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  <span>下载</span>
+                                </div>
+                              </button>
+                              <button
+                                onClick={shareBook}
+                                className="px-6 py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
                               >
                                 <div className="flex items-center justify-center space-x-2">
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -685,15 +647,21 @@ export default function BookDetailComponent() {
                         <>
                           <a
                             href="/login"
-                            className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-lg transition-colors shadow-lg text-center"
+                            className="col-span-2 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 text-center flex items-center justify-center"
                           >
                             登录后阅读
                           </a>
                           <button
-                            onClick={() => alert("请先登录以使用此功能")}
-                            className="px-8 py-4 bg-gray-300 text-gray-600 rounded-xl font-semibold text-lg cursor-not-allowed"
+                            disabled
+                            className="px-6 py-4 bg-gray-300 text-gray-500 rounded-xl font-semibold cursor-not-allowed shadow-lg"
                           >
-                            下载全书
+                            下载
+                          </button>
+                          <button
+                            disabled
+                            className="px-6 py-4 bg-gray-300 text-gray-500 rounded-xl font-semibold cursor-not-allowed shadow-lg"
+                          >
+                            推荐
                           </button>
                         </>
                       )}
@@ -728,7 +696,7 @@ export default function BookDetailComponent() {
                       <img
                         src={bookInfo.value.cover}
                         alt={bookInfo.value.title}
-                        className="w-40 h-56 object-cover rounded-2xl shadow-lg ring-4 ring-white/70 mx-auto"
+                        className="w-32 aspect-[2/3] object-cover rounded-2xl shadow-lg ring-4 ring-white/70 mx-auto"
                         onError={(e) => {
                           e.currentTarget.src =
                             "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDE5MiAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMjU2IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik02NCA2NEgxMjhWMTkySDY0VjY0WiIgZmlsbD0iI0Q1RDVENY0+Cjx0ZXh0IHg9Ijk2IiB5PSIyMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM2QjcyODAiIGZvbnQtc2l6ZT0iMTYiPuaXoOaaguWwgTwvdGV4dD4KPC9zdmc+Cg==";
@@ -740,200 +708,144 @@ export default function BookDetailComponent() {
                     </h1>
                   </div>
 
-                  {/* 移动端信息卡片 */}
-                  <div className="space-y-3 mb-6">
-                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex items-center shadow-sm">
-                      <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mr-3">
+                  {/* 移动端信息卡片 - 2列网格布局 */}
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <button 
+                      onClick={() => globalThis.location.href = `/search?q=${encodeURIComponent(bookInfo.value.author)}`}
+                      className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mb-2">
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                         </svg>
                       </div>
-                      <div>
-                        <span className="text-gray-500 text-xs block">作者</span>
-                        <span className="font-semibold text-gray-800">{bookInfo.value.author}</span>
-                      </div>
-                    </div>
+                      <span className="text-gray-500 text-xs block mb-1">作者</span>
+                      <span className="font-semibold text-gray-800 text-sm leading-tight">{bookInfo.value.author}</span>
+                      <svg className="w-3 h-3 text-gray-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </button>
 
                     {bookInfo.value.category && (
-                      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex items-center shadow-sm">
-                        <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mr-3">
+                      <button 
+                        onClick={() => globalThis.location.href = `/search?q=${encodeURIComponent(bookInfo.value.category)}`}
+                        className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mb-2">
                           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                           </svg>
                         </div>
-                        <div>
-                          <span className="text-gray-500 text-xs block">分类</span>
-                          <span className="font-semibold text-gray-800">{bookInfo.value.category}</span>
+                        <span className="text-gray-500 text-xs block mb-1">分类</span>
+                        <span className="font-semibold text-gray-800 text-sm leading-tight">{bookInfo.value.category}</span>
+                        <svg className="w-3 h-3 text-gray-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </button>
+                    )}
+
+                    {bookInfo.value.price && (
+                      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
+                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-500 text-xs block mb-1">价格</span>
+                        <span className="font-semibold text-gray-800 text-sm">¥{(bookInfo.value.price / 100).toFixed(2)}</span>
+                      </div>
+                    )}
+
+                    {bookInfo.value.rating || bookInfo.value.newRating ? (
+                      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
+                        <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-500 text-xs block mb-1">评分</span>
+                        <span className="font-semibold text-gray-800 text-sm">
+                          {bookInfo.value.newRating ? (bookInfo.value.newRating / 100).toFixed(1) : (bookInfo.value.rating / 100).toFixed(1)} ★
+                        </span>
+                        {bookInfo.value.newRatingDetail?.title && (
+                          <span className="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs font-medium rounded mt-1">
+                            {bookInfo.value.newRatingDetail.title}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
+                        <div className="w-8 h-8 bg-gray-500 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-500 text-xs block mb-1">评分</span>
+                        <span className="font-semibold text-gray-800 text-sm">暂无评分</span>
+                      </div>
+                    )}
+
+                    {bookInfo.value.format && (
+                      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
+                        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-500 text-xs block mb-1">格式</span>
+                        <span className="font-semibold text-gray-800 text-sm">{bookInfo.value.format.toUpperCase()}</span>
+                      </div>
+                    )}
+
+                    {bookInfo.value.updateTime && (
+                      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
+                        <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-500 text-xs block mb-1">更新时间</span>
+                        <span className="font-semibold text-gray-800 text-sm">{new Date(bookInfo.value.updateTime * 1000).toLocaleDateString('zh-CN')}</span>
+                      </div>
+                    )}
+
+                    {/* 章节信息 - 移动端 */}
+                    {bookInfo.value.chapterSize && (
+                      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
+                        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-500 text-xs block mb-1">章节</span>
+                        <span className="font-semibold text-gray-800 text-sm">共{bookInfo.value.chapterSize}章</span>
+                        <div className="flex items-center gap-1 flex-wrap mt-1">
+                          {bookInfo.value.finished && (
+                            <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-medium rounded-full">
+                              已完结
+                            </span>
+                          )}
+                          {bookInfo.value.maxFreeChapter && (
+                            <span className="px-2 py-1 bg-blue-200 text-blue-800 text-xs font-medium rounded-full">
+                              前{bookInfo.value.maxFreeChapter}章免费
+                            </span>
+                          )}
                         </div>
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-3">
-                      {bookInfo.value.price && (
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                          <div className="flex items-center">
-                            <div className="w-6 h-6 bg-yellow-500 rounded-lg flex items-center justify-center mr-2">
-                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-gray-500 text-xs block">价格</span>
-                              <span className="font-semibold text-gray-800 text-sm">¥{(bookInfo.value.price / 100).toFixed(2)}</span>
-                            </div>
-                          </div>
+                    {/* 出版信息 - 移动端 */}
+                    {bookInfo.value.publisher && (
+                      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
+                        <div className="w-8 h-8 bg-gray-500 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 100-2H7a1 1 0 100 2h6zm-6 4a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                          </svg>
                         </div>
-                      )}
-
-                      {bookInfo.value.rating ? (
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                          <div className="flex items-center">
-                            <div className="w-6 h-6 bg-yellow-500 rounded-lg flex items-center justify-center mr-2">
-                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-gray-500 text-xs block">评分</span>
-                              <div className="flex items-center gap-1">
-                                <span className="font-semibold text-gray-800 text-sm">
-                                  {bookInfo.value.newRating ? (bookInfo.value.newRating / 100).toFixed(1) : (bookInfo.value.rating / 100).toFixed(1)} ★
-                                </span>
-                                {bookInfo.value.newRatingDetail?.title && (
-                                  <span className="px-1 py-0.5 bg-yellow-200 text-yellow-800 text-xs font-medium rounded">
-                                    {bookInfo.value.newRatingDetail.title}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                          <div className="flex items-center">
-                            <div className="w-6 h-6 bg-gray-500 rounded-lg flex items-center justify-center mr-2">
-                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-gray-500 text-xs block">评分</span>
-                              <span className="font-semibold text-gray-800 text-sm">暂无评分</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {bookInfo.value.format && (
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                          <div className="flex items-center">
-                            <div className="w-6 h-6 bg-yellow-500 rounded-lg flex items-center justify-center mr-2">
-                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-gray-500 text-xs block">格式</span>
-                              <span className="font-semibold text-gray-800 text-sm">{bookInfo.value.format.toUpperCase()}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {bookInfo.value.updateTime && (
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                          <div className="flex items-center">
-                            <div className="w-6 h-6 bg-yellow-500 rounded-lg flex items-center justify-center mr-2">
-                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-gray-500 text-xs block">更新时间</span>
-                              <span className="font-semibold text-gray-800 text-sm">{new Date(bookInfo.value.updateTime * 1000).toLocaleDateString('zh-CN')}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 移动端额外信息卡片 */}
-                    <div className="space-y-3 mb-6">
-                        {/* 榜单排名 - 移动端 */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mr-3">
-                              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                            <div className="flex-1">
-                              <span className="text-gray-500 text-xs block">榜单排名</span>
-                              {(bookInfo.value.ranklist && bookInfo.value.ranklist.seq) ? (
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-semibold text-gray-800 text-sm">#{bookInfo.value.ranklist.seq}</span>
-                                  <span className="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs font-medium rounded-full">
-                                    {bookInfo.value.ranklist.categoryName}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="font-semibold text-gray-800 text-sm">暂无</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 章节信息 - 移动端 */}
-                        {bookInfo.value.chapterSize && (
-                          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mr-3">
-                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                                </svg>
-                              </div>
-                              <div className="flex-1">
-                                <span className="text-gray-500 text-xs block">章节</span>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-semibold text-gray-800 text-sm">共{bookInfo.value.chapterSize}章</span>
-                                  {bookInfo.value.finished && (
-                                    <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-medium rounded-full">
-                                      已完结
-                                    </span>
-                                  )}
-                                  {bookInfo.value.maxFreeChapter && (
-                                    <span className="px-2 py-1 bg-blue-200 text-blue-800 text-xs font-medium rounded-full">
-                                      前{bookInfo.value.maxFreeChapter}章免费
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* 出版信息 - 移动端 */}
-                        {bookInfo.value.publisher && (
-                          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mr-3">
-                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 100-2H7a1 1 0 100 2h6zm-6 4a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                                </svg>
-                              </div>
-                              <div className="flex-1">
-                                <span className="text-gray-500 text-xs block">出版社</span>
-                                <span className="font-semibold text-gray-800 text-sm">{bookInfo.value.publisher}</span>
-                                {bookInfo.value.bookSize && (
-                                  <div className="text-gray-500 text-xs mt-1">
-                                    大小: {(bookInfo.value.bookSize / (1024 * 1024)).toFixed(1)} MB
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                    </div>
+                        <span className="text-gray-500 text-xs block mb-1">出版社</span>
+                        <span className="font-semibold text-gray-800 text-sm">{bookInfo.value.publisher}</span>
+                      </div>
+                    )}
                   </div>
 
                   {bookInfo.value.intro && (
@@ -954,16 +866,16 @@ export default function BookDetailComponent() {
                     </div>
                   )}
 
-                  {/* 移动端操作按钮 */}
-                  <div className="space-y-2">
+                  {/* 移动端操作按钮 - 4列网格布局 */}
+                  <div className="grid grid-cols-4 gap-2 w-full">
                     {isLoggedIn.value ? (
                       <>
                         <button
                           onClick={startReading}
-                          className="w-full px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 ring-2 ring-orange-300"
+                          className="px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
                         >
-                          <div className="flex items-center justify-center space-x-2">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="flex flex-col items-center space-y-1">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <span>阅读</span>
@@ -972,15 +884,15 @@ export default function BookDetailComponent() {
                         <button
                           onClick={() => loadChapters(localStorage.getItem("weread_token"), bookInfo.value.bookId)}
                           disabled={chaptersLoading.value}
-                          className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:scale-105 active:scale-95"
+                          className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:scale-105 active:scale-95"
                         >
-                          <div className="flex items-center justify-center space-x-2">
+                          <div className="flex flex-col items-center space-y-1">
                             {chaptersLoading.value ? (
                               <>
                                 <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
-                                <span>加载中...</span>
+                                <span>刷新中</span>
                               </>
                             ) : (
                               <>
@@ -992,26 +904,49 @@ export default function BookDetailComponent() {
                             )}
                           </div>
                         </button>
-                        {chapters.value.length > 0 && (
+                        {chapters.value.length > 0 ? (
                           <>
                             <button
                               onClick={downloadAllChapters}
-                              className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                              className="px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
                             >
-                              <div className="flex items-center justify-center space-x-2">
+                              <div className="flex flex-col items-center space-y-1">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 <span>下载</span>
                               </div>
                             </button>
-
-                            
                             <button
                               onClick={shareBook}
-                              className="w-full px-6 py-3 bg-red-500 hover:bg-red-400 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                              className="px-4 py-3 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
                             >
-                              <div className="flex items-center justify-center space-x-2">
+                              <div className="flex flex-col items-center space-y-1">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                                <span>推荐</span>
+                              </div>
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              disabled
+                              className="px-4 py-3 bg-gray-300 text-gray-500 rounded-xl font-semibold text-sm cursor-not-allowed shadow-lg"
+                            >
+                              <div className="flex flex-col items-center space-y-1">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>下载</span>
+                              </div>
+                            </button>
+                            <button
+                              onClick={shareBook}
+                              className="px-4 py-3 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                            >
+                              <div className="flex flex-col items-center space-y-1">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
@@ -1025,15 +960,31 @@ export default function BookDetailComponent() {
                       <>
                         <a
                           href="/login"
-                          className="block w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors shadow-lg text-center"
+                          className="col-span-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 text-center flex items-center justify-center"
                         >
                           登录后阅读
                         </a>
                         <button
-                          onClick={() => alert("请先登录以使用此功能")}
-                          className="w-full px-6 py-4 bg-gray-300 text-gray-600 rounded-xl font-semibold cursor-not-allowed"
+                          disabled
+                          className="px-4 py-3 bg-gray-300 text-gray-500 rounded-xl font-semibold text-sm cursor-not-allowed shadow-lg"
                         >
-                          下载全书
+                          <div className="flex flex-col items-center space-y-1">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>下载</span>
+                          </div>
+                        </button>
+                        <button
+                          disabled
+                          className="px-4 py-3 bg-gray-300 text-gray-500 rounded-xl font-semibold text-sm cursor-not-allowed shadow-lg"
+                        >
+                          <div className="flex flex-col items-center space-y-1">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            <span>推荐</span>
+                          </div>
                         </button>
                       </>
                     )}
@@ -1044,7 +995,7 @@ export default function BookDetailComponent() {
 
             {/* 章节列表 */}
             {showChapters.value && (
-              <div className={`bg-gradient-to-br from-white/90 to-purple-50/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/50 p-6 md:p-8 ${showAllChapters.value ? 'max-h-96 overflow-y-auto custom-scrollbar' : ''}`}>
+              <div className={`bg-gradient-to-br from-white/90 to-purple-50/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/50 p-6 md:p-8}`}>
                 <div className="flex flex-col gap-6 mb-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-purple-800 bg-clip-text flex items-center">
@@ -1106,7 +1057,7 @@ export default function BookDetailComponent() {
 
                 {filteredChapters.value.length === 0
                   ? (
-                    <div className="text-center py-12">
+                    <div className="text-center py-12 max-h-96 overflow-y-auto custom-scrollbar">
                       <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                         <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -1126,7 +1077,7 @@ export default function BookDetailComponent() {
                   )
                   : (
                     <>
-                      <div className="space-y-3 max-h-36 overflow-y-auto pr-2">
+                      <div className="space-y-3 max-h-96 overflow-y-auto chapter-list-scrollbar pr-2">
                         {(showAllChapters.value ? filteredChapters.value : currentChapters).map((chapter, index) => {
                           const actualIndex = showAllChapters.value ? index : startIndex + index;
                           return (
@@ -1280,66 +1231,6 @@ export default function BookDetailComponent() {
 
       {/* 底部导航 */}
       <BottomNavigation currentPath={bookInfo.value ? `/book/${bookInfo.value.bookId}` : "/book"} />
-
-      {/* 添加CSS样式 */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @media (max-width: 767px) {
-            .book-detail-container {
-              padding-bottom: 5rem !important;
-            }
-          }
-          .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-          
-          /* 自定义滚动条样式 */
-          .custom-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: #a855f7 #f1f5f9;
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 12px;
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #a855f7, #3b82f6);
-            border-radius: 6px;
-            border: 2px solid #f1f5f9;
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #9333ea, #2563eb);
-          }
-          
-          .custom-scrollbar::-webkit-scrollbar-corner {
-            background: #f1f5f9;
-          }
-          
-          /* 移动端触摸优化 */
-          @media (max-width: 640px) {
-            .hover\\:bg-gray-50:hover {
-              background-color: rgb(249 250 251);
-            }
-            .hover\\:bg-blue-50:hover {
-              background-color: rgb(239 246 255);
-            }
-            .hover\\:bg-green-50:hover {
-              background-color: rgb(240 253 244);
-            }
-          }
-        `
-      }} />
     </div>
   );
 }

@@ -125,15 +125,6 @@ export default function ShelfComponent() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @media (max-width: 399px) {
-            .shelf-container {
-              padding-bottom: 5rem !important;
-            }
-          }
-        `
-      }} />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="shelf-container">
       <Navigation
@@ -351,7 +342,7 @@ export default function ShelfComponent() {
                           <img
                             src={book.cover}
                             alt={book.title}
-                            className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-200"
+                            className="w-full aspect-[2/3] object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-200"
                             onError={(e) => {
                               e.currentTarget.src =
                                 "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDIwMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03MC41IDcwSDEyOS41VjE3MEg3MC41VjcwWiIgZmlsbD0iI0Q1RDVENS8+Cjx0ZXh0IHg9IjEwMCIgeT0iMjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNkI3MjgwIiBmb250LXNpemU9IjE0Ij7ml6DmmYLlsIE+PC90ZXh0Pgo8L3N2Zz4K";
@@ -430,7 +421,7 @@ export default function ShelfComponent() {
                               <img
                                 src={book.cover}
                                 alt={book.title}
-                                className="h-12 w-8 object-cover rounded"
+                                className="w-8 aspect-[2/3] object-cover rounded"
                                 onError={(e) => {
                                   e.currentTarget.src =
                                     "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCAzMiA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjQ4IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMSAxNkgyMVYzMkgxMVYxNloiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg==";
