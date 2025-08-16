@@ -10,7 +10,7 @@ import { logger } from "@/utils";
 /**
  * 处理SSE登录 - 真实的微信读书登录
  */
-export async function handler(_req: Request): Promise<Response> {
+export async function handler(req: Request): Promise<Response> {
   logger.info("=== WeRead SSE login endpoint called ===");
 
   try {
@@ -113,11 +113,72 @@ export async function handler(_req: Request): Promise<Response> {
                 });
                 logger.info("Session initialized successfully");
 
-                // 6. 发送成功事件
+                // 6. 获取完整的用户信息
+                let completeUserInfo = null;
+                try {
+                  // 调用weread API获取详细用户信息
+                  const wereadApiUrl = `${new URL(req.url).origin}/api/user/weread?userVid=${webLoginResult.vid}&skey=${webLoginResult.accessToken}&vid=${webLoginResult.vid}`;
+                  const wereadResponse = await fetch(wereadApiUrl);
+                  
+                  if (wereadResponse.ok) {
+                    const wereadData = await wereadResponse.json();
+                    if (wereadData.success && wereadData.data) {
+                      completeUserInfo = wereadData.data;
+                      logger.info("Complete user info fetched successfully");
+                    }
+                  }
+                } catch (userInfoError) {
+                  logger.warn("Failed to fetch complete user info:", userInfoError);
+                }
+
+                // 7. 存储完整用户信息到KV数据库
+                try {
+                  const kv = await Deno.openKv();
+                  const userDataToStore = {
+                    // 基本登录凭证
+                    vid: webLoginResult.vid,
+                    skey: webLoginResult.accessToken,
+                    rt: webLoginResult.refreshToken,
+                    name: webLoginResult.name,
+                    loginTime: new Date().toISOString(),
+                    isActive: true,
+                    
+                    // 完整用户信息（如果获取成功）
+                    ...(completeUserInfo && {
+                      raw: completeUserInfo.raw,
+                      transformed: completeUserInfo.transformed,
+                      profileData: {
+                        avatarUrl: completeUserInfo.transformed?.avatarUrl,
+                        wechatName: completeUserInfo.transformed?.wechatName,
+                        gender: completeUserInfo.transformed?.gender,
+                        signature: completeUserInfo.transformed?.signature,
+                        isVip: completeUserInfo.transformed?.isVip,
+                        vipLevel: completeUserInfo.transformed?.vipLevel,
+                        medalInfo: completeUserInfo.transformed?.medalInfo,
+                        location: completeUserInfo.raw?.location,
+                      }
+                    })
+                  };
+                  
+                  await kv.set(["user", webLoginResult.vid.toString()], userDataToStore);
+                  logger.info(
+                    "Complete user info saved to KV database:",
+                    webLoginResult.vid,
+                    completeUserInfo ? "with profile data" : "basic only"
+                  );
+                } catch (kvError) {
+                  logger.error("Failed to save user info to KV:", kvError);
+                }
+
+                // 8. 发送成功事件
                 sendEvent("success", {
                   token: webLoginResult.accessToken,
-                  name: webLoginResult.name,
+                  name: completeUserInfo?.transformed?.name || webLoginResult.name,
                   vid: webLoginResult.vid,
+                  // 可选：发送头像信息给前端
+                  ...(completeUserInfo?.transformed?.avatarUrl && {
+                    avatar: completeUserInfo.transformed.avatarUrl
+                  })
                 });
 
                 // 延迟关闭连接
@@ -149,31 +210,73 @@ export async function handler(_req: Request): Promise<Response> {
                   });
                   logger.info("Session initialized successfully");
 
-                  // 6. 存储用户信息到KV数据库
+                  // 6. 获取完整的用户信息
+                  let completeUserInfo = null;
+                  try {
+                    // 调用weread API获取详细用户信息
+                    const wereadApiUrl = `${new URL(req.url).origin}/api/user/weread?userVid=${userInfo.vid}&skey=${userInfo.skey}&vid=${userInfo.vid}`;
+                    const wereadResponse = await fetch(wereadApiUrl);
+                    
+                    if (wereadResponse.ok) {
+                      const wereadData = await wereadResponse.json();
+                      if (wereadData.success && wereadData.data) {
+                        completeUserInfo = wereadData.data;
+                        logger.info("Complete user info fetched successfully");
+                      }
+                    }
+                  } catch (userInfoError) {
+                    logger.warn("Failed to fetch complete user info:", userInfoError);
+                  }
+
+                  // 7. 存储完整用户信息到KV数据库
                   try {
                     const kv = await Deno.openKv();
-                    await kv.set(["user", userInfo.vid.toString()], {
+                    const userDataToStore = {
+                      // 基本登录凭证
                       vid: userInfo.vid,
                       skey: userInfo.skey,
                       rt: userInfo.rt,
                       name: userInfo.name,
                       loginTime: new Date().toISOString(),
                       isActive: true,
-                    });
+                      
+                      // 完整用户信息（如果获取成功）
+                      ...(completeUserInfo && {
+                        raw: completeUserInfo.raw,
+                        transformed: completeUserInfo.transformed,
+                        profileData: {
+                          avatarUrl: completeUserInfo.transformed?.avatarUrl,
+                          wechatName: completeUserInfo.transformed?.wechatName,
+                          gender: completeUserInfo.transformed?.gender,
+                          signature: completeUserInfo.transformed?.signature,
+                          isVip: completeUserInfo.transformed?.isVip,
+                          vipLevel: completeUserInfo.transformed?.vipLevel,
+                          medalInfo: completeUserInfo.transformed?.medalInfo,
+                          location: completeUserInfo.raw?.location,
+                        }
+                      })
+                    };
+                    
+                    await kv.set(["user", userInfo.vid.toString()], userDataToStore);
                     logger.info(
-                      "User info saved to KV database:",
+                      "Complete user info saved to KV database:",
                       userInfo.vid,
+                      completeUserInfo ? "with profile data" : "basic only"
                     );
                   } catch (kvError) {
                     logger.error("Failed to save user info to KV:", kvError);
                   }
 
-                  // 7. 发送成功事件
+                  // 8. 发送成功事件
                   sendEvent("success", {
                     token: userInfo.skey,
-                    name: userInfo.name,
+                    name: completeUserInfo?.transformed?.name || userInfo.name,
                     vid: userInfo.vid,
                     message: "登录成功！正在跳转...",
+                    // 可选：发送头像信息给前端
+                    ...(completeUserInfo?.transformed?.avatarUrl && {
+                      avatar: completeUserInfo.transformed.avatarUrl
+                    })
                   });
 
                   // 延迟关闭连接

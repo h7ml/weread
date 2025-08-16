@@ -346,32 +346,35 @@ export default function LoginComponent() {
       localStorage.setItem("weread_token", data.token);
       localStorage.setItem("weread_vid", data.vid?.toString() || "");
       
-      try {
-        // 使用weread接口获取用户信息
-        const userResponse = await fetch(`/api/user/weread?userVid=${data.vid}&skey=${data.token}&vid=${data.vid}`);
-        
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          if (userData.success && userData.data && userData.data.transformed) {
-            const userInfo = userData.data.transformed;
-            userName.value = userInfo.name || "微信读书用户";
-            localStorage.setItem("weread_user", userInfo.name || "");
-            localStorage.setItem("weread_avatar", userInfo.avatarUrl || "");
-          } else {
-            // 如果获取失败，使用默认值
-            userName.value = data.name || "微信读书用户";
-            localStorage.setItem("weread_user", data.name || "");
+      // 优先使用SSE返回的用户信息
+      userName.value = data.name || "微信读书用户";
+      localStorage.setItem("weread_user", data.name || "");
+      
+      // 如果SSE返回了avatar，直接使用
+      if (data.avatar) {
+        localStorage.setItem("weread_avatar", data.avatar);
+      } else {
+        // 如果没有avatar，尝试调用API获取
+        try {
+          const userResponse = await fetch(`/api/user/weread?userVid=${data.vid}&skey=${data.token}&vid=${data.vid}`);
+          
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            if (userData.success && userData.data && userData.data.transformed) {
+              const userInfo = userData.data.transformed;
+              if (userInfo.avatarUrl) {
+                localStorage.setItem("weread_avatar", userInfo.avatarUrl);
+              }
+              // 更新用户名为更准确的信息
+              if (userInfo.name) {
+                userName.value = userInfo.name;
+                localStorage.setItem("weread_user", userInfo.name);
+              }
+            }
           }
-        } else {
-          // 如果API调用失败，使用默认值
-          userName.value = data.name || "微信读书用户";
-          localStorage.setItem("weread_user", data.name || "");
+        } catch (error) {
+          console.warn("Failed to fetch additional user info:", error);
         }
-      } catch (error) {
-        console.error("获取用户信息失败:", error);
-        // 使用默认值
-        userName.value = data.name || "微信读书用户";
-        localStorage.setItem("weread_user", data.name || "");
       }
       
       loginStatus.value = "success";

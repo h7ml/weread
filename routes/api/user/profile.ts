@@ -6,6 +6,7 @@ import {
   getWeReadUserInfo,
   transformUserInfo,
 } from "@/apis";
+import { logger } from "@/utils";
 
 export async function handler(req: Request, ctx: FreshContext) {
   if (req.method === "OPTIONS") {
@@ -63,7 +64,44 @@ export async function handler(req: Request, ctx: FreshContext) {
 
     if (req.method === "GET") {
       try {
-        // 使用新的微信读书API获取用户信息
+        // 优先检查KV中是否有完整的用户信息
+        if (userInfo.raw && userInfo.transformed) {
+          logger.info("Using cached complete user info from KV");
+          
+          // 构建cookie字符串用于其他API调用
+          const cookie = `wr_vid=${userInfo.vid}; wr_skey=${userInfo.skey}; wr_rt=${userInfo.rt}`;
+
+          // 并行获取统计数据
+          const [readingStatsData] = await Promise.all([
+            getReadingStats(cookie).catch(() => null),
+          ]);
+
+          const responseData = {
+            user: userInfo.transformed, // 使用KV中的transformed数据
+            profile: userInfo.profileData || null, // 使用KV中的profileData
+            stats: readingStatsData,
+            raw: userInfo.raw, // 原始数据
+            fromCache: true, // 标识来自缓存
+            cacheTime: userInfo.loginTime,
+          };
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              data: responseData,
+            }),
+            {
+              status: 200,
+              headers: { 
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+              },
+            },
+          );
+        }
+
+        // 如果KV中没有完整信息，使用新的微信读书API获取用户信息
+        logger.info("Fetching fresh user info from WeRead API");
         const wereadUser = await getWeReadUserInfo(
           userInfo.vid,
           userInfo.skey,
@@ -72,6 +110,31 @@ export async function handler(req: Request, ctx: FreshContext) {
 
         // 转换为项目内部格式
         const transformedUserInfo = transformUserInfo(wereadUser);
+
+        // 更新KV中的完整用户信息
+        try {
+          const updatedUserData = {
+            ...userInfo,
+            raw: wereadUser,
+            transformed: transformedUserInfo,
+            profileData: {
+              avatarUrl: transformedUserInfo.avatarUrl,
+              wechatName: transformedUserInfo.wechatName,
+              gender: transformedUserInfo.gender,
+              signature: transformedUserInfo.signature,
+              isVip: transformedUserInfo.isVip,
+              vipLevel: transformedUserInfo.vipLevel,
+              medalInfo: transformedUserInfo.medalInfo,
+              location: wereadUser.location,
+            },
+            lastUpdated: new Date().toISOString(),
+          };
+          
+          await kv.set(["user", userInfo.vid.toString()], updatedUserData);
+          logger.info("Updated complete user info in KV");
+        } catch (kvUpdateError) {
+          logger.warn("Failed to update user info in KV:", kvUpdateError);
+        }
 
         // 构建cookie字符串用于其他API调用
         const cookie = `wr_vid=${userInfo.vid}; wr_skey=${userInfo.skey}; wr_rt=${userInfo.rt}`;
@@ -87,6 +150,7 @@ export async function handler(req: Request, ctx: FreshContext) {
           stats: readingStatsData,
           // 包含原始微信读书数据以便调试
           rawWereadUser: wereadUser,
+          fromCache: false, // 标识来自API
         };
 
         return new Response(
