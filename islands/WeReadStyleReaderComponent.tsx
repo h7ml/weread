@@ -638,6 +638,11 @@ export default function WeReadStyleReaderComponent() {
       if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent?.trim();
         if (text && text.length > 0) {
+          // 过滤掉不应该朗读的内容
+          if (shouldSkipText(text, node.parentElement)) {
+            return;
+          }
+          
           // 按句号、问号、感叹号分句
           const sentenceArray = text.split(/[。！？；]\s*/).filter((s) =>
             s.trim().length > 0
@@ -651,12 +656,69 @@ export default function WeReadStyleReaderComponent() {
         }
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const elem = node as Element;
+        // 跳过不应该朗读的元素
+        if (shouldSkipElement(elem)) {
+          return;
+        }
         Array.from(elem.childNodes).forEach((child) => walkNode(child, elem));
       }
     };
 
     walkNode(element, element);
     return { sentences, elements };
+  };
+
+  // 判断是否应该跳过某个元素
+  const shouldSkipElement = (element: Element): boolean => {
+    const tagName = element.tagName?.toLowerCase();
+    const className = element.className || '';
+    
+    // 跳过脚本、样式等元素
+    if (['script', 'style', 'meta', 'link', 'head', 'title'].includes(tagName)) {
+      return true;
+    }
+    
+    // 跳过隐藏元素
+    const style = getComputedStyle(element);
+    if (style.display === 'none' || style.visibility === 'hidden') {
+      return true;
+    }
+    
+    return false;
+  };
+
+  // 判断是否应该跳过某段文本
+  const shouldSkipText = (text: string, parentElement: Element | null): boolean => {
+    const trimmedText = text.trim();
+    
+    // 跳过空文本或太短的文本
+    if (trimmedText.length < 2) {
+      return true;
+    }
+    
+    // 跳过看起来像JSON的文本
+    if ((trimmedText.startsWith('{') || trimmedText.startsWith('[')) && 
+        (trimmedText.includes('"') || trimmedText.includes(':'))) {
+      return true;
+    }
+    
+    // 跳过看起来像URL的文本
+    if (trimmedText.startsWith('http') || trimmedText.includes('://')) {
+      return true;
+    }
+    
+    // 跳过纯数字、日期或ID
+    if (/^[\d\-_]+$/.test(trimmedText)) {
+      return true;
+    }
+    
+    // 跳过包含大量特殊字符的文本（可能是数据或代码）
+    const specialCharsCount = (trimmedText.match(/[{}[\]"':;,]/g) || []).length;
+    if (specialCharsCount > trimmedText.length * 0.2) {
+      return true;
+    }
+    
+    return false;
   };
 
   const startTTS = async () => {
@@ -667,6 +729,10 @@ export default function WeReadStyleReaderComponent() {
 
     // 提取文本内容
     const result = extractTextContent(contentRef.current);
+    
+    // 调试：输出提取的句子
+    console.log("TTS 提取的句子数量:", result.sentences.length);
+    console.log("前5个句子:", result.sentences.slice(0, 5));
 
     if (result.sentences.length === 0) {
       alert("没有可朗读的文本内容");
@@ -742,6 +808,11 @@ export default function WeReadStyleReaderComponent() {
   const speakWithBrowserTTS = async (sentence: string) => {
     if (!speechSynthesis.current) return;
 
+    // 停止之前的语音合成
+    if (speechSynthesis.current && ttsState.value.utterance) {
+      speechSynthesis.current.cancel();
+    }
+
     // 创建语音合成utterance
     const utterance = new SpeechSynthesisUtterance(sentence);
     utterance.rate = ttsSettings.value.rate;
@@ -790,9 +861,12 @@ export default function WeReadStyleReaderComponent() {
 
   const speakWithExternalTTS = async (sentence: string) => {
     try {
-      // 停止之前的音频
+      // 停止之前的音频并清除其回调
       if (ttsState.value.currentAudio) {
-        ttsState.value.currentAudio.pause();
+        const prevAudio = ttsState.value.currentAudio;
+        prevAudio.pause();
+        prevAudio.onended = null; // 清除回调防止重复调用
+        prevAudio.onerror = null;
       }
 
       // 根据引擎选择不同的请求方式
@@ -920,10 +994,13 @@ export default function WeReadStyleReaderComponent() {
       speechSynthesis.current.cancel();
     }
 
-    // 停止Azure TTS音频
+    // 停止外部TTS音频并清除回调
     if (ttsState.value.currentAudio) {
-      ttsState.value.currentAudio.pause();
-      ttsState.value.currentAudio.currentTime = 0;
+      const audio = ttsState.value.currentAudio;
+      audio.pause();
+      audio.currentTime = 0;
+      audio.onended = null; // 清除回调防止重复调用
+      audio.onerror = null;
     }
 
     // 移除所有高亮
@@ -1555,8 +1632,10 @@ export default function WeReadStyleReaderComponent() {
         className={`${
           (ttsState.value.isPlaying || autoReading.value.isActive)
             ? "pt-32"
-            : "pt-20"
-        } pb-20`}
+            : showTopBar.value
+            ? "pt-20"
+            : "pt-0"
+        } ${showBottomBar.value ? "pb-20" : "pb-0"}`}
       >
         <div className={`mx-auto px-6 ${getPageWidthClass()}`}>
           <div
