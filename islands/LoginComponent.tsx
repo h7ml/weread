@@ -944,8 +944,8 @@ export default function LoginComponent() {
         </div>
       )}
 
-      <style jsx>
-        {`
+      <style dangerouslySetInnerHTML={{
+        __html: `
           @keyframes fadeIn {
             from {
               opacity: 0;
@@ -970,8 +970,8 @@ export default function LoginComponent() {
           .animate-scaleIn {
             animation: scaleIn 0.3s ease-out;
           }
-        `}
-      </style>
+        `
+      }} />
     </div>
   );
 }

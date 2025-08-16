@@ -4162,3 +4162,97 @@ video {
     margin-bottom: 12px;
   }
 }
+
+/* === 全局动画定义 === */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.9); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* === 工具类 === */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* === Profile页面样式 === */
+@media (max-width: 399px) {
+  .profile-container {
+    padding-bottom: 5rem !important;
+  }
+}
+
+/* === Navigation样式 === */
+@media (max-width: 767px) {
+  .nav-pc-only {
+    display: none !important;
+  }
+  .nav-mobile-only {
+    display: flex !important;
+  }
+  .nav-full-hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .nav-pc-only {
+    display: flex !important;
+  }
+  .nav-mobile-only {
+    display: none !important;
+  }
+  .nav-full-hide-mobile {
+    display: block !important;
+  }
+}
+
+/* === PWA样式 === */
+.pwa-installed {
+  /* PWA已安装状态样式 */
+}
+
+.pwa-installable {
+  /* PWA可安装状态样式 */
+}
+
+/* === 动画工具类 === */
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s ease-out;
+}

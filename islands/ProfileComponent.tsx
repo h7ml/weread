@@ -324,15 +324,6 @@ export default function ProfileComponent() {
   if (!loading.value && !isLoggedIn.value) {
     return (
       <>
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            @media (max-width: 399px) {
-              .profile-container {
-                padding-bottom: 5rem !important;
-              }
-            }
-          `
-        }} />
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
           <div className="profile-container">
             <Navigation
@@ -417,24 +408,6 @@ export default function ProfileComponent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @media (max-width: 399px) {
-            .profile-container {
-              padding-bottom: 5rem !important;
-            }
-          }
-          .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-          }
-          .stat-card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-          }
-        `
-      }} />
       <div className="profile-container">
       <Navigation
         title="个人中心"

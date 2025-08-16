@@ -157,32 +157,6 @@ export default function Navigation({ title, icon = "home", showUser = false, cur
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @media (max-width: 767px) {
-            .nav-pc-only {
-              display: none !important;
-            }
-            .nav-mobile-only {
-              display: flex !important;
-            }
-            .nav-full-hide-mobile {
-              display: none !important;
-            }
-          }
-          @media (min-width: 768px) {
-            .nav-pc-only {
-              display: flex !important;
-            }
-            .nav-mobile-only {
-              display: none !important;
-            }
-            .nav-full-hide-mobile {
-              display: block !important;
-            }
-          }
-        `
-      }} />
       <nav className="nav-full-hide-mobile bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">

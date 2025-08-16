@@ -19,11 +19,12 @@
     "check-types": "deno check main.ts dev.ts",
     "check-all": "deno fmt --check . && deno lint . && deno check **/*.ts && deno check **/*.tsx",
     "dev": "deno run -A --unstable-kv --unstable-cron --watch=static/,routes/ dev.ts",
-    "build": "deno run -A dev.ts build",
+    "build": "deno run -A dev.ts build && deno run -A npm:tailwindcss@3.4.0 -i ./static/styles.css -o ./static/styles.css --minify",
     "start": "deno run -A --unstable-kv --unstable-cron main.ts",
     "preview": "deno run -A main.ts",
     "update": "deno run -A -r https://fresh.deno.dev/update .",
-    "tailwind:build": "deno run -A npm:tailwindcss@3.4.0 -i ./static/styles.css -o ./static/styles.css --watch"
+    "tailwind:build": "deno run -A npm:tailwindcss@3.4.0 -i ./static/styles.css -o ./static/styles.css --watch",
+    "tailwind:prod": "deno run -A npm:tailwindcss@3.4.0 -i ./static/styles.css -o ./static/styles.css --minify"
   },
   "lint": {
     "rules": {
